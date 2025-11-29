@@ -1,9 +1,10 @@
-function App() {
+import { Routes, Route } from "react-router-dom";
+import LoginPage from "./features/auth/pages/LoginPage";
+
+export default function App() {
   return (
-    <h1 className="text-4xl font-bold text-blue-600">
-      Tailwind funcionando en Sass-Barber 🚀💈
-    </h1>
+    <Routes>
+      <Route path=":tenantSlug/auth/login" element={<LoginPage />} />
+    </Routes>
   );
 }
-
-export default App;
