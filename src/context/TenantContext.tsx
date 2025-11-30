@@ -1,6 +1,5 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
-// Tenant interface
 interface Tenant {
   id: string;
   name: string;
@@ -9,28 +8,47 @@ interface Tenant {
   primaryColor?: string | null;
 }
 
-// TenantContext interface
 interface TenantContextType {
   tenant: Tenant | null;
   setTenant: (t: Tenant) => void;
+  clearTenant: () => void;
 }
 
-// TenantContext
 const TenantContext = createContext<TenantContextType>({
   tenant: null,
   setTenant: () => { },
+  clearTenant: () => { },
 });
 
-// TenantProvider
 export function TenantProvider({ children }: { children: React.ReactNode }) {
-  const [tenant, setTenant] = useState<Tenant | null>(null);
+  const [tenant, setTenantState] = useState<Tenant | null>(null);
+
+  // Restaura tenant desde localStorage al cargar la app
+  useEffect(() => {
+    const saved = localStorage.getItem("tenantData");
+    if (saved) {
+      try {
+        setTenantState(JSON.parse(saved));
+      } catch { }
+    }
+  }, []);
+
+  // Guarda automáticamente cuando cambia
+  const setTenant = (t: Tenant) => {
+    setTenantState(t);
+    localStorage.setItem("tenantData", JSON.stringify(t));
+  };
+
+  const clearTenant = () => {
+    setTenantState(null);
+    localStorage.removeItem("tenantData");
+  };
 
   return (
-    <TenantContext.Provider value={{ tenant, setTenant }}>
+    <TenantContext.Provider value={{ tenant, setTenant, clearTenant }}>
       {children}
     </TenantContext.Provider>
   );
 }
 
-// useTenant hook
 export const useTenant = () => useContext(TenantContext);
