@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { isAxiosError } from "axios";
 import { useTenant } from "../../../context/TenantContext";
-import apiClient from "../../../lib/axios";
+import { loginApi } from "../api/auth.api";
 
-// useLogin hook
 export function useLogin() {
   const { tenant } = useTenant();
   const [loading, setLoading] = useState(false);
@@ -14,20 +13,22 @@ export function useLogin() {
       setError("No se pudo identificar la barbería.");
       return { ok: false };
     }
+
     try {
       setLoading(true);
       setError(null);
-      const res = await apiClient.post(`/${tenant.slug}/auth/login`, {
-        email,
-        password,
-      });
+
+      const res = await loginApi(tenant.slug, email, password);
+
       localStorage.setItem("token", res.data.access_token);
       localStorage.setItem("tenant", tenant.slug);
+
       return { ok: true };
     } catch (err: unknown) {
       const message = isAxiosError(err)
         ? err.response?.data?.message || "Error al iniciar sesión"
         : "Error al iniciar sesión";
+
       setError(message);
       return { ok: false };
     } finally {

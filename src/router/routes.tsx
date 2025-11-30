@@ -1,5 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 import LoginPage from "../features/auth/pages/LoginPage";
+import DashboardLayout from "../components/layout/DashboardLayout";
+import DashboardHome from "../pages/dashboard/DashboardHome";
 
 export const router = createBrowserRouter([
   {
@@ -8,6 +10,12 @@ export const router = createBrowserRouter([
   },
   {
     path: "/:tenantSlug/dashboard",
-    element: <h1>Dashboard</h1>,
+    element: <DashboardLayout />,
+    children: [
+      {
+        path: "",
+        element: <DashboardHome />,
+      },
+    ],
   },
 ]);

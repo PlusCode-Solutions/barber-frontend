@@ -14,10 +14,7 @@ export default function LoginForm() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const result = await login(email, password);
-
-    if (result.ok) {
-      navigate(`/${tenant?.slug}/dashboard`);
-    }
+    if (result.ok) navigate(`/${tenant?.slug}/dashboard`);
   };
 
   return (
@@ -34,7 +31,7 @@ export default function LoginForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          placeholder={`joseandres@${tenant?.slug}.com`}
+          placeholder={`usuario@${tenant?.slug}.com`}
         />
       </div>
 

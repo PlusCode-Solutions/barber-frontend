@@ -2,6 +2,7 @@ import { createContext, useContext, useState } from "react";
 
 // Tenant interface
 interface Tenant {
+  id: string;
   name: string;
   slug: string;
   logoUrl?: string | null;
