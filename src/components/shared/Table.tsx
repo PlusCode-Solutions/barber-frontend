@@ -1,3 +1,5 @@
+import { Calendar, Clock, Scissors, DollarSign } from "lucide-react";
+
 interface Column<T> {
     header: string;
     accessor: string;
@@ -12,18 +14,34 @@ function getNestedValue(obj: any, path: string) {
     return path.split(".").reduce((acc, key) => acc?.[key], obj);
 }
 
+// Mapeo de iconos según el header
+const getIconForHeader = (header: string) => {
+    const lowerHeader = header.toLowerCase();
+    if (lowerHeader.includes("servicio")) return <Scissors className="w-4 h-4" />;
+    if (lowerHeader.includes("precio")) return <DollarSign className="w-4 h-4" />;
+    if (lowerHeader.includes("fecha")) return <Calendar className="w-4 h-4" />;
+    if (lowerHeader.includes("hora") || lowerHeader.includes("inicio") || lowerHeader.includes("fin")) return <Clock className="w-4 h-4" />;
+    return null;
+};
+
+// Determinar color según el tipo de dato
+const getValueColor = (header: string, value: string) => {
+    const lowerHeader = header.toLowerCase();
+    if (lowerHeader.includes("precio")) return "text-green-600 font-bold";
+    if (lowerHeader.includes("fecha")) return "text-blue-600 font-semibold";
+    if (lowerHeader.includes("hora")) return "text-purple-600 font-semibold";
+    return "text-gray-900 font-semibold";
+};
+
 export function Table<T>({ data, columns }: TableProps<T>) {
     if (!data.length) {
         return (
-            <div className="flex flex-col items-center justify-center py-16 text-center bg-white rounded-3xl border border-gray-200 shadow-sm">
-                <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mb-4 shadow-inner">
-                    <svg className="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
+            <div className="flex flex-col items-center justify-center py-20 text-center bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl border-2 border-dashed border-blue-200 shadow-sm">
+                <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mb-5 shadow-lg">
+                    <Calendar className="w-12 h-12 text-blue-500" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-800 mb-1">No hay citas</h3>
-                <p className="text-gray-500 text-sm">Tus próximas citas aparecerán aquí</p>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">No hay citas programadas</h3>
+                <p className="text-gray-500 text-sm max-w-xs">Tus próximas citas aparecerán aquí. ¡Agenda una nueva cita!</p>
             </div>
         );
     }
@@ -33,23 +51,56 @@ export function Table<T>({ data, columns }: TableProps<T>) {
             {data.map((row, i) => (
                 <div
                     key={i}
-                    className="bg-white rounded-3xl shadow-lg p-5 border border-gray-100 hover:shadow-xl transition-all duration-300"
+                    className="group bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-md border border-gray-200 hover:shadow-2xl hover:border-blue-300 transition-all duration-300 overflow-hidden"
                 >
-                    {columns.map((col, index) => (
-                        <div
-                            key={col.header}
-                            className={`flex justify-between items-center py-3 gap-4 ${index !== columns.length - 1 ? "border-b border-gray-100" : ""
-                                }`}
-                        >
-                            <span className="text-gray-500 text-xs font-semibold uppercase tracking-wider">
-                                {col.header}
-                            </span>
+                    {/* Barra superior decorativa con gradiente */}
+                    <div className="h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
 
-                            <span className="text-gray-900 font-semibold text-right text-sm max-w-[55%] truncate">
-                                {String(getNestedValue(row, col.accessor) ?? "—")}
+                    <div className="p-5">
+                        {columns.map((col, index) => {
+                            const value = String(getNestedValue(row, col.accessor) ?? "—");
+                            const icon = getIconForHeader(col.header);
+                            const valueColor = getValueColor(col.header, value);
+
+                            return (
+                                <div
+                                    key={col.header}
+                                    className={`flex justify-between items-center py-3.5 gap-4 ${index !== columns.length - 1 ? "border-b border-gray-100" : ""
+                                        }`}
+                                >
+                                    {/* Label con icono */}
+                                    <div className="flex items-center gap-2">
+                                        {icon && (
+                                            <div className="w-8 h-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg flex items-center justify-center text-blue-600">
+                                                {icon}
+                                            </div>
+                                        )}
+                                        <span className="text-gray-600 text-xs font-bold uppercase tracking-wide">
+                                            {col.header.replace(/[🎨📅💰⏰]/g, '').trim()}
+                                        </span>
+                                    </div>
+
+                                    {/* Valor con estilo dinámico */}
+                                    <span className={`text-right text-base max-w-[60%] truncate ${valueColor}`}>
+                                        {value}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Footer decorativo opcional */}
+                    <div className="px-5 pb-4 pt-2">
+                        <div className="flex items-center justify-between text-xs text-gray-400">
+                            <span className="flex items-center gap-1">
+                                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                                Confirmada
+                            </span>
+                            <span className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                Ver detalles →
                             </span>
                         </div>
-                    ))}
+                    </div>
                 </div>
             ))}
         </div>
