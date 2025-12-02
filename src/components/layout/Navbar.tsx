@@ -1,89 +1,141 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Menu, X, Home, CalendarCheck, Users, Scissors, Clock } from "lucide-react";
+import { Link, useParams, useLocation } from "react-router-dom";
+import { Menu, X, Home, CalendarCheck, Users, Scissors } from "lucide-react";
 import { useTenant } from "../../context/TenantContext";
 
 export default function Navbar() {
     const [menuOpen, setMenuOpen] = useState(false);
+    const { tenantSlug } = useParams();
     const { tenant } = useTenant();
+    const location = useLocation();
 
     const primary = tenant?.primaryColor ?? "#3b82f6";
 
-    return (
-        <header
-            className="w-full fixed top-0 left-0 z-50 shadow-md"
-            style={{ backgroundColor: primary }}
-        >
-            <div className="flex items-center justify-between px-4 py-3">
+    const menuItems = [
+        { icon: Home, label: "Inicio", path: "dashboard" },
+        { icon: CalendarCheck, label: "Citas", path: "dashboard/bookings" },
+        { icon: Scissors, label: "Servicios", path: "dashboard/services" },
+        { icon: Users, label: "Barberos", path: "dashboard/barbers" }
+    ];
 
-                {/* Logo + Nombre */}
-                <div className="flex items-center gap-2">
-                    {tenant?.logoUrl && (
-                        <img
-                            src={tenant.logoUrl}
-                            className="h-8 w-8 rounded-full object-cover border border-white/40 shadow"
-                        />
-                    )}
-                    <span className="text-white font-semibold text-lg tracking-tight">
-                        {tenant?.name ?? "Barbería"}
-                    </span>
+    return (
+        <>
+            <header
+                className="w-full fixed top-0 left-0 z-50 shadow-lg"
+                style={{ backgroundColor: primary }}
+            >
+                <div className="flex items-center justify-between px-5 py-4">
+                    <div className="flex items-center gap-3">
+                        {tenant?.logoUrl && (
+                            <img
+                                src={tenant.logoUrl}
+                                alt="Logo"
+                                className="h-11 w-11 rounded-xl object-cover border-2 border-white/50 shadow-md"
+                            />
+                        )}
+                        <span className="text-white font-bold text-xl">
+                            {tenant?.name ?? "Barbería"}
+                        </span>
+                    </div>
+
+                    <button
+                        className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all active:scale-95"
+                        onClick={() => setMenuOpen(!menuOpen)}
+                    >
+                        {menuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                </div>
+            </header>
+
+            {/* Overlay */}
+            {menuOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-40 transition-opacity"
+                    onClick={() => setMenuOpen(false)}
+                />
+            )}
+
+            {/* Menu lateral */}
+            <nav
+                className={`fixed top-0 right-0 h-full w-72 bg-white z-50 shadow-2xl transform transition-transform duration-300 ${menuOpen ? "translate-x-0" : "translate-x-full"
+                    }`}
+            >
+                {/* Header del menú */}
+                <div
+                    className="p-5 flex items-center justify-between border-b border-gray-200"
+                    style={{ backgroundColor: `${primary}08` }}
+                >
+                    <div className="flex items-center gap-3">
+                        {tenant?.logoUrl && (
+                            <img
+                                src={tenant.logoUrl}
+                                alt="Logo"
+                                className="h-10 w-10 rounded-lg object-cover"
+                            />
+                        )}
+                        <div>
+                            <h3 className="font-bold text-gray-900">{tenant?.name}</h3>
+                            <p className="text-sm text-gray-500">Menú</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => setMenuOpen(false)}
+                        className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors"
+                    >
+                        <X size={20} />
+                    </button>
                 </div>
 
-                {/* Botón mobile */}
-                <button
-                    className="text-white"
-                    onClick={() => setMenuOpen(!menuOpen)}
-                >
-                    {menuOpen ? <X size={28} /> : <Menu size={28} />}
-                </button>
-            </div>
+                {/* Items del menú */}
+                <div className="p-4">
+                    {menuItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = location.pathname === `/${tenantSlug}/${item.path}`;
 
-            {/* MOBILE MENU */}
-            {menuOpen && (
-                <nav
-                    className="flex flex-col gap-4 px-4 pb-5 pt-2 text-white text-base animate-slideDown"
-                >
-                    <Link
-                        to="/dashboard"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-3"
-                    >
-                        <Home size={20} /> Inicio
-                    </Link>
+                        return (
+                            <Link
+                                key={item.path}
+                                to={`/${tenantSlug}/${item.path}`}
+                                onClick={() => setMenuOpen(false)}
+                                className={`flex items-center gap-4 p-4 rounded-xl transition-colors mb-2 group ${isActive ? 'shadow-md' : 'hover:bg-gray-50'
+                                    }`}
+                                style={isActive ? { backgroundColor: `${primary}10` } : {}}
+                            >
+                                <div
+                                    className="w-11 h-11 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"
+                                    style={{
+                                        backgroundColor: isActive ? primary : `${primary}15`,
+                                    }}
+                                >
+                                    <Icon
+                                        size={22}
+                                        style={{ color: isActive ? 'white' : primary }}
+                                        strokeWidth={2}
+                                    />
+                                </div>
+                                <span
+                                    className="font-semibold text-base flex-1"
+                                    style={{ color: isActive ? primary : '#374151' }}
+                                >
+                                    {item.label}
+                                </span>
+                                <svg
+                                    className="w-5 h-5"
+                                    style={{ color: isActive ? primary : '#9ca3af' }}
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </Link>
+                        );
+                    })}
+                </div>
+            </nav>
 
-                    <Link
-                        to="/dashboard/appointments"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-3"
-                    >
-                        <CalendarCheck size={20} /> Citas
-                    </Link>
-
-                    <Link
-                        to="/dashboard/barbers"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-3"
-                    >
-                        <Users size={20} /> Barberos
-                    </Link>
-
-                    <Link
-                        to="/dashboard/services"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-3"
-                    >
-                        <Scissors size={20} /> Servicios
-                    </Link>
-
-                    <Link
-                        to="/dashboard/schedule"
-                        onClick={() => setMenuOpen(false)}
-                        className="flex items-center gap-3"
-                    >
-                        <Clock size={20} /> Horarios
-                    </Link>
-                </nav>
-            )}
-        </header>
+            {/* Espaciador */}
+            <div className="h-[68px]"></div>
+        </>
     );
 }

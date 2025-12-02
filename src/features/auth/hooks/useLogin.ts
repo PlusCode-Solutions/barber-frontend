@@ -19,9 +19,9 @@ export function useLogin() {
       setError(null);
 
       const res = await loginApi(tenant.slug, email, password);
-
       localStorage.setItem("token", res.data.access_token);
       localStorage.setItem("tenant", tenant.slug);
+      localStorage.setItem("user", JSON.stringify(res.data.user));
 
       return { ok: true };
     } catch (err: unknown) {
