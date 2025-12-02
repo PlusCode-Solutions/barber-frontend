@@ -6,6 +6,7 @@ import DashboardLayout from "./components/layout/DashboardLayout";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 
 import BookingsPage from "./features/bookings/pages/BookingsPage";
+import ServicesPage from "./features/services/pages/ServicesPage";
 
 export default function App() {
   return (
@@ -17,9 +18,8 @@ export default function App() {
       {/* Dashboard */}
       <Route path=":tenantSlug/dashboard" element={<DashboardLayout />}>
         <Route index element={<DashboardHome />} />
-
-        {/* AQUÍ FALTABA ESTA RUTA */}
         <Route path="bookings" element={<BookingsPage />} />
+        <Route path="services" element={<ServicesPage />} />
       </Route>
     </Routes>
   );
