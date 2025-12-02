@@ -5,4 +5,16 @@ const instance = axios.create({
   withCredentials: false,
 });
 
+instance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/"; // Redirect to home/login
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default instance;
