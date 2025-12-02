@@ -1,17 +1,14 @@
-import { useParams } from "react-router-dom";
-import { TenantProvider } from "../context/TenantContext";
-import React from "react";
+import { Navigate, Outlet, useParams } from "react-router-dom";
+import { useTenant } from "../context/TenantContext";
 
-export default function TenantRoute({ children }: { children: React.ReactNode }) {
-  const { tenant: tenantSlug } = useParams();
+export default function TenantRoute() {
+  const { tenant } = useTenant();
+  const { tenantSlug } = useParams();
 
-  if (!tenantSlug) {
-    return <div>Tenant no encontrado</div>;
+  // Si no hay tenant, redirige a login
+  if (!tenant) {
+    return <Navigate to={`/${tenantSlug}`} />;
   }
 
-  return (
-    <TenantProvider>
-      {children}
-    </TenantProvider>
-  );
+  return <Outlet />;
 }

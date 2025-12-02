@@ -1,21 +1,31 @@
-import { createBrowserRouter } from "react-router-dom";
-import LoginPage from "../features/auth/pages/LoginPage";
+import { Routes, Route } from "react-router-dom";
+import TenantRoute from "./TenantRoute";
+
 import DashboardLayout from "../components/layout/DashboardLayout";
 import DashboardHome from "../pages/dashboard/DashboardHome";
 
-export const router = createBrowserRouter([
-  {
-    path: "/:tenantSlug/auth/login",
-    element: <LoginPage />,
-  },
-  {
-    path: "/:tenantSlug/dashboard",
-    element: <DashboardLayout />,
-    children: [
-      {
-        path: "",
-        element: <DashboardHome />,
-      },
-    ],
-  },
-]);
+import BookingsPage from "../features/bookings/pages/BookingsPage";
+
+export default function AppRoutes() {
+  return (
+    <Routes>
+
+      {/* Rutas protegidas */}
+      <Route element={<TenantRoute />}>
+
+        {/* Dashboard */}
+        <Route path=":tenantSlug/dashboard" element={<DashboardLayout />}>
+
+          {/* Inicio */}
+          <Route index element={<DashboardHome />} />
+
+          {/* Citas */}
+          <Route path="bookings" element={<BookingsPage />} />
+
+        </Route>
+
+      </Route>
+
+    </Routes>
+  );
+}
