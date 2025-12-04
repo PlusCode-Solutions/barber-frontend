@@ -7,6 +7,7 @@ import DashboardHome from "./pages/dashboard/DashboardHome";
 
 import BookingsPage from "./features/bookings/pages/BookingsPage";
 import ServicesPage from "./features/services/pages/ServicesPage";
+import BarbersPage from "./features/barbers/pages/BarbersPage";
 
 export default function App() {
   return (
@@ -20,7 +21,9 @@ export default function App() {
         <Route index element={<DashboardHome />} />
         <Route path="bookings" element={<BookingsPage />} />
         <Route path="services" element={<ServicesPage />} />
+        <Route path="barbers" element={<BarbersPage />} />
       </Route>
     </Routes>
   );
 }
+
