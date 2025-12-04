@@ -1,5 +1,5 @@
 import { useUserBookings } from "../hooks/useUserBookings";
-import { Table } from "../../../components/shared/Table";
+import { BookingsTable } from "../components/BookingsTable";
 import BookingsSkeleton from "../components/BookingsSkeleton";
 import { formatRelativeDate, formatHour } from "../../../utils/dateUtils";
 
@@ -47,7 +47,7 @@ export default function BookingsPage() {
 
             {/* CONTENIDO */}
             <div className="px-4 pt-6">
-                <Table
+                <BookingsTable
                     data={formattedBookings}
                     columns={[
                         { header: "Servicio 🎨", accessor: "service.name" },

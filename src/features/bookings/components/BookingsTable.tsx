@@ -1,13 +1,13 @@
 import { Calendar, Clock, Scissors, DollarSign } from "lucide-react";
 
-interface Column<T> {
+interface Column {
     header: string;
     accessor: string;
 }
 
 interface TableProps<T> {
     data: T[];
-    columns: Column<T>[];
+    columns: Column[];
 }
 
 function getNestedValue(obj: any, path: string) {
@@ -25,7 +25,7 @@ const getIconForHeader = (header: string) => {
 };
 
 // Determinar color según el tipo de dato
-const getValueColor = (header: string, value: string) => {
+const getValueColor = (header: string) => {
     const lowerHeader = header.toLowerCase();
     if (lowerHeader.includes("precio")) return "text-green-600 font-bold";
     if (lowerHeader.includes("fecha")) return "text-blue-600 font-semibold";
@@ -33,7 +33,7 @@ const getValueColor = (header: string, value: string) => {
     return "text-gray-900 font-semibold";
 };
 
-export function Table<T>({ data, columns }: TableProps<T>) {
+export function BookingsTable<T>({ data, columns }: TableProps<T>) {
     if (!data.length) {
         return (
             <div className="flex flex-col items-center justify-center py-20 text-center bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl border-2 border-dashed border-blue-200 shadow-sm">
@@ -60,7 +60,7 @@ export function Table<T>({ data, columns }: TableProps<T>) {
                         {columns.map((col, index) => {
                             const value = String(getNestedValue(row, col.accessor) ?? "—");
                             const icon = getIconForHeader(col.header);
-                            const valueColor = getValueColor(col.header, value);
+                            const valueColor = getValueColor(col.header);
 
                             return (
                                 <div
