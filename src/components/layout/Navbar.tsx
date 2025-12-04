@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
-import { Menu, X, Home, CalendarCheck, Users, Scissors } from "lucide-react";
+import { Menu, X, Home, CalendarCheck, Users, Scissors, Clock } from "lucide-react";
 import { useTenant } from "../../context/TenantContext";
 
 export default function Navbar() {
@@ -15,7 +15,8 @@ export default function Navbar() {
         { icon: Home, label: "Inicio", path: "dashboard" },
         { icon: CalendarCheck, label: "Citas", path: "dashboard/bookings" },
         { icon: Scissors, label: "Servicios", path: "dashboard/services" },
-        { icon: Users, label: "Barberos", path: "dashboard/barbers" }
+        { icon: Users, label: "Barberos", path: "dashboard/barbers" },
+        { icon: Clock, label: "Horarios", path: "dashboard/schedules" }
     ];
 
     return (
