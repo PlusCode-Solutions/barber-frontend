@@ -1,9 +1,11 @@
-import { useState } from "react";
-import { isAxiosError } from "axios";
+import { useAuth } from "../../../context/AuthContext";
 import { useTenant } from "../../../context/TenantContext";
+import { useState } from "react";
 import { loginApi } from "../api/auth.api";
+import { isAxiosError } from "axios";
 
 export function useLogin() {
+  const { login: contextLogin } = useAuth();
   const { tenant } = useTenant();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,9 +21,12 @@ export function useLogin() {
       setError(null);
 
       const res = await loginApi(tenant.slug, email, password);
-      localStorage.setItem("token", res.data.access_token);
+
+      // Use logic from context to update state and storage uniformly
+      contextLogin(res.data.access_token, res.data.user);
+
+      // We still store tenant slug if needed by other parts, but token/user is handled by context
       localStorage.setItem("tenant", tenant.slug);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
 
       return { ok: true };
     } catch (err: unknown) {

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLogin } from "../hooks/useLogin";
 import { useNavigate } from "react-router-dom";
 import { useTenant } from "../../../context/TenantContext";
+import { Input } from "../../../components/ui/Input";
 
 export default function LoginForm() {
   const { login, error, loading } = useLogin();
@@ -23,29 +24,23 @@ export default function LoginForm() {
         <p className="bg-red-100 text-red-600 p-2 rounded">{error}</p>
       )}
 
-      <div>
-        <label className="block mb-1 text-sm">Correo</label>
-        <input
-          type="email"
-          className="w-full border px-3 py-2 rounded"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          placeholder={`usuario@${tenant?.slug}.com`}
-        />
-      </div>
+      <Input
+        label="Correo"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+        placeholder={`usuario@${tenant?.slug}.com`}
+      />
 
-      <div>
-        <label className="block mb-1 text-sm">Contraseña</label>
-        <input
-          type="password"
-          className="w-full border px-3 py-2 rounded"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          placeholder="********"
-        />
-      </div>
+      <Input
+        label="Contraseña"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+        placeholder="********"
+      />
 
       <button
         type="submit"

@@ -4,15 +4,18 @@ import { BrowserRouter } from "react-router-dom";
 
 import App from "./App";
 import { TenantProvider } from "./context/TenantContext";
+import { AuthProvider } from "./context/AuthContext";
 
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <TenantProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </TenantProvider>
+    <AuthProvider>
+      <TenantProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </TenantProvider>
+    </AuthProvider>
   </React.StrictMode>
 );

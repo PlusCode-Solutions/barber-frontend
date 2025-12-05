@@ -19,13 +19,21 @@ instance.interceptors.request.use(
   }
 );
 
+
+// Response interceptor to handle 401 Unauthorized
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      window.location.href = "/"; // Redirect to home/login
+
+      const tenantSlug = localStorage.getItem("tenant");
+      if (tenantSlug) {
+        window.location.href = `/${tenantSlug}/auth/login`;
+      } else {
+        window.location.href = "/";
+      }
     }
     return Promise.reject(error);
   }
