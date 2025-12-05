@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getUserBookings } from "../api/getUserBookings";
+import { useAuth } from "../../../context/AuthContext";
 import type { Booking } from "../types";
 
 export function useUserBookings() {
@@ -7,18 +8,19 @@ export function useUserBookings() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const { user, token } = useAuth();
 
     useEffect(() => {
-        if (!user.id || !token) {
+        if (!user?.id || !token) {
             setLoading(false);
             return;
         }
 
         async function load() {
+            if (!user?.id || !token) return;
+
             try {
-                const data = await getUserBookings(user.id, token as string);
+                const data = await getUserBookings(user.id);
                 setBookings(data);
             } catch (err) {
                 console.error("Error cargando citas del usuario", err);
@@ -29,7 +31,7 @@ export function useUserBookings() {
         }
 
         load();
-    }, [user.id, token]);
+    }, [user?.id, token]);
 
     return { bookings, loading, error };
 }
