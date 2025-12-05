@@ -9,3 +9,19 @@ export interface Booking {
         price: number;
     };
 }
+
+export interface CreateBookingDto {
+    serviceId: string;
+    barberId: string;
+    date: string; // YYYY-MM-DD
+    startTime: string; // HH:mm
+    endTime: string; // HH:mm
+    notes?: string;
+}
+
+export interface AvailabilityResponse {
+    slots: Array<{
+        time: string;
+        available: boolean;
+    }>;
+}
