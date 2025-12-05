@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Link, useParams, useLocation } from "react-router-dom";
 import { Menu, X, Home, CalendarCheck, Users, Scissors, Clock } from "lucide-react";
-import { useTenant } from "../../context/TenantContext";
+import { useTenant } from "../../../context/TenantContext";
 
-export default function Navbar() {
+export default function UserNavbar() {
     const [menuOpen, setMenuOpen] = useState(false);
     const { tenantSlug } = useParams();
     const { tenant } = useTenant();
