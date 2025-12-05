@@ -5,6 +5,9 @@ import DashboardLayout from "../components/layout/DashboardLayout";
 import DashboardHome from "../pages/dashboard/DashboardHome";
 
 import BookingsPage from "../features/bookings/pages/BookingsPage";
+import TenantAdminLayout from "../components/layout/TenantAdminLayout";
+import TenantAdminDashboard from "../pages/tenant-admin/TenantAdminDashboard";
+import TenantBookingsPage from "../features/bookings/pages/TenantBookingsPage";
 
 export default function AppRoutes() {
   return (
@@ -13,15 +16,17 @@ export default function AppRoutes() {
       {/* Rutas protegidas */}
       <Route element={<TenantRoute />}>
 
-        {/* Dashboard */}
+        {/* User Dashboard */}
         <Route path=":tenantSlug/dashboard" element={<DashboardLayout />}>
-
-          {/* Inicio */}
           <Route index element={<DashboardHome />} />
-
-          {/* Citas */}
           <Route path="bookings" element={<BookingsPage />} />
+        </Route>
 
+        {/* Admin Dashboard */}
+        <Route path=":tenantSlug/admin" element={<TenantAdminLayout />}>
+          <Route path="dashboard" element={<TenantAdminDashboard />} />
+          <Route path="bookings" element={<TenantBookingsPage />} />
+          {/* Add other admin routes here later */}
         </Route>
 
       </Route>

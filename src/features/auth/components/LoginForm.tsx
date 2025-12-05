@@ -15,7 +15,15 @@ export default function LoginForm() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const result = await login(email, password);
-    if (result.ok) navigate(`/${tenant?.slug}/dashboard`);
+    if (result.ok && result.user) {
+      if (result.user.role === 'TENANT_ADMIN') {
+        navigate(`/${tenant?.slug}/admin/dashboard`);
+      } else if (result.user.role === 'SUPER_ADMIN') {
+        navigate(`/admin/dashboard`); // Or appropriate super admin route
+      } else {
+        navigate(`/${tenant?.slug}/dashboard`);
+      }
+    }
   };
 
   return (

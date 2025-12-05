@@ -8,6 +8,16 @@ export interface Booking {
         name: string;
         price: number;
     };
+    // Include these for admin view
+    user?: {
+        id: string;
+        name: string;
+        email?: string;
+    };
+    barber?: {
+        id: string;
+        name: string;
+    };
 }
 
 export interface CreateBookingDto {

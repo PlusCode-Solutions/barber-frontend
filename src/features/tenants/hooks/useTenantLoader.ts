@@ -29,8 +29,10 @@ export function useTenantLoader(slug: string) {
                 // Guardar en contexto
                 setTenant(data);
 
-                // Guardar cache local
-                localStorage.setItem("tenant", JSON.stringify(data));
+                // FIXED: Do not overwrite 'tenant' key with object. 
+                // 'tenantData' is handled by setTenant, and 'tenant' key 
+                // is reserved for slug string by other parts of app.
+
 
             } catch (err) {
                 console.error(err);

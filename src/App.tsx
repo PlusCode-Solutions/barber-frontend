@@ -23,6 +23,7 @@ import SchedulesPage from "./features/schedules/pages/SchedulesPage";
 // Admin Pages
 import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
 import TenantAdminDashboard from "./pages/tenant-admin/TenantAdminDashboard";
+import TenantBookingsPage from "./features/bookings/pages/TenantBookingsPage";
 
 // Permissions
 import { PERMISSIONS } from "./config/permissions";
@@ -53,11 +54,11 @@ export default function App() {
       {/* ========== TENANT ADMIN ROUTES ========== */}
       <Route
         path=":tenantSlug/admin"
-        element={<ProtectedRoute requiredPermissions={[PERMISSIONS.BOOKINGS_VIEW_ALL]} />}
+        element={<ProtectedRoute requiredRole="TENANT_ADMIN" />}
       >
         <Route element={<TenantAdminLayout />}>
           <Route path="dashboard" element={<TenantAdminDashboard />} />
-          <Route path="bookings" element={<BookingsPage />} />
+          <Route path="bookings" element={<TenantBookingsPage />} />
           <Route path="services" element={<ServicesPage />} />
           <Route path="barbers" element={<BarbersPage />} />
           <Route path="schedules" element={<SchedulesPage />} />

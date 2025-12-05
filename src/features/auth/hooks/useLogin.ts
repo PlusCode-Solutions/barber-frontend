@@ -28,7 +28,7 @@ export function useLogin() {
       // We still store tenant slug if needed by other parts, but token/user is handled by context
       localStorage.setItem("tenant", tenant.slug);
 
-      return { ok: true };
+      return { ok: true, user: res.data.user };
     } catch (err: unknown) {
       const message = isAxiosError(err)
         ? err.response?.data?.message || "Error al iniciar sesión"

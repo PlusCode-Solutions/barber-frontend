@@ -28,9 +28,35 @@ instance.interceptors.response.use(
       localStorage.removeItem("token");
       localStorage.removeItem("user");
 
-      const tenantSlug = localStorage.getItem("tenant");
+      let tenantSlug = localStorage.getItem("tenant");
+      const tenantData = localStorage.getItem("tenantData");
+
+      // Try to get slug from tenantData object first (more reliable source)
+      if (tenantData) {
+        try {
+          const parsed = JSON.parse(tenantData);
+          if (parsed && parsed.slug) {
+            tenantSlug = parsed.slug;
+          }
+        } catch (e) {
+          console.error("Error parsing tenantData for redirect", e);
+        }
+      }
+
       if (tenantSlug) {
-        window.location.href = `/${tenantSlug}/auth/login`;
+        // Ensure we don't injecting a JSON object string if legacy data persists
+        if (tenantSlug.startsWith("{")) {
+          try {
+            const parsed = JSON.parse(tenantSlug);
+            tenantSlug = parsed.slug || "";
+          } catch { }
+        }
+
+        if (tenantSlug) {
+          window.location.href = `/${tenantSlug}/auth/login`;
+        } else {
+          window.location.href = "/";
+        }
       } else {
         window.location.href = "/";
       }
