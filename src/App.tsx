@@ -24,6 +24,7 @@ import SchedulesPage from "./features/schedules/pages/SchedulesPage";
 import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
 import TenantAdminDashboard from "./pages/tenant-admin/TenantAdminDashboard";
 import TenantBookingsPage from "./features/bookings/pages/TenantBookingsPage";
+import TenantCustomersPage from "./features/users/pages/TenantCustomersPage";
 
 // Permissions
 import { PERMISSIONS } from "./config/permissions";
@@ -59,6 +60,7 @@ export default function App() {
         <Route element={<TenantAdminLayout />}>
           <Route path="dashboard" element={<TenantAdminDashboard />} />
           <Route path="bookings" element={<TenantBookingsPage />} />
+          <Route path="customers" element={<TenantCustomersPage />} />
           <Route path="services" element={<ServicesPage />} />
           <Route path="barbers" element={<BarbersPage />} />
           <Route path="schedules" element={<SchedulesPage />} />

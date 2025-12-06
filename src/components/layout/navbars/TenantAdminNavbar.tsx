@@ -1,111 +1,168 @@
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { LayoutDashboard, Users, Scissors, Calendar, FileText, UserCircle, Settings, LogOut, Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useState } from "react";
+import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X, LayoutDashboard, FileText, Scissors, Users, Calendar, UserCircle, LogOut } from "lucide-react";
+import { useTenant } from "../../../context/TenantContext";
 
 export default function TenantAdminNavbar() {
-    const [isOpen, setIsOpen] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
     const { tenantSlug } = useParams();
+    const { tenant } = useTenant();
+    const location = useLocation();
     const navigate = useNavigate();
 
-    const navItems = [
-        { path: `/${tenantSlug}/admin/dashboard`, label: 'Dashboard', icon: LayoutDashboard },
-        { path: `/${tenantSlug}/admin/barbers`, label: 'Barberos', icon: Users },
-        { path: `/${tenantSlug}/admin/services`, label: 'Servicios', icon: Scissors },
-        { path: `/${tenantSlug}/admin/schedules`, label: 'Horarios', icon: Calendar },
-        { path: `/${tenantSlug}/admin/bookings`, label: 'Citas', icon: FileText },
-        { path: `/${tenantSlug}/admin/customers`, label: 'Clientes', icon: UserCircle },
+    const primary = tenant?.primaryColor ?? "#3b82f6";
+
+    const menuItems = [
+        { icon: LayoutDashboard, label: "Dashboard", path: "admin/dashboard" },
+        { icon: FileText, label: "Citas", path: "admin/bookings" },
+        { icon: Scissors, label: "Servicios", path: "admin/services" },
+        { icon: Users, label: "Barberos", path: "admin/barbers" },
+        { icon: Calendar, label: "Horarios", path: "admin/schedules" },
+        { icon: UserCircle, label: "Clientes", path: "admin/customers" },
     ];
 
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        navigate(`/${tenantSlug}/login`);
+        navigate(`/${tenantSlug}/auth/login`);
     };
 
     return (
-        <nav className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-16">
-                    {/* Logo */}
+        <>
+            <header
+                className="w-full fixed top-0 left-0 z-50 shadow-lg"
+                style={{ backgroundColor: primary }}
+            >
+                <div className="flex items-center justify-between px-5 py-4">
                     <div className="flex items-center gap-3">
-                        <Scissors size={28} className="text-blue-200" />
+                        {tenant?.logoUrl && (
+                            <img
+                                src={tenant.logoUrl}
+                                alt="Logo"
+                                className="h-11 w-11 rounded-xl object-cover border-2 border-white/50 shadow-md"
+                            />
+                        )}
                         <div>
-                            <h1 className="text-xl font-bold capitalize">{tenantSlug}</h1>
-                            <p className="text-xs text-blue-200">Admin Panel</p>
+                            <span className="text-white font-bold text-xl block leading-tight">
+                                {tenant?.name ?? "Barbería"}
+                            </span>
+                            <span className="text-white/80 text-xs font-medium bg-white/20 px-2 py-0.5 rounded-full">
+                                ADMIN PANEL
+                            </span>
                         </div>
                     </div>
 
-                    {/* Desktop Navigation */}
-                    <div className="hidden lg:flex items-center gap-4">
-                        {navItems.map((item) => (
-                            <Link
-                                key={item.path}
-                                to={item.path}
-                                className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 transition"
-                            >
-                                <item.icon size={18} />
-                                <span className="font-medium text-sm">{item.label}</span>
-                            </Link>
-                        ))}
-
-                        <Link
-                            to={`/${tenantSlug}/admin/settings`}
-                            className="p-2 rounded-lg hover:bg-white/10 transition"
-                            title="Settings"
-                        >
-                            <Settings size={20} />
-                        </Link>
-
-                        <button
-                            onClick={handleLogout}
-                            className="flex items-center gap-2 px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition"
-                        >
-                            <LogOut size={18} />
-                            <span className="font-medium text-sm">Logout</span>
-                        </button>
-                    </div>
-
-                    {/* Mobile menu button */}
                     <button
-                        onClick={() => setIsOpen(!isOpen)}
-                        className="lg:hidden p-2 rounded-lg hover:bg-white/10"
+                        className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all active:scale-95"
+                        onClick={() => setMenuOpen(!menuOpen)}
                     >
-                        {isOpen ? <X size={24} /> : <Menu size={24} />}
+                        {menuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
+                </div>
+            </header>
+
+            {/* Overlay */}
+            {menuOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-40 transition-opacity"
+                    onClick={() => setMenuOpen(false)}
+                />
+            )}
+
+            {/* Menu lateral */}
+            <nav
+                className={`fixed top-0 right-0 h-full w-72 bg-white z-50 shadow-2xl transform transition-transform duration-300 flex flex-col ${menuOpen ? "translate-x-0" : "translate-x-full"
+                    }`}
+            >
+                {/* Header del menú */}
+                <div
+                    className="p-5 flex items-center justify-between border-b border-gray-200"
+                    style={{ backgroundColor: `${primary}08` }}
+                >
+                    <div className="flex items-center gap-3">
+                        {tenant?.logoUrl && (
+                            <img
+                                src={tenant.logoUrl}
+                                alt="Logo"
+                                className="h-10 w-10 rounded-lg object-cover"
+                            />
+                        )}
+                        <div>
+                            <h3 className="font-bold text-gray-900">{tenant?.name}</h3>
+                            <p className="text-sm text-gray-500">Administración</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => setMenuOpen(false)}
+                        className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors"
+                    >
+                        <X size={20} />
                     </button>
                 </div>
 
-                {/* Mobile Navigation */}
-                {isOpen && (
-                    <div className="lg:hidden pb-4 space-y-2">
-                        {navItems.map((item) => (
+                {/* Items del menú */}
+                <div className="p-4 flex-1 overflow-y-auto">
+                    {menuItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = location.pathname.includes(`/${tenantSlug}/${item.path}`);
+
+                        return (
                             <Link
                                 key={item.path}
-                                to={item.path}
-                                onClick={() => setIsOpen(false)}
-                                className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition"
+                                to={`/${tenantSlug}/${item.path}`}
+                                onClick={() => setMenuOpen(false)}
+                                className={`flex items-center gap-4 p-4 rounded-xl transition-colors mb-2 group ${isActive ? 'shadow-md' : 'hover:bg-gray-50'
+                                    }`}
+                                style={isActive ? { backgroundColor: `${primary}10` } : {}}
                             >
-                                <item.icon size={20} />
-                                <span className="font-medium">{item.label}</span>
+                                <div
+                                    className="w-11 h-11 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"
+                                    style={{
+                                        backgroundColor: isActive ? primary : `${primary}15`,
+                                    }}
+                                >
+                                    <Icon
+                                        size={22}
+                                        style={{ color: isActive ? 'white' : primary }}
+                                        strokeWidth={2}
+                                    />
+                                </div>
+                                <span
+                                    className="font-semibold text-base flex-1"
+                                    style={{ color: isActive ? primary : '#374151' }}
+                                >
+                                    {item.label}
+                                </span>
+                                <svg
+                                    className="w-5 h-5"
+                                    style={{ color: isActive ? primary : '#9ca3af' }}
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
                             </Link>
-                        ))}
-                        <Link
-                            to={`/${tenantSlug}/admin/settings`}
-                            onClick={() => setIsOpen(false)}
-                            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition"
-                        >
-                            <Settings size={20} />
-                            <span className="font-medium">Settings</span>
-                        </Link>
-                        <button
-                            onClick={handleLogout}
-                            className="w-full flex items-center gap-3 px-4 py-3 bg-white/20 rounded-lg hover:bg-white/30 transition"
-                        >
-                            <LogOut size={20} />
-                            <span className="font-medium">Logout</span>
-                        </button>
-                    </div>
-                )}
-            </div>
-        </nav>
+                        );
+                    })}
+                </div>
+
+                {/* Footer / Logout */}
+                <div className="p-4 border-t border-gray-100">
+                    <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-red-50 text-red-600 transition-colors group"
+                    >
+                        <div className="w-11 h-11 rounded-xl bg-red-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <LogOut size={22} />
+                        </div>
+                        <span className="font-semibold text-base">Cerrar Sesión</span>
+                    </button>
+                </div>
+            </nav>
+
+            {/* Espaciador */}
+            <div className="h-[76px]"></div>
+        </>
     );
 }
