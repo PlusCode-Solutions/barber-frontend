@@ -1,9 +1,42 @@
+import { useState } from "react";
 import { UserCircle, Mail, Calendar, Search } from "lucide-react";
 import { useTenantUsers } from "../hooks/useTenantUsers";
 import { formatRelativeDate } from "../../../utils/dateUtils";
+import type { User } from "../types";
+import EditUserModal from "../components/EditUserModal";
+import DeleteUserModal from "../components/DeleteUserModal";
+import UserActionsMenu from "../components/UserActionsMenu";
+import Toast from "../../../components/ui/Toast";
 
 export default function TenantCustomersPage() {
     const { users, loading } = useTenantUsers();
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [toastMessage, setToastMessage] = useState("");
+    const [showToast, setShowToast] = useState(false);
+
+    const handleEdit = (user: User) => {
+        setSelectedUser(user);
+        setIsEditModalOpen(true);
+    };
+
+    const handleDelete = (user: User) => {
+        setSelectedUser(user);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleEditSuccess = () => {
+        setToastMessage("✅ Usuario actualizado correctamente");
+        setShowToast(true);
+        setTimeout(() => window.location.reload(), 1000);
+    };
+
+    const handleDeleteSuccess = () => {
+        setToastMessage("🗑️ Usuario eliminado correctamente");
+        setShowToast(true);
+        setTimeout(() => window.location.reload(), 1000);
+    };
 
     if (loading) {
         return (
@@ -59,6 +92,7 @@ export default function TenantCustomersPage() {
                                     <th className="px-6 py-4 font-semibold">Contacto</th>
                                     <th className="px-6 py-4 font-semibold">Rol</th>
                                     <th className="px-6 py-4 font-semibold">Registrado</th>
+                                    <th className="px-6 py-4 font-semibold w-16">Acciones</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -83,8 +117,8 @@ export default function TenantCustomersPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${user.role === 'TENANT_ADMIN'
-                                                    ? 'bg-purple-50 text-purple-700 border-purple-100'
-                                                    : 'bg-blue-50 text-blue-700 border-blue-100'
+                                                ? 'bg-purple-50 text-purple-700 border-purple-100'
+                                                : 'bg-blue-50 text-blue-700 border-blue-100'
                                                 }`}>
                                                 {user.role}
                                             </span>
@@ -94,6 +128,13 @@ export default function TenantCustomersPage() {
                                                 <Calendar size={14} />
                                                 {formatRelativeDate(user.createdAt)}
                                             </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <UserActionsMenu
+                                                user={user}
+                                                onEdit={handleEdit}
+                                                onDelete={handleDelete}
+                                            />
                                         </td>
                                     </tr>
                                 ))}
@@ -128,8 +169,8 @@ export default function TenantCustomersPage() {
                                         <p className="text-xs text-gray-400">ID: {user.id.slice(0, 8)}...</p>
                                     </div>
                                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${user.role === 'TENANT_ADMIN'
-                                            ? 'bg-purple-50 text-purple-700 border-purple-100'
-                                            : 'bg-blue-50 text-blue-700 border-blue-100'
+                                        ? 'bg-purple-50 text-purple-700 border-purple-100'
+                                        : 'bg-blue-50 text-blue-700 border-blue-100'
                                         }`}>
                                         {user.role}
                                     </span>
@@ -146,11 +187,45 @@ export default function TenantCustomersPage() {
                                         <span>Registrado {formatRelativeDate(user.createdAt)}</span>
                                     </div>
                                 </div>
+
+                                {/* Actions */}
+                                <div className="pt-3 border-t border-gray-100">
+                                    <UserActionsMenu
+                                        user={user}
+                                        onEdit={handleEdit}
+                                        onDelete={handleDelete}
+                                    />
+                                </div>
                             </div>
                         ))
                     )}
                 </div>
             </div>
+
+            {/* Modals */}
+            {selectedUser && (
+                <>
+                    <EditUserModal
+                        user={selectedUser}
+                        isOpen={isEditModalOpen}
+                        onClose={() => setIsEditModalOpen(false)}
+                        onSuccess={handleEditSuccess}
+                    />
+                    <DeleteUserModal
+                        user={selectedUser}
+                        isOpen={isDeleteModalOpen}
+                        onClose={() => setIsDeleteModalOpen(false)}
+                        onSuccess={handleDeleteSuccess}
+                    />
+                </>
+            )}
+
+            {/* Toast Notification */}
+            <Toast
+                message={toastMessage}
+                isVisible={showToast}
+                onClose={() => setShowToast(false)}
+            />
         </div>
     );
 }

@@ -11,3 +11,10 @@ export interface User {
     updatedAt: string;
     // Add other fields from UserResponseDto if needed
 }
+
+export interface UpdateUserDto {
+    name?: string;
+    email?: string;
+    role?: UserRole;
+    avatar?: string;
+}
