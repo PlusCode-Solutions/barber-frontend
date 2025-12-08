@@ -58,3 +58,39 @@ export function formatHour(timeStr: string, mode: "12h" | "24h" = "24h"): string
     const hour12 = ((h + 11) % 12 + 1);
     return `${hour12}:${m.toString().padStart(2, "0")} ${suffix}`;
 }
+
+/** Verifica si la fecha proporcionada coincide con el día indicado (ignorando horas/zona) */
+export function isSameDay(dateStr: string, target: Date): boolean {
+    const date = safeDate(dateStr);
+    if (!date) return false;
+
+    return (
+        date.getFullYear() === target.getFullYear() &&
+        date.getMonth() === target.getMonth() &&
+        date.getDate() === target.getDate()
+    );
+}
+
+/** Formatea un objeto Date al formato yyyy-MM-dd para inputs de tipo date */
+export function formatDateForInput(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+/** Devuelve una cadena amigable tipo: "lunes, 3 de febrero" (sin año) */
+export function formatFriendlyDay(date: Date): string {
+    return date.toLocaleDateString("es-ES", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+    });
+}
+
+/** Normaliza un string de fecha a formato yyyy-MM-dd (retorna null si es inválida) */
+export function normalizeDateString(dateStr: string): string | null {
+    const date = safeDate(dateStr);
+    if (!date) return null;
+    return formatDateForInput(date);
+}

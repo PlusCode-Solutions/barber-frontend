@@ -1,14 +1,31 @@
+import { useMemo, useState } from "react";
 import { useTenantBookings } from "../hooks/useTenantBookings";
 import { BookingsTable } from "../components/BookingsTable";
 import BookingsSkeleton from "../components/BookingsSkeleton";
-import { formatRelativeDate, formatHour } from "../../../utils/dateUtils";
+import {
+    formatDateForInput,
+    formatHour,
+    formatRelativeDate,
+    normalizeDateString
+} from "../../../utils/dateUtils";
+import TenantBookingsDateFilter from "../components/TenantBookingsDateFilter";
 
 export default function TenantBookingsPage() {
     const { bookings, loading } = useTenantBookings();
+    const [selectedDate, setSelectedDate] = useState<string>(formatDateForInput(new Date()));
+
+    const filteredBookings = useMemo(
+        () =>
+            bookings.filter((b) => {
+                const bookingDate = normalizeDateString(b.date);
+                return bookingDate === selectedDate;
+            }),
+        [bookings, selectedDate]
+    );
 
     if (loading) return <BookingsSkeleton />;
 
-    const formattedBookings = bookings.map((b) => ({
+    const formattedBookings = filteredBookings.map((b) => ({
         ...b,
         date: formatRelativeDate(b.date),
         startTime: formatHour(b.startTime),
@@ -24,27 +41,12 @@ export default function TenantBookingsPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-8">
-            {/* ADMIN HEADER - Distinto al del usuario */}
-            <div className="bg-white px-6 py-6 shadow-sm mb-6 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900 mb-1">
-                            Gestión de Citas
-                        </h1>
-                        <p className="text-gray-500 text-sm">
-                            Visualiza y administra todas las reservas de la barbería.
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <div className="bg-indigo-50 px-4 py-2 rounded-lg border border-indigo-100">
-                            <span className="text-indigo-700 font-bold text-lg">
-                                {formattedBookings.length}
-                            </span>
-                            <span className="text-indigo-600 text-xs ml-2 font-medium">TOTALES</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <TenantBookingsDateFilter
+                selectedDate={selectedDate}
+                onDateChange={setSelectedDate}
+                countForDay={formattedBookings.length}
+                totalCount={bookings.length}
+            />
 
             {/* CONTENIDO */}
             <div className="px-6">
