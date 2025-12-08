@@ -1,11 +1,14 @@
-import { Users, Mail, Phone, Award, UserCheck } from "lucide-react";
+import { Users, Mail, Phone, Award, UserCheck, Pencil, Trash2 } from "lucide-react";
 import type { Barber } from "../types";
 
 interface BarberCardProps {
     barber: Barber;
+    isAdmin?: boolean;
+    onEdit?: (barber: Barber) => void;
+    onDelete?: (barber: Barber) => void;
 }
 
-export default function BarberCard({ barber }: BarberCardProps) {
+export default function BarberCard({ barber, isAdmin = false, onEdit, onDelete }: BarberCardProps) {
     return (
         <div className="group bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-md border border-gray-200 hover:shadow-2xl hover:border-purple-300 transition-all duration-300 overflow-hidden">
             {/* Barra superior decorativa */}
@@ -62,7 +65,7 @@ export default function BarberCard({ barber }: BarberCardProps) {
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-xs text-gray-500 uppercase font-semibold mb-0.5">Email</p>
-                            <p className="text-sm font-medium text-gray-900 truncate">{barber.email}</p>
+                            <p className="text-sm font-medium text-gray-900 truncate">{barber.email || "No registrado"}</p>
                         </div>
                     </div>
 
@@ -92,8 +95,31 @@ export default function BarberCard({ barber }: BarberCardProps) {
                             </>
                         )}
                     </span>
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity">
-                        Ver perfil →
+                    <span className="flex items-center gap-2">
+                        {isAdmin ? (
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={() => onEdit?.(barber)}
+                                    className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
+                                >
+                                    <Pencil className="h-4 w-4" />
+                                    Editar
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => onDelete?.(barber)}
+                                    className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 shadow-sm transition hover:bg-red-100"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                    Eliminar
+                                </button>
+                            </>
+                        ) : (
+                            <span className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                Ver perfil →
+                            </span>
+                        )}
                     </span>
                 </div>
             </div>

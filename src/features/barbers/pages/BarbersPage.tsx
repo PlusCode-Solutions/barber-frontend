@@ -1,10 +1,26 @@
-import { useBarbers } from "../hooks/useBarbers";
+import { useState } from "react";
+import { Users, Plus } from "lucide-react";
+import { PERMISSIONS } from "../../../config/permissions";
+import { usePermissions } from "../../../hooks/usePermissions";
+import { useManageBarbers } from "../hooks/useManageBarbers";
 import BarbersSkeleton from "../components/BarbersSkeleton";
 import BarberCard from "../components/BarberCard";
-import { Users } from "lucide-react";
+import BarberModal from "../components/BarberModal";
+import DeleteBarberModal from "../components/DeleteBarberModal";
+import Toast from "../../../components/ui/Toast";
+import type { Barber } from "../types";
 
 export default function BarbersPage() {
-    const { barbers, loading, error } = useBarbers();
+    const { can, isRole } = usePermissions();
+    const { barbers, loading, error, submitting, createBarber, updateBarber, deleteBarber } = useManageBarbers();
+    const [showCreate, setShowCreate] = useState(false);
+    const [editing, setEditing] = useState<Barber | null>(null);
+    const [deleting, setDeleting] = useState<Barber | null>(null);
+    const [toastMessage, setToastMessage] = useState("");
+    const [toastType, setToastType] = useState<"success" | "error">("success");
+    const [showToast, setShowToast] = useState(false);
+
+    const isAdmin = can(PERMISSIONS.BARBERS_MANAGE) || isRole("TENANT_ADMIN");
 
     if (loading) return <BarbersSkeleton />;
 
@@ -25,7 +41,7 @@ export default function BarbersPage() {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-black text-white mb-2 tracking-tight">
-                            Nuestros Barberos
+                            {isAdmin ? "Barberos del tenant" : "Nuestros Barberos"}
                         </h1>
                         <div className="flex items-center gap-2">
                             <div className="bg-white/25 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/30">
@@ -36,8 +52,20 @@ export default function BarbersPage() {
                             </div>
                         </div>
                     </div>
-                    <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
-                        <Users className="w-8 h-8 text-white" strokeWidth={2.5} />
+                    <div className="flex items-center gap-3">
+                        <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
+                            <Users className="w-8 h-8 text-white" strokeWidth={2.5} />
+                        </div>
+                        {isAdmin && (
+                            <button
+                                type="button"
+                                onClick={() => setShowCreate(true)}
+                                className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-purple-700 shadow-lg transition hover:shadow-xl"
+                            >
+                                <Plus className="h-4 w-4" />
+                                Nuevo barbero
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -55,11 +83,89 @@ export default function BarbersPage() {
                 ) : (
                     <div className="space-y-4">
                         {barbers.map((barber) => (
-                            <BarberCard key={barber.id} barber={barber} />
+                            <BarberCard
+                                key={barber.id}
+                                barber={barber}
+                                isAdmin={isAdmin}
+                                onEdit={(b) => setEditing(b)}
+                                onDelete={(b) => setDeleting(b)}
+                            />
                         ))}
                     </div>
                 )}
             </div>
+
+            {/* Modales */}
+            <BarberModal
+                mode="create"
+                open={showCreate}
+                submitting={submitting}
+                onClose={() => setShowCreate(false)}
+                onSubmit={async (payload) => {
+                    try {
+                        await createBarber({ ...payload, isActive: undefined });
+                        setShowCreate(false);
+                        setToastType("success");
+                        setToastMessage("✅ Barbero creado correctamente");
+                        setShowToast(true);
+                    } catch (e) {
+                        setToastType("error");
+                        setToastMessage("No se pudo crear el barbero");
+                        setShowToast(true);
+                    }
+                }}
+            />
+
+            <BarberModal
+                mode="edit"
+                open={!!editing}
+                initialData={editing ?? undefined}
+                submitting={submitting}
+                onClose={() => setEditing(null)}
+                onSubmit={async (payload) => {
+                    if (!editing) return;
+                    try {
+                        await updateBarber(editing.id, payload);
+                        setEditing(null);
+                        setToastType("success");
+                        setToastMessage("✅ Barbero actualizado correctamente");
+                        setShowToast(true);
+                    } catch (e) {
+                        setToastType("error");
+                        const msg = e instanceof Error ? e.message : "No se pudo actualizar el barbero";
+                        setToastMessage(msg);
+                        setShowToast(true);
+                    }
+                }}
+            />
+
+            <DeleteBarberModal
+                open={!!deleting}
+                barber={deleting}
+                submitting={submitting}
+                onClose={() => setDeleting(null)}
+                onConfirm={async () => {
+                    if (!deleting) return;
+                    try {
+                        await deleteBarber(deleting.id);
+                        setDeleting(null);
+                        setToastType("success");
+                        setToastMessage("🗑️ Barbero eliminado");
+                        setShowToast(true);
+                    } catch (e) {
+                        setToastType("error");
+                        setToastMessage("No se pudo eliminar el barbero");
+                        setShowToast(true);
+                    }
+                }}
+            />
+
+            <Toast
+                message={toastMessage}
+                type={toastType}
+                isVisible={showToast}
+                onClose={() => setShowToast(false)}
+            />
         </div>
     );
 }
