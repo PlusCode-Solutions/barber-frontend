@@ -1,9 +1,26 @@
-import { useServices } from "../hooks/useServices";
+import { useState } from "react";
+import { Scissors, Clock, DollarSign, Pencil, Trash2, Plus } from "lucide-react";
+import { PERMISSIONS } from "../../../config/permissions";
+import { usePermissions } from "../../../hooks/usePermissions";
+import { useManageServices } from "../hooks/useManageServices";
 import ServicesSkeleton from "../components/ServicesSkeleton";
-import { Scissors, Clock, DollarSign } from "lucide-react";
+import ServiceModal from "../components/ServiceModal";
+import DeleteServiceModal from "../components/DeleteServiceModal";
+import type { Service } from "../types";
+import Toast from "../../../components/ui/Toast";
 
 export default function ServicesPage() {
-    const { services, loading, error } = useServices();
+    const { can, isRole } = usePermissions();
+    const { services, loading, error, submitting, createService, updateService, deleteService } = useManageServices();
+    const [showCreate, setShowCreate] = useState(false);
+    const [editing, setEditing] = useState<Service | null>(null);
+    const [deleting, setDeleting] = useState<Service | null>(null);
+    const [toastMessage, setToastMessage] = useState("");
+    const [toastType, setToastType] = useState<"success" | "error">("success");
+    const [showToast, setShowToast] = useState(false);
+
+    // Considerar rol de tenant admin además del permiso explícito
+    const isAdmin = can(PERMISSIONS.SERVICES_MANAGE) || isRole("TENANT_ADMIN");
 
     if (loading) return <ServicesSkeleton />;
 
@@ -24,7 +41,7 @@ export default function ServicesPage() {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-3xl font-black text-white mb-2 tracking-tight">
-                            Nuestros Servicios
+                            {isAdmin ? "Servicios del tenant" : "Nuestros Servicios"}
                         </h1>
                         <div className="flex items-center gap-2">
                             <div className="bg-white/25 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/30">
@@ -35,8 +52,20 @@ export default function ServicesPage() {
                             </div>
                         </div>
                     </div>
-                    <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
-                        <Scissors className="w-8 h-8 text-white" strokeWidth={2.5} />
+                    <div className="flex items-center gap-3">
+                        <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
+                            <Scissors className="w-8 h-8 text-white" strokeWidth={2.5} />
+                        </div>
+                        {isAdmin && (
+                            <button
+                                type="button"
+                                onClick={() => setShowCreate(true)}
+                                className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-indigo-700 shadow-lg transition hover:shadow-xl"
+                            >
+                                <Plus className="h-4 w-4" />
+                                Nuevo servicio
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -108,8 +137,31 @@ export default function ServicesPage() {
                                             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                                             Disponible
                                         </span>
-                                        <span className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                            Reservar →
+                                        <span className="flex items-center gap-2">
+                                            {isAdmin ? (
+                                                <>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setEditing(service)}
+                                                        className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                        Editar
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setDeleting(service)}
+                                                        className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 shadow-sm transition hover:bg-red-100"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                        Eliminar
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <span className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    Reservar →
+                                                </span>
+                                            )}
                                         </span>
                                     </div>
                                 </div>
@@ -118,6 +170,77 @@ export default function ServicesPage() {
                     </div>
                 )}
             </div>
+
+            {/* Modales */}
+            <ServiceModal
+                mode="create"
+                open={showCreate}
+                submitting={submitting}
+                onClose={() => setShowCreate(false)}
+                onSubmit={async (payload) => {
+                    try {
+                        await createService(payload);
+                        setShowCreate(false);
+                        setToastType("success");
+                        setToastMessage("✅ Servicio creado correctamente");
+                        setShowToast(true);
+                    } catch (e) {
+                        setToastType("error");
+                        setToastMessage("No se pudo crear el servicio");
+                        setShowToast(true);
+                    }
+                }}
+            />
+
+            <ServiceModal
+                mode="edit"
+                open={!!editing}
+                initialData={editing ?? undefined}
+                submitting={submitting}
+                onClose={() => setEditing(null)}
+                onSubmit={async (payload) => {
+                    if (!editing) return;
+                    try {
+                        await updateService(editing.id, payload);
+                        setEditing(null);
+                        setToastType("success");
+                        setToastMessage("✅ Servicio actualizado correctamente");
+                        setShowToast(true);
+                    } catch (e) {
+                        setToastType("error");
+                        setToastMessage("No se pudo actualizar el servicio");
+                        setShowToast(true);
+                    }
+                }}
+            />
+
+            <DeleteServiceModal
+                open={!!deleting}
+                service={deleting}
+                submitting={submitting}
+                onClose={() => setDeleting(null)}
+                onConfirm={async () => {
+                    if (!deleting) return;
+                    try {
+                        await deleteService(deleting.id);
+                        setDeleting(null);
+                        setToastType("success");
+                        setToastMessage("🗑️ Servicio eliminado");
+                        setShowToast(true);
+                    } catch (e) {
+                        setToastType("error");
+                        setToastMessage("No se pudo eliminar el servicio");
+                        setShowToast(true);
+                    }
+                }}
+            />
+
+            <Toast
+                message={toastMessage}
+                type={toastType}
+                isVisible={showToast}
+                onClose={() => setShowToast(false)}
+            />
         </div>
     );
 }
