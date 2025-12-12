@@ -3,9 +3,33 @@ export interface Schedule {
     dayOfWeek: number; // 0 = Sunday, 1 = Monday, etc.
     startTime: string; // HH:mm
     endTime: string; // HH:mm
-    isDayOff: boolean;
-    breakStartTime?: string;
-    breakEndTime?: string;
+    isClosed: boolean;
+    lunchStartTime?: string;
+    lunchEndTime?: string;
     tenantId?: string;
+    barberId?: string;
+}
+
+export interface Closure {
+    id: string;
+    date: string; // YYYY-MM-DD
+    reason: string;
+    tenantId: string;
+    barberId?: string;
+}
+
+export interface CreateScheduleDto {
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+    isClosed: boolean;
+    lunchStartTime?: string;
+    lunchEndTime?: string;
+    barberId?: string;
+}
+
+export interface CreateClosureDto {
+    date: string;
+    reason: string;
     barberId?: string;
 }

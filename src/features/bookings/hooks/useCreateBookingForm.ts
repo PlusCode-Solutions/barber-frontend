@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import type { Service } from "../../services/types";
 import type { Barber } from "../../barbers/types";
 import type { CreateBookingDto } from "../types";
@@ -6,6 +6,8 @@ import { checkAvailability } from "../api/checkAvailability";
 import { createBooking } from "../api/createBooking";
 import { validateBookingForm, type FormValidationError } from "../utils/validation";
 import { calculateEndTime } from "../utils/timeUtils";
+import { SchedulesService } from "../../schedules/api/schedules.service";
+import type { Closure } from "../../schedules/types";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -21,6 +23,17 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [validationErrors, setValidationErrors] = useState<FormValidationError[]>([]);
+    
+    // New state for closures
+    const [closures, setClosures] = useState<Closure[]>([]);
+
+    useEffect(() => {
+        if (selectedBarber) {
+            SchedulesService.getClosures(selectedBarber.id)
+                .then(data => setClosures(data))
+                .catch(console.error);
+        }
+    }, [selectedBarber]);
 
     const reset = useCallback(() => {
         setStep(1);
@@ -32,6 +45,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         setAvailableSlots([]);
         setError(null);
         setValidationErrors([]);
+        setClosures([]);
     }, []);
 
     const handleClose = useCallback(() => {
@@ -55,8 +69,16 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         setSelectedDate(date);
         setSelectedSlot("");
         setError(null);
+        setAvailableSlots([]); // Clear slots on date change
 
         if (selectedBarber && date) {
+            // Check for closures
+            const closure = closures.find(c => c.date === date);
+            if (closure) {
+                setError(`La barbería está cerrada este día por: ${closure.reason}`);
+                return;
+            }
+
             setLoadingSlots(true);
             try {
                 const result = await checkAvailability(date, selectedBarber.id, selectedService?.id);
@@ -76,7 +98,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
                 setLoadingSlots(false);
             }
         }
-    }, [selectedBarber, selectedService?.id]);
+    }, [selectedBarber, selectedService?.id, closures]);
 
     const handleSlotSelect = useCallback((slot: string) => {
         setSelectedSlot(slot);
