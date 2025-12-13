@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { useTenant } from "../../../context/TenantContext";
-import type { Barber, CreateBarberDto, UpdateBarberDto } from "../types";
-import { getBarbers } from "../api/getBarbers";
-import { createBarber as apiCreate } from "../api/createBarber";
-import { updateBarber as apiUpdate } from "../api/updateBarber";
-import { deleteBarber as apiDelete } from "../api/deleteBarber";
+import { useErrorHandler } from "../../../hooks/useErrorHandler";
+import type { Barber } from "../types";
+import { BarbersService } from "../api/barbers.service";
 
 export function useManageBarbers() {
     const { tenant } = useTenant();
+    const { handleError } = useErrorHandler();
     const [barbers, setBarbers] = useState<Barber[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -20,21 +19,24 @@ export function useManageBarbers() {
         }
 
         async function load() {
+            if (!tenant?.slug) return;
+
             try {
-                const data = await getBarbers(tenant.slug);
+                const data = await BarbersService.getAll(tenant.slug);
                 setBarbers(data);
             } catch (err) {
-                console.error("Error cargando barberos", err);
-                setError("No se pudieron cargar los barberos. Inténtalo más tarde.");
+                const message = handleError(err, 'useManageBarbers');
+                setError(message);
             } finally {
                 setLoading(false);
             }
         }
 
         load();
-    }, [tenant?.slug]);
+    }, [tenant?.slug, handleError]);
 
-    const cleanPayload = (payload: CreateBarberDto | UpdateBarberDto) => {
+    // Clean payload before sending
+    const cleanPayload = (payload: Partial<Barber>) => {
         const body: Record<string, unknown> = {};
 
         if (payload.name !== undefined) {
@@ -55,12 +57,12 @@ export function useManageBarbers() {
         return body;
     };
 
-    const createBarber = async (payload: CreateBarberDto) => {
+    const createBarber = async (payload: Partial<Barber>) => {
         if (!tenant?.slug) throw new Error("Tenant no disponible");
         setSubmitting(true);
         try {
             const body = cleanPayload(payload);
-            const created = await apiCreate(tenant.slug, body as CreateBarberDto);
+            const created = await BarbersService.create(tenant.slug, body);
             setBarbers((prev) => [created, ...prev]);
             return created;
         } finally {
@@ -68,12 +70,12 @@ export function useManageBarbers() {
         }
     };
 
-    const updateBarber = async (id: string, payload: UpdateBarberDto) => {
+    const updateBarber = async (id: string, payload: Partial<Barber>) => {
         if (!tenant?.slug) throw new Error("Tenant no disponible");
         setSubmitting(true);
         try {
             const body = cleanPayload(payload);
-            const updated = await apiUpdate(tenant.slug, id, body as UpdateBarberDto);
+            const updated = await BarbersService.update(tenant.slug, id, body);
             setBarbers((prev) => prev.map((b) => (b.id === id ? updated : b)));
             return updated;
         } finally {
@@ -85,7 +87,7 @@ export function useManageBarbers() {
         if (!tenant?.slug) throw new Error("Tenant no disponible");
         setSubmitting(true);
         try {
-            await apiDelete(tenant.slug, id);
+            await BarbersService.delete(tenant.slug, id);
             setBarbers((prev) => prev.filter((b) => b.id !== id));
         } finally {
             setSubmitting(false);

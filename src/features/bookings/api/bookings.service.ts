@@ -6,14 +6,8 @@ interface AvailabilityResponse {
     slots?: string[];
 }
 
-/**
- * Bookings API Service
- * Handles all API calls related to bookings management
- */
 export const BookingsService = {
-    /**
-     * Get user's bookings
-     */
+    // Get user bookings
     getUserBookings: async (tenantSlug: string): Promise<Booking[]> => {
         const res = await axios.get(`/${tenantSlug}/bookings/my-bookings`);
 
@@ -28,9 +22,7 @@ export const BookingsService = {
         return [];
     },
 
-    /**
-     * Get all bookings for tenant admin
-     */
+    // Get tenant bookings
     getTenantBookings: async (
         tenantSlug: string,
         startDate?: string,
@@ -53,17 +45,13 @@ export const BookingsService = {
         return [];
     },
 
-    /**
-     * Create a new booking
-     */
+    // Create booking
     create: async (tenantSlug: string, data: Partial<Booking>): Promise<Booking> => {
         const res = await axios.post(`/${tenantSlug}/bookings`, data);
         return res.data;
     },
 
-    /**
-     * Check availability for a specific date and barber
-     */
+    // Check availability
     checkAvailability: async (
         tenantSlug: string,
         barberId: string,

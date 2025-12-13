@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useTenant } from "../../../context/TenantContext";
-import { getTenantBySlugApi } from "../api/tenants.api";
+import { useErrorHandler } from "../../../hooks/useErrorHandler";
+import { TenantsService } from "../api/tenants.service";
 
 export function useTenantLoader(slug: string) {
     const { tenant, setTenant } = useTenant();
+    const { handleError } = useErrorHandler();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -18,32 +20,25 @@ export function useTenantLoader(slug: string) {
             try {
                 setLoading(true);
 
-                // Siempre validar que el slug actual coincide
+                // Skip if already loaded
                 if (tenant && tenant.slug === slug) {
                     setLoading(false);
                     return;
                 }
 
-                const data = await getTenantBySlugApi(slug);
-
-                // Guardar en contexto
+                const data = await TenantsService.getBySlug(slug);
                 setTenant(data);
 
-                // FIXED: Do not overwrite 'tenant' key with object. 
-                // 'tenantData' is handled by setTenant, and 'tenant' key 
-                // is reserved for slug string by other parts of app.
-
-
             } catch (err) {
-                console.error(err);
-                setError("No se encontró la barbería");
+                const message = handleError(err, 'useTenantLoader');
+                setError(message || "No se encontró la barbería");
             }
 
             setLoading(false);
         }
 
         load();
-    }, [slug]);
+    }, [slug, tenant, setTenant, handleError]);
 
     return { tenant, loading, error };
 }

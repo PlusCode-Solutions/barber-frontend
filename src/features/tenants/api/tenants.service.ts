@@ -10,22 +10,14 @@ interface Tenant {
     updatedAt: string;
 }
 
-/**
- * Tenants API Service
- * Handles all tenant-related API calls
- */
 export const TenantsService = {
-    /**
-     * Get tenant by slug
-     */
+    // Get tenant by slug
     getBySlug: async (slug: string): Promise<Tenant> => {
         const res = await axios.get(`/tenants/slug/${slug}`);
         return res.data;
     },
 
-    /**
-     * Get all tenants (admin only)
-     */
+    // Get all tenants
     getAll: async (): Promise<Tenant[]> => {
         const res = await axios.get("/tenants");
         

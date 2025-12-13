@@ -22,36 +22,28 @@ interface AuthResponse {
     };
 }
 
-/**
- * Authentication API Service
- * Handles all authentication-related API calls
- */
 export const AuthService = {
-    /**
-     * Login user
-     */
+    // Login user
     login: async (
         tenantSlug: string,
         credentials: LoginCredentials
     ): Promise<AuthResponse> => {
         const res = await axios.post(`/${tenantSlug}/auth/login`, credentials);
-        return res.data;
+        // Backend returns access_token, map it to token
+        return {
+            token: res.data.access_token,
+            user: res.data.user
+        };
     },
 
-    /**
-     * Register new user
-     */
+    // Register new user
     register: async (data: RegisterData): Promise<AuthResponse> => {
         const res = await axios.post("/users", data);
         return res.data;
     },
 
-    /**
-     * Logout user (if backend endpoint exists)
-     */
+    // Logout user
     logout: async (): Promise<void> => {
-        // Clear local storage is handled by AuthContext
-        // This is a placeholder for backend logout if needed
         await axios.post("/auth/logout");
     },
 };

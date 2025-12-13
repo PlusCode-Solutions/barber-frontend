@@ -1,24 +1,28 @@
 import { useState } from "react";
-import { deleteUser as deleteUserApi } from "../api/deleteUser";
+import { UsersService } from "../api/users.service";
+import { useErrorHandler } from "../../../hooks/useErrorHandler";
+import { useTenant } from "../../../context/TenantContext";
 
 export function useDeleteUser() {
+    const { tenant } = useTenant();
+    const { handleError } = useErrorHandler();
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
-    const deleteUser = async (id: string): Promise<boolean> => {
+    const deleteUser = async (userId: string) => {
+        if (!tenant?.slug) {
+            throw new Error("Tenant no disponible");
+        }
+
+        setLoading(true);
         try {
-            setLoading(true);
-            setError(null);
-            await deleteUserApi(id);
-            return true;
-        } catch (err: any) {
-            console.error("Error deleting user:", err);
-            setError(err.response?.data?.message || "Error al eliminar usuario");
-            return false;
+            await UsersService.delete(tenant.slug, userId);
+        } catch (err) {
+            handleError(err, 'useDeleteUser');
+            throw err;
         } finally {
             setLoading(false);
         }
     };
 
-    return { deleteUser, loading, error };
+    return { deleteUser, loading };
 }

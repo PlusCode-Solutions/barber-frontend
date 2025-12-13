@@ -1,14 +1,8 @@
 import axios from "../../../lib/axios";
 import type { Service } from "../types";
 
-/**
- * Services API Service
- * Handles all API calls related to services management
- */
 export const ServicesService = {
-    /**
-     * Get all services for a tenant
-     */
+    // Get all services
     getAll: async (tenantSlug: string): Promise<Service[]> => {
         const res = await axios.get(`/${tenantSlug}/services`);
 
@@ -23,17 +17,13 @@ export const ServicesService = {
         return [];
     },
 
-    /**
-     * Create a new service
-     */
+    // Create service
     create: async (tenantSlug: string, data: Partial<Service>): Promise<Service> => {
         const res = await axios.post(`/${tenantSlug}/services`, data);
         return res.data;
     },
 
-    /**
-     * Update an existing service
-     */
+    // Update service
     update: async (
         tenantSlug: string,
         serviceId: string,
@@ -43,9 +33,7 @@ export const ServicesService = {
         return res.data;
     },
 
-    /**
-     * Delete a service
-     */
+    // Delete service
     delete: async (tenantSlug: string, serviceId: string): Promise<void> => {
         await axios.delete(`/${tenantSlug}/services/${serviceId}`);
     },

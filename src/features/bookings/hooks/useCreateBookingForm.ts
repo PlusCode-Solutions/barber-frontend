@@ -2,16 +2,17 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import type { Service } from "../../services/types";
 import type { Barber } from "../../barbers/types";
 import type { CreateBookingDto } from "../types";
-import { checkAvailability } from "../api/checkAvailability";
-import { createBooking } from "../api/createBooking";
+import { BookingsService } from "../api/bookings.service";
 import { validateBookingForm, type FormValidationError } from "../utils/validation";
 import { calculateEndTime } from "../utils/timeUtils";
 import { SchedulesService } from "../../schedules/api/schedules.service";
+import { useTenant } from "../../../context/TenantContext";
 import type { Closure } from "../../schedules/types";
 
 type Step = 1 | 2 | 3 | 4;
 
 export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => void) {
+    const { tenant } = useTenant();
     const [step, setStep] = useState<Step>(1);
     const [selectedService, setSelectedService] = useState<Service | null>(null);
     const [selectedBarber, setSelectedBarber] = useState<Barber | null>(null);
@@ -81,16 +82,11 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
 
             setLoadingSlots(true);
             try {
-                const result = await checkAvailability(date, selectedBarber.id, selectedService?.id);
+                if (!tenant?.slug) return;
+                const result = await BookingsService.checkAvailability(tenant.slug, selectedBarber.id, date);
 
-                // Filter only available slots and extract the time
-                const available = result.slots
-                    ? result.slots
-                        .filter(slot => slot.available)
-                        .map(slot => slot.time)
-                    : [];
-
-                setAvailableSlots(available);
+                // Note: API returns slots as string[] directly, not objects
+                setAvailableSlots(result.slots || []);
             } catch (err) {
                 setError("No se pudo verificar la disponibilidad. Por favor intenta de nuevo.");
                 setAvailableSlots([]);
@@ -141,7 +137,8 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
 
         setSubmitting(true);
         try {
-            await createBooking(dto);
+            if (!tenant?.slug) throw new Error("Tenant no disponible");
+            await BookingsService.create(tenant.slug, dto);
             handleClose();
             onSuccess?.();
         } catch (err: any) {

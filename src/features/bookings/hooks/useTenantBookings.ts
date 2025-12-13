@@ -1,39 +1,40 @@
 import { useEffect, useState } from "react";
-import { getTenantBookings } from "../api/getTenantBookings";
+import { BookingsService } from "../api/bookings.service";
 import { useAuth } from "../../../context/AuthContext";
+import { useErrorHandler } from "../../../hooks/useErrorHandler";
+import { useTenant } from "../../../context/TenantContext";
 import type { Booking } from "../types";
 
 export function useTenantBookings() {
+    const { tenant } = useTenant();
+    const { user, token } = useAuth();
+    const { handleError } = useErrorHandler();
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const { user, token } = useAuth();
-
     useEffect(() => {
-        if (!user?.tenantId || !token) {
-            // If we are strictly in a protected admin route, this might be handled by the guard,
-            // but good to have a check here.
+        if (!user?.tenantId || !token || !tenant?.slug) {
             setLoading(false);
             return;
         }
 
         async function load() {
-            if (!user?.tenantId) return;
+            if (!tenant?.slug) return;
 
             try {
-                const data = await getTenantBookings(user.tenantId);
+                const data = await BookingsService.getTenantBookings(tenant.slug);
                 setBookings(data);
             } catch (err) {
-                console.error("Error cargando todas las citas del tenant", err);
-                setError("No se pudieron cargar las citas. Inténtalo más tarde.");
+                const message = handleError(err, 'useTenantBookings');
+                setError(message);
             } finally {
                 setLoading(false);
             }
         }
 
         load();
-    }, [user?.tenantId, token]);
+    }, [user?.tenantId, token, tenant?.slug, handleError]);
 
     return { bookings, loading, error };
 }

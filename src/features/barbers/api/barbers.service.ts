@@ -1,14 +1,8 @@
 import axios from "../../../lib/axios";
 import type { Barber } from "../types";
 
-/**
- * Barbers API Service
- * Handles all API calls related to barbers management
- */
 export const BarbersService = {
-    /**
-     * Get all barbers for a tenant
-     */
+    // Get all barbers
     getAll: async (tenantSlug: string): Promise<Barber[]> => {
         const res = await axios.get(`/${tenantSlug}/barbers`);
 
@@ -23,17 +17,13 @@ export const BarbersService = {
         return [];
     },
 
-    /**
-     * Create a new barber
-     */
+    // Create barber
     create: async (tenantSlug: string, data: Partial<Barber>): Promise<Barber> => {
         const res = await axios.post(`/${tenantSlug}/barbers`, data);
         return res.data;
     },
 
-    /**
-     * Update an existing barber
-     */
+    // Update barber
     update: async (
         tenantSlug: string,
         barberId: string,
@@ -43,9 +33,7 @@ export const BarbersService = {
         return res.data;
     },
 
-    /**
-     * Delete a barber
-     */
+    // Delete barber
     delete: async (tenantSlug: string, barberId: string): Promise<void> => {
         await axios.delete(`/${tenantSlug}/barbers/${barberId}`);
     },

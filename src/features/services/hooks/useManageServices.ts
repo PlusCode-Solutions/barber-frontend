@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { useTenant } from "../../../context/TenantContext";
+import { useErrorHandler } from "../../../hooks/useErrorHandler";
 import type { Service } from "../types";
-import { getServices } from "../api/getServices";
-import { createService, type CreateServicePayload } from "../api/createService";
-import { updateService, type UpdateServicePayload } from "../api/updateService";
-import { deleteService } from "../api/deleteService";
+import { ServicesService } from "../api/services.service";
 
 export function useManageServices() {
     const { tenant } = useTenant();
+    const { handleError } = useErrorHandler();
     const [services, setServices] = useState<Service[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -20,25 +19,27 @@ export function useManageServices() {
         }
 
         async function load() {
+            if (!tenant?.slug) return;
+
             try {
-                const data = await getServices(tenant.slug);
+                const data = await ServicesService.getAll(tenant.slug);
                 setServices(data);
             } catch (err) {
-                console.error("Error cargando servicios", err);
-                setError("No se pudieron cargar los servicios. Inténtalo más tarde.");
+                const message = handleError(err, 'useManageServices');
+                setError(message);
             } finally {
                 setLoading(false);
             }
         }
 
         load();
-    }, [tenant?.slug]);
+    }, [tenant?.slug, handleError]);
 
-    const handleCreate = async (payload: CreateServicePayload) => {
+    const handleCreate = async (payload: Partial<Service>) => {
         if (!tenant?.slug) throw new Error("Tenant no disponible");
         setSubmitting(true);
         try {
-            const created = await createService(tenant.slug, payload);
+            const created = await ServicesService.create(tenant.slug, payload);
             setServices((prev) => [created, ...prev]);
             return created;
         } finally {
@@ -46,11 +47,11 @@ export function useManageServices() {
         }
     };
 
-    const handleUpdate = async (serviceId: string, payload: UpdateServicePayload) => {
+    const handleUpdate = async (serviceId: string, payload: Partial<Service>) => {
         if (!tenant?.slug) throw new Error("Tenant no disponible");
         setSubmitting(true);
         try {
-            const updated = await updateService(tenant.slug, serviceId, payload);
+            const updated = await ServicesService.update(tenant.slug, serviceId, payload);
             setServices((prev) => prev.map((s) => (s.id === serviceId ? updated : s)));
             return updated;
         } finally {
@@ -62,7 +63,7 @@ export function useManageServices() {
         if (!tenant?.slug) throw new Error("Tenant no disponible");
         setSubmitting(true);
         try {
-            await deleteService(tenant.slug, serviceId);
+            await ServicesService.delete(tenant.slug, serviceId);
             setServices((prev) => prev.filter((s) => s.id !== serviceId));
         } finally {
             setSubmitting(false);

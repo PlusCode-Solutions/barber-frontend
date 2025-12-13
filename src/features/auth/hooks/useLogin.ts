@@ -1,39 +1,34 @@
 import { useAuth } from "../../../context/AuthContext";
-import { useTenant } from "../../../context/TenantContext";
 import { useState } from "react";
-import { loginApi } from "../api/auth.api";
-import { isAxiosError } from "axios";
+import { useNavigate } from "react-router-dom";
+import { useTenant } from "../../../context/TenantContext";
+import { AuthService } from "../api/auth.service";
+import { useErrorHandler } from "../../../hooks/useErrorHandler";
 
 export function useLogin() {
-  const { login: contextLogin } = useAuth();
+  const navigate = useNavigate();
   const { tenant } = useTenant();
+  const { login: authLogin } = useAuth();
+  const { handleError } = useErrorHandler();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const login = async (email: string, password: string) => {
-    if (!tenant) {
-      setError("No se pudo identificar la barbería.");
+    if (!tenant?.slug) {
+      setError("Tenant no disponible");
       return { ok: false };
     }
 
+    setLoading(true);
+    setError(null);
+
     try {
-      setLoading(true);
-      setError(null);
-
-      const res = await loginApi(tenant.slug, email, password);
-
-      // Use logic from context to update state and storage uniformly
-      contextLogin(res.data.access_token, res.data.user);
-
-      // We still store tenant slug if needed by other parts, but token/user is handled by context
-      localStorage.setItem("tenant", tenant.slug);
-
-      return { ok: true, user: res.data.user };
-    } catch (err: unknown) {
-      const message = isAxiosError(err)
-        ? err.response?.data?.message || "Error al iniciar sesión"
-        : "Error al iniciar sesión";
-
+      const res = await AuthService.login(tenant.slug, { email, password });
+      
+      authLogin(res.token, res.user);
+      return { ok: true, user: res.user };
+    } catch (err) {
+      const message = handleError(err, 'useLogin');
       setError(message);
       return { ok: false };
     } finally {

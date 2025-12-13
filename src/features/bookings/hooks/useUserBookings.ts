@@ -1,37 +1,40 @@
 import { useEffect, useState } from "react";
-import { getUserBookings } from "../api/getUserBookings";
+import { BookingsService } from "../api/bookings.service";
 import { useAuth } from "../../../context/AuthContext";
+import { useErrorHandler } from "../../../hooks/useErrorHandler";
+import { useTenant } from "../../../context/TenantContext";
 import type { Booking } from "../types";
 
 export function useUserBookings() {
+    const { tenant } = useTenant();
+    const { user, token } = useAuth();
+    const { handleError } = useErrorHandler();
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const { user, token } = useAuth();
-
     useEffect(() => {
-        if (!user?.id || !token) {
+        if (!user?.id || !token || !tenant?.slug) {
             setLoading(false);
             return;
         }
 
         async function load() {
-            if (!user?.id || !token) return;
+            if (!tenant?.slug) return;
 
             try {
-                const data = await getUserBookings(user.id);
+                const data = await BookingsService.getUserBookings(tenant.slug);
                 setBookings(data);
             } catch (err) {
-                console.error("Error cargando citas del usuario", err);
-                setError("No se pudieron cargar las citas. Inténtalo más tarde.");
+                const message = handleError(err, 'useUserBookings');
+                setError(message);
             } finally {
                 setLoading(false);
             }
         }
 
         load();
-    }, [user?.id, token]);
+    }, [user?.id, token, tenant?.slug, handleError]);
 
     return { bookings, loading, error };
 }

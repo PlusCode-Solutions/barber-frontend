@@ -1,14 +1,8 @@
 import axios from "../../../lib/axios";
 import type { User } from "../types";
 
-/**
- * Users API Service
- * Handles all API calls related to user management
- */
 export const UsersService = {
-    /**
-     * Get all users/customers for a tenant
-     */
+    // Get tenant users
     getTenantUsers: async (tenantSlug: string): Promise<User[]> => {
         const res = await axios.get(`/${tenantSlug}/users`);
 
@@ -23,9 +17,7 @@ export const UsersService = {
         return [];
     },
 
-    /**
-     * Update a user
-     */
+    // Update user
     update: async (
         tenantSlug: string,
         userId: string,
@@ -35,9 +27,7 @@ export const UsersService = {
         return res.data;
     },
 
-    /**
-     * Delete a user
-     */
+    // Delete user
     delete: async (tenantSlug: string, userId: string): Promise<void> => {
         await axios.delete(`/${tenantSlug}/users/${userId}`);
     },
