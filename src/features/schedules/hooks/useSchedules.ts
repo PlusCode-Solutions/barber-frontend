@@ -12,15 +12,7 @@ export function useSchedules() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!slug) {
-            // If we're still loading tenant or no tenant, we might want to wait or stop.
-            // But if we return here, loading stays true. 
-            // Better to check if tenant is explicitly null (after loading).
-            // For now, let's just return and let the tenant loader handle the parent loading state if needed.
-            // OR: set loading to false if we know there is no tenant coming?
-            // Actually, if !slug, we can't fetch. 
-            return;
-        }
+        if (!slug) return;
         
         async function load() {
             try {
