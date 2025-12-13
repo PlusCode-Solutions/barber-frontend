@@ -18,14 +18,28 @@ const DAYS = [
 export default function ScheduleCard({ schedule }: ScheduleCardProps) {
     const dayName = DAYS[schedule.dayOfWeek];
 
+    // Helper to safely get properties (handles potential casing mismatch)
+    const getProp = (obj: any, key: string, altKey: string) => obj[key] || obj[altKey];
+
+    const startTime = getProp(schedule, 'startTime', 'start_time');
+    const endTime = getProp(schedule, 'endTime', 'end_time');
+    const lunchStartTime = getProp(schedule, 'lunchStartTime', 'lunch_start_time');
+    const lunchEndTime = getProp(schedule, 'lunchEndTime', 'lunch_end_time');
+
     // Formatear hora (ej: 09:00 -> 9:00 AM)
     const formatTime = (time: string) => {
         if (!time) return "";
-        const [hours, minutes] = time.split(':');
-        const h = parseInt(hours, 10);
-        const ampm = h >= 12 ? 'PM' : 'AM';
-        const h12 = h % 12 || 12;
-        return `${h12}:${minutes} ${ampm}`;
+        try {
+            const [hours, minutes] = time.split(':');
+            const h = parseInt(hours, 10);
+            if (isNaN(h)) return time; // Fallback if parsing fails
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const h12 = h % 12 || 12;
+            return `${h12}:${minutes} ${ampm}`;
+        } catch (e) {
+            console.error("Error formatting time:", time, e);
+            return time;
+        }
     };
 
     return (
@@ -64,11 +78,11 @@ export default function ScheduleCard({ schedule }: ScheduleCardProps) {
                     {!schedule.isClosed ? (
                         <>
                             <p className="text-gray-900 font-bold text-lg">
-                                {formatTime(schedule.startTime)} - {formatTime(schedule.endTime)}
+                                {formatTime(startTime)} - {formatTime(endTime)}
                             </p>
-                            {schedule.lunchStartTime && schedule.lunchEndTime && (
+                            {lunchStartTime && lunchEndTime && (
                                 <p className="text-xs text-gray-500 mt-0.5">
-                                    Receso: {formatTime(schedule.lunchStartTime)} - {formatTime(schedule.lunchEndTime)}
+                                    Receso: {formatTime(lunchStartTime)} - {formatTime(lunchEndTime)}
                                 </p>
                             )}
                         </>

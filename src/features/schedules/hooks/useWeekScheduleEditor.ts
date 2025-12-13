@@ -6,6 +6,7 @@ interface UseWeekScheduleEditorProps {
     currentSchedules: Schedule[];
     onUpdate: () => void;
     onShowToast?: (message: string, type: "success" | "error") => void;
+    barberId?: string;
 }
 
 const DAYS = [
@@ -18,7 +19,7 @@ const DAYS = [
     { id: 0, name: "Domingo" },
 ];
 
-export function useWeekScheduleEditor({ currentSchedules, onUpdate, onShowToast }: UseWeekScheduleEditorProps) {
+export function useWeekScheduleEditor({ currentSchedules, onUpdate, onShowToast, barberId }: UseWeekScheduleEditorProps) {
     const { updateSchedule } = useAdminSchedules();
     const [savingDay, setSavingDay] = useState<number | null>(null);
     const [formData, setFormData] = useState<Record<number, CreateScheduleDto>>({});
@@ -44,7 +45,21 @@ export function useWeekScheduleEditor({ currentSchedules, onUpdate, onShowToast 
         if (!data) return;
 
         setSavingDay(dayOfWeek);
-        const res = await updateSchedule(data);
+        
+        const payload = {
+            ...data,
+            barberId,
+            startTime: data.startTime || null,
+            endTime: data.endTime || null,
+            lunchStartTime: data.lunchStartTime || null,
+            lunchEndTime: data.lunchEndTime || null,
+        };
+        
+        const sanitizedPayload: any = { ...payload };
+        if (!sanitizedPayload.lunchStartTime) delete sanitizedPayload.lunchStartTime;
+        if (!sanitizedPayload.lunchEndTime) delete sanitizedPayload.lunchEndTime;
+
+        const res = await updateSchedule(sanitizedPayload);
         setSavingDay(null);
 
         if (res) {

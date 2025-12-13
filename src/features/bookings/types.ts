@@ -29,9 +29,11 @@ export interface CreateBookingDto {
     notes?: string;
 }
 
+export interface AvailabilitySlot {
+    time: string;
+    available: boolean;
+}
+
 export interface AvailabilityResponse {
-    slots: Array<{
-        time: string;
-        available: boolean;
-    }>;
+    slots: AvailabilitySlot[];
 }

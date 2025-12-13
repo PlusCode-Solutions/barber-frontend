@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import type { Service } from "../../services/types";
 import type { Barber } from "../../barbers/types";
-import type { CreateBookingDto } from "../types";
+import type { CreateBookingDto, AvailabilitySlot } from "../types";
 import { BookingsService } from "../api/bookings.service";
 import { validateBookingForm, type FormValidationError } from "../utils/validation";
 import { calculateEndTime } from "../utils/timeUtils";
@@ -29,12 +29,12 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
     const [closures, setClosures] = useState<Closure[]>([]);
 
     useEffect(() => {
-        if (selectedBarber) {
+        if (selectedBarber && tenant?.slug) {
             SchedulesService.getClosures(selectedBarber.id)
                 .then(data => setClosures(data))
                 .catch(console.error);
         }
-    }, [selectedBarber]);
+    }, [selectedBarber, tenant?.slug]);
 
     const reset = useCallback(() => {
         setStep(1);
@@ -83,10 +83,12 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
             setLoadingSlots(true);
             try {
                 if (!tenant?.slug) return;
-                const result = await BookingsService.checkAvailability(tenant.slug, selectedBarber.id, date);
+                const result = await BookingsService.checkAvailability(selectedBarber.id, date);
 
-                // Note: API returns slots as string[] directly, not objects
-                setAvailableSlots(result.slots || []);
+                // Map availability slots to strings (time) strictly
+                const rawSlots: AvailabilitySlot[] = result.slots || [];
+                const stringSlots = rawSlots.map((s) => s.time);
+                setAvailableSlots(stringSlots);
             } catch (err) {
                 setError("No se pudo verificar la disponibilidad. Por favor intenta de nuevo.");
                 setAvailableSlots([]);
@@ -138,7 +140,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         setSubmitting(true);
         try {
             if (!tenant?.slug) throw new Error("Tenant no disponible");
-            await BookingsService.create(tenant.slug, dto);
+            await BookingsService.create(dto);
             handleClose();
             onSuccess?.();
         } catch (err: any) {

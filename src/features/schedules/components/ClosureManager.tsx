@@ -1,97 +1,117 @@
-import { CalendarOff, Trash2, Plus, Calendar } from "lucide-react";
-import { Button } from "../../../components/ui/Button";
-import { Input } from "../../../components/ui/Input";
+import { CalendarOff, Trash2 } from "lucide-react";
 import { useClosureManager } from "../hooks/useClosureManager";
+import { safeDate } from "../../../utils/dateUtils";
 
 interface Props {
     onShowToast?: (message: string, type: "success" | "error") => void;
+    barberId?: string;
 }
 
-export default function ClosureManager({ onShowToast }: Props) {
-    const { closures, loadingList, form, actions } = useClosureManager({ onShowToast });
-    const { newDate, setNewDate, newReason, setNewReason, isCreating } = form;
-    const { handleCreate, handleDelete } = actions;
+export default function ClosureManager({ onShowToast, barberId }: Props) {
+    const { closures, loadingList, form, actions } = useClosureManager({ onShowToast, barberId });
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-full flex flex-col">
-            <div className="p-6 border-b border-gray-100 flex items-center gap-3">
-                <div className="p-2 bg-red-50 rounded-lg text-red-600">
-                    <CalendarOff className="w-5 h-5" />
-                </div>
-                <div>
-                    <h3 className="font-bold text-gray-900">Días Libres & Festivos</h3>
-                    <p className="text-sm text-gray-500">Gestiona cierres excepcionales.</p>
-                </div>
-            </div>
-
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden h-full flex flex-col">
             <div className="p-6 border-b border-gray-100 bg-gray-50/50">
-                <form onSubmit={handleCreate} className="flex flex-col gap-3">
-                    <label className="text-xs font-semibold uppercase text-gray-400 tracking-wider">Nuevo Cierre</label>
-                    <div className="flex flex-col md:flex-row gap-2">
-                        <div className="w-full md:w-1/3">
-                            <Input
-                                type="date"
-                                value={newDate}
-                                onChange={e => setNewDate(e.target.value)}
-                                required
-                                className="bg-white w-full"
-                            />
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center text-red-600">
+                        <CalendarOff className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-gray-900">Días Libres & Festivos</h3>
+                        <p className="text-xs text-gray-500">Gestione los días que no habrá atención.</p>
+                    </div>
+                </div>
+
+                {/* Formulario de Creación */}
+                <form onSubmit={actions.handleCreate} className="space-y-3 mt-4">
+                    <div className="grid grid-cols-1 gap-2">
+                        <div>
+                            <label className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1 block">
+                                NUEVO CIERRE
+                            </label>
+                            <div className="flex gap-2">
+                                <input
+                                    type="date"
+                                    className="block w-full rounded-lg border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2.5"
+                                    value={form.newDate}
+                                    onChange={(e) => form.setNewDate(e.target.value)}
+                                    required
+                                />
+                            </div>
                         </div>
-                        <div className="flex-1">
-                            <Input
+
+                        <div className="flex gap-2">
+                            <input
                                 type="text"
-                                placeholder="Motivo (ej. Navidad)"
-                                value={newReason}
-                                onChange={e => setNewReason(e.target.value)}
+                                placeholder="Motivo (ej. Navidad, Capacitación)"
+                                className="block w-full rounded-lg border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2"
+                                value={form.newReason}
+                                onChange={(e) => form.setNewReason(e.target.value)}
                                 required
-                                className="bg-white w-full"
                             />
+                            <button
+                                type="submit"
+                                disabled={form.isCreating || !form.newDate || !form.newReason}
+                                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-xl leading-none flex items-center justify-center"
+                            >
+                                {form.isCreating ? <span className="animate-spin">⏳</span> : "+"}
+                            </button>
                         </div>
-                        <Button type="submit" isLoading={isCreating} variant="secondary" className="w-full md:w-auto">
-                            <Plus className="w-4 h-4" />
-                        </Button>
                     </div>
                 </form>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4">
+            {/* Lista de Cierres */}
+            <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
                 {loadingList ? (
-                    <div className="p-8 text-center text-gray-400">Cargando...</div>
+                    <div className="flex items-center justify-center h-20 text-gray-400 text-sm">
+                        Cargando...
+                    </div>
                 ) : closures.length === 0 ? (
-                    <div className="p-10 text-center flex flex-col items-center">
-                        <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-3 text-gray-400">
-                            <Calendar className="w-6 h-6" />
-                        </div>
-                        <p className="text-gray-500 text-sm">No hay días libres registrados.</p>
+                    <div className="flex flex-col items-center justify-center h-32 text-gray-400 gap-2 border-2 border-dashed border-gray-100 rounded-xl">
+                        <CalendarOff className="w-8 h-8 opacity-20" />
+                        <span className="text-xs font-medium">No hay días libres registrados</span>
                     </div>
                 ) : (
                     <ul className="space-y-2">
-                        {closures.map(closure => (
-                            <li key={closure.id} className="flex items-center justify-between p-3 border border-gray-100 md:border-transparent md:hover:bg-gray-50 rounded-lg group transition-colors bg-white md:bg-transparent shadow-sm md:shadow-none">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 bg-red-100 text-red-600 rounded-lg flex flex-col items-center justify-center text-xs font-bold leading-none shadow-sm flex-shrink-0">
-                                        <span>{new Date(closure.date + 'T00:00:00').getDate()}</span>
-                                        <span className="text-[9px] opacity-75 uppercase">
-                                            {new Date(closure.date + 'T00:00:00').toLocaleDateString('es-ES', { month: 'short' }).slice(0, 3)}
-                                        </span>
+                        {closures.map(closure => {
+                            const dateObj = safeDate(closure.date);
+                            const isValid = dateObj && !isNaN(dateObj.getTime());
+
+                            const dayNumber = isValid ? dateObj.getDate() : "?";
+                            const monthShort = isValid ? dateObj.toLocaleDateString('es-ES', { month: 'short' }).slice(0, 3) : "?";
+                            const fullDate = isValid ? dateObj.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : "Fecha inválida";
+
+                            return (
+                                <li key={closure.id} className="flex items-center justify-between p-3 border border-gray-100 md:border-transparent md:hover:bg-gray-50 rounded-lg group transition-colors bg-white md:bg-transparent shadow-sm md:shadow-none hover:shadow-md">
+                                    <div className="flex items-center gap-3">
+                                        {/* Date Badge */}
+                                        <div className={`w-10 h-10 ${isValid ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-400'} rounded-lg flex flex-col items-center justify-center text-xs font-bold leading-none shadow-sm flex-shrink-0`}>
+                                            <span>{dayNumber}</span>
+                                            <span className="text-[9px] opacity-75 uppercase">
+                                                {monthShort}
+                                            </span>
+                                        </div>
+
+                                        <div className="min-w-0">
+                                            <p className="font-medium text-gray-900 truncate">{closure.reason}</p>
+                                            <p className="text-xs text-gray-500 truncate capitalize">
+                                                {fullDate}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="min-w-0">
-                                        <p className="font-medium text-gray-900 truncate">{closure.reason}</p>
-                                        <p className="text-xs text-gray-500 truncate">
-                                            {new Date(closure.date + 'T00:00:00').toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                                        </p>
-                                    </div>
-                                </div>
-                                <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => handleDelete(closure.id)}
-                                    className="md:opacity-0 md:group-hover:opacity-100 text-red-500 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </Button>
-                            </li>
-                        ))}
+
+                                    <button
+                                        onClick={() => actions.handleDelete(closure.id)}
+                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                                        title="Eliminar registro"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </li>
+                            );
+                        })}
                     </ul>
                 )}
             </div>

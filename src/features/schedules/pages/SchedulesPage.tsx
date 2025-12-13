@@ -1,21 +1,30 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Clock, Calendar, Settings, ArrowLeft } from "lucide-react";
 import { useSchedules } from "../hooks/useSchedules";
 import ScheduleCard from "../components/ScheduleCard";
 import SchedulesSkeleton from "../components/SchedulesSkeleton";
 import WeekScheduleEditor from "../components/WeekScheduleEditor";
 import ClosureManager from "../components/ClosureManager";
+import PublicClosuresView from "../components/PublicClosuresView";
 import { useAuth } from "../../../context/AuthContext";
 import { Button } from "../../../components/ui/Button";
-import { SchedulesService } from "../api/schedules.service";
 import Toast from "../../../components/ui/Toast";
+import { useBarbers } from "../../../features/barbers/hooks/useBarbers";
 
 export default function SchedulesPage() {
-    const { schedules, loading, error, refresh } = useSchedules();
     const { user } = useAuth();
+    const isAdmin = user?.role === 'TENANT_ADMIN';
+
+    // Obtener barberos para identificar el principal
+    const { barbers } = useBarbers();
+    const shopBarberId = barbers?.[0]?.id;
+
+    // Cargar horarios globales usando el ID del barbero principal
+    const { schedules, loading, error, refresh } = useSchedules(shopBarberId, false);
+
     const [isEditing, setIsEditing] = useState(false);
 
-    // Toast State
+    // Sistema de notificaciones (Toast)
     const [toastState, setToastState] = useState<{ message: string; type: "success" | "error"; isVisible: boolean }>({
         message: "",
         type: "success",
@@ -30,9 +39,6 @@ export default function SchedulesPage() {
         setToastState(prev => ({ ...prev, isVisible: false }));
     }, []);
 
-    // Initial check for 'TENANT_ADMIN' role. 
-    const isAdmin = user?.role === 'TENANT_ADMIN';
-
     if (loading) return <SchedulesSkeleton />;
 
     if (error) {
@@ -46,7 +52,7 @@ export default function SchedulesPage() {
         );
     }
 
-    // Ordenar horarios por día de la semana (Domingo a Sábado)
+    // Ordenar horarios (Domingo a Sábado)
     const sortedSchedules = [...schedules].sort((a, b) => a.dayOfWeek - b.dayOfWeek);
 
     return (
@@ -58,7 +64,7 @@ export default function SchedulesPage() {
                 onClose={handleCloseToast}
             />
 
-            {/* HEADER */}
+            {/* Encabezado */}
             <div className="bg-white border-b border-gray-200 px-6 py-6 sticky top-0 z-20 shadow-sm">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
@@ -99,28 +105,29 @@ export default function SchedulesPage() {
                 </div>
             </div>
 
-            {/* CONTENT */}
+            {/* Contenido Principal */}
             <div className="max-w-7xl mx-auto px-6 pt-8">
                 {isEditing ? (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Left Column: Weekly Schedule */}
+                        {/* Columna Izquierda: Editor Semanal */}
                         <div className="lg:col-span-2">
                             <WeekScheduleEditor
                                 currentSchedules={schedules}
                                 onUpdate={refresh}
                                 onShowToast={handleShowToast}
+                                barberId={shopBarberId}
                             />
                         </div>
 
-                        {/* Right Column: Closures */}
+                        {/* Columna Derecha: Días Libres */}
                         <div className="lg:col-span-1">
                             <div className="sticky top-32">
-                                <ClosureManager onShowToast={handleShowToast} />
+                                <ClosureManager onShowToast={handleShowToast} barberId={shopBarberId} />
                             </div>
                         </div>
                     </div>
                 ) : (
-                    // VIEW MODE
+                    // Vista Pública
                     <div>
                         {sortedSchedules.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-3xl border border-gray-200 shadow-sm max-w-2xl mx-auto">
@@ -137,63 +144,18 @@ export default function SchedulesPage() {
                             </div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                                {sortedSchedules.map((schedule) => (
-                                    <ScheduleCard key={schedule.id} schedule={schedule} />
+                                {sortedSchedules.map((schedule, index) => (
+                                    <ScheduleCard
+                                        key={`${schedule.id || 'no-id'}-${schedule.dayOfWeek}-${index}`}
+                                        schedule={schedule}
+                                    />
                                 ))}
                             </div>
                         )}
 
-                        <PublicClosuresView />
+                        <PublicClosuresView barberId={shopBarberId} />
                     </div>
                 )}
-            </div>
-        </div>
-    );
-}
-
-import { useTenant } from "../../../context/TenantContext";
-
-function PublicClosuresView() {
-    const { tenant } = useTenant();
-    const slug = tenant?.slug;
-    const [closures, setClosures] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        if (!slug) return;
-
-        SchedulesService.getClosures(slug)
-            .then(data => {
-                // Filter only future or today's closures
-                const upcoming = data.filter((c: any) => new Date(c.date) >= new Date(new Date().setHours(0, 0, 0, 0)));
-                setClosures(upcoming.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime()));
-            })
-            .catch(() => { })
-            .finally(() => setLoading(false));
-    }, [slug]);
-
-    if (loading || closures.length === 0) return null;
-
-    return (
-        <div className="mt-12 max-w-4xl mx-auto">
-            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                <Calendar className="w-5 h-5 mr-2 text-red-500" />
-                Próximos Días Libres
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {closures.map(closure => (
-                    <div key={closure.id} className="bg-white p-4 rounded-xl border border-red-100 shadow-sm flex items-center justify-between">
-                        <div>
-                            <p className="font-semibold text-gray-900">{closure.reason}</p>
-                            <p className="text-sm text-gray-500 capitalize">
-                                {new Date(closure.date + 'T00:00:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
-                            </p>
-                        </div>
-                        <div className="bg-red-50 text-red-600 text-xs font-bold px-3 py-1 rounded-full border border-red-100">
-                            Cerrado
-                        </div>
-                    </div>
-                ))}
             </div>
         </div>
     );

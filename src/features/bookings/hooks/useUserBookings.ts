@@ -20,10 +20,10 @@ export function useUserBookings() {
         }
 
         async function load() {
-            if (!tenant?.slug) return;
+            if (!tenant?.slug || !user?.id) return;
 
             try {
-                const data = await BookingsService.getUserBookings(tenant.slug);
+                const data = await BookingsService.getUserBookings(user.id);
                 setBookings(data);
             } catch (err) {
                 const message = handleError(err, 'useUserBookings');

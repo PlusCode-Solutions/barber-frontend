@@ -29,7 +29,7 @@ export const ServicesService = {
         serviceId: string,
         data: Partial<Service>
     ): Promise<Service> => {
-        const res = await axios.put(`/${tenantSlug}/services/${serviceId}`, data);
+        const res = await axios.patch(`/${tenantSlug}/services/${serviceId}`, data);
         return res.data;
     },
 

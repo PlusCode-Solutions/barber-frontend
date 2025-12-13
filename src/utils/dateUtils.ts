@@ -8,8 +8,16 @@ export function isValidDate(dateStr: string): boolean {
 
 /** Parsea fecha de forma segura (si falla devuelve null) */
 export function safeDate(dateStr: string): Date | null {
-    const date = new Date(dateStr);
-    return isNaN(date.getTime()) ? null : date;
+    if (!dateStr) return null;
+    
+    // Si es formato YYYY-MM-DD estricto, forzar hora local
+    if (typeof dateStr === 'string' && dateStr.length === 10 && dateStr.includes('-')) {
+        const d = new Date(dateStr + 'T00:00:00');
+        return isNaN(d.getTime()) ? null : d;
+    }
+    
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? null : d;
 }
 
 /** Devuelve "Hoy", "Mañana" o fecha corta estilo "lun 3 feb" */

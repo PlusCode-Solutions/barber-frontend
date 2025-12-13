@@ -25,8 +25,15 @@ export function useLogin() {
     try {
       const res = await AuthService.login(tenant.slug, { email, password });
       
-      authLogin(res.token, res.user);
-      return { ok: true, user: res.user };
+      // Ensure tenantSlug and tenantId are included in user data
+      const userData = {
+        ...res.user,
+        tenantSlug: tenant.slug,
+        tenantId: res.user.tenantId || tenant?.id
+      };
+      
+      authLogin(res.token, userData);
+      return { ok: true, user: userData };
     } catch (err) {
       const message = handleError(err, 'useLogin');
       setError(message);

@@ -3,7 +3,7 @@ import type { Schedule } from "../types";
 import { SchedulesService } from "../api/schedules.service";
 import { useTenant } from "../../../context/TenantContext";
 
-export function useSchedules() {
+export function useSchedules(barberId?: string, fetchAll: boolean = false) {
     const { tenant } = useTenant();
     const slug = tenant?.slug;
 
@@ -15,8 +15,13 @@ export function useSchedules() {
         if (!slug) return;
         
         async function load() {
+            setLoading(true);
             try {
-                const data = await SchedulesService.getSchedules(slug!);
+                // If fetchAll is true (Admin mode), use the admin endpoint
+                const data = fetchAll 
+                    ? await SchedulesService.getAllSchedules()
+                    : await SchedulesService.getSchedules(barberId);
+                    
                 setSchedules(data);
             } catch (err) {
                 console.error("Error cargando horarios", err);
@@ -27,12 +32,16 @@ export function useSchedules() {
         }
 
         load();
-    }, [slug]);
+    }, [slug, barberId, fetchAll]);
 
     const refresh = () => {
         if (!slug) return;
         setLoading(true);
-        SchedulesService.getSchedules(slug)
+        const promise = fetchAll 
+            ? SchedulesService.getAllSchedules()
+            : SchedulesService.getSchedules(barberId);
+
+        promise
             .then(data => setSchedules(data))
             .catch(err => {
                 console.error("Error cargando horarios", err);
@@ -41,5 +50,5 @@ export function useSchedules() {
             .finally(() => setLoading(false));
     };
 
-    return { schedules, loading, error, refresh };
+    return { schedules, loading, error, refresh, barberId };
 }

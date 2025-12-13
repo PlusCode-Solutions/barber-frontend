@@ -1,30 +1,18 @@
 import axios from "../../../lib/axios";
-import type { Booking } from "../types";
-
-interface AvailabilityResponse {
-    available: boolean;
-    slots?: string[];
-}
+import type { Booking, AvailabilityResponse } from "../types";
 
 export const BookingsService = {
+    
     // Get user bookings
-    getUserBookings: async (tenantSlug: string): Promise<Booking[]> => {
-        const res = await axios.get(`/${tenantSlug}/bookings/my-bookings`);
-
-        if (Array.isArray(res.data)) {
-            return res.data;
-        }
-
-        if (res.data && Array.isArray(res.data.data)) {
-            return res.data.data;
-        }
-
-        return [];
+    // Endpoint: GET /bookings/user/:userId
+    getUserBookings: async (userId: string): Promise<Booking[]> => {
+        const res = await axios.get(`/bookings/user/${userId}`);
+        return res.data;
     },
 
     // Get tenant bookings
+    // Endpoint: GET /bookings
     getTenantBookings: async (
-        tenantSlug: string,
         startDate?: string,
         endDate?: string
     ): Promise<Booking[]> => {
@@ -32,32 +20,24 @@ export const BookingsService = {
         if (startDate) params.startDate = startDate;
         if (endDate) params.endDate = endDate;
 
-        const res = await axios.get(`/${tenantSlug}/bookings`, { params });
-
-        if (Array.isArray(res.data)) {
-            return res.data;
-        }
-
-        if (res.data && Array.isArray(res.data.data)) {
-            return res.data.data;
-        }
-
-        return [];
+        const res = await axios.get(`/bookings`, { params });
+        return res.data;
     },
 
     // Create booking
-    create: async (tenantSlug: string, data: Partial<Booking>): Promise<Booking> => {
-        const res = await axios.post(`/${tenantSlug}/bookings`, data);
+    // Endpoint: POST /bookings
+    create: async (data: Partial<Booking>): Promise<Booking> => {
+        const res = await axios.post(`/bookings`, data);
         return res.data;
     },
 
     // Check availability
+    // Endpoint: GET /bookings/availability
     checkAvailability: async (
-        tenantSlug: string,
         barberId: string,
         date: string
     ): Promise<AvailabilityResponse> => {
-        const res = await axios.get(`/${tenantSlug}/bookings/availability`, {
+        const res = await axios.get(`/bookings/availability`, {
             params: { barberId, date },
         });
         return res.data;

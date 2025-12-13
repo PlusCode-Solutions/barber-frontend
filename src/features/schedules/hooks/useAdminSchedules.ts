@@ -10,58 +10,58 @@ export function useAdminSchedules() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Actualizar configuración de horario
     const updateSchedule = async (data: CreateScheduleDto): Promise<Schedule | null> => {
-        if (!slug) {
-            console.error("No tenant slug found in context");
-            return null;
-        }
+        if (!slug) return null;
+        
         setLoading(true);
         setError(null);
         try {
-            const result = await SchedulesService.upsertSchedule(slug, data);
+            const result = await SchedulesService.upsertSchedule(data);
+             // TODO: Invalidar cache si usáramos React Query
             return result;
         } catch (err) {
             console.error("Error updating schedule", err);
-            setError("Failed to update schedule");
+            setError("Error al actualizar el horario.");
             return null;
         } finally {
             setLoading(false);
         }
     };
 
+    // Crear cierre (Día libre/festivo)
     const createClosure = async (data: CreateClosureDto): Promise<Closure | null> => {
-        if (!slug) {
-            console.error("No tenant slug found in context");
-            return null;
-        }
+        if (!slug) return null;
+
         setLoading(true);
         setError(null);
         try {
-            const result = await SchedulesService.createClosure(slug, data);
+            const result = await SchedulesService.createClosure(data);
             return result;
         } catch (err) {
             console.error("Error creating closure", err);
-            setError("Failed to create closure");
+            setError("Error al crear el cierre.");
             return null;
         } finally {
             setLoading(false);
         }
     };
 
-    const deleteClosure = async (id: string): Promise<boolean> => {
-        if (!slug) {
-            console.error("No tenant slug found in context");
-            return false;
-        }
+    // Eliminar cierre
+    const deleteClosure = async (id: string): Promise<boolean | string> => {
+        if (!slug) return "Error de contexto (Tenant no encontrado)";
+
         setLoading(true);
         setError(null);
         try {
-            await SchedulesService.deleteClosure(slug, id);
+            await SchedulesService.deleteClosure(id);
             return true;
-        } catch (err) {
+        } catch (err: any) {
             console.error("Error deleting closure", err);
-            setError("Failed to delete closure");
-            return false;
+            // Extraer mensaje del backend si existe
+            const msg = err.response?.data?.message || err.message || "Error desconocido al eliminar";
+            setError(msg);
+            return msg;
         } finally {
             setLoading(false);
         }

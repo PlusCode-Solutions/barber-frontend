@@ -19,6 +19,8 @@ interface AuthResponse {
         email: string;
         name: string;
         role: string;
+        tenantId?: string;
+        [key: string]: any; // Allow additional fields from backend
     };
 }
 
@@ -30,9 +32,18 @@ export const AuthService = {
     ): Promise<AuthResponse> => {
         const res = await axios.post(`/${tenantSlug}/auth/login`, credentials);
         // Backend returns access_token, map it to token
+        // Ensure we capture all user data including tenantId
+        const userData = res.data.user || {};
         return {
             token: res.data.access_token,
-            user: res.data.user
+            user: {
+                id: userData.id,
+                email: userData.email,
+                name: userData.name,
+                role: userData.role,
+                tenantId: userData.tenantId,
+                ...userData // Include any additional fields from backend
+            }
         };
     },
 
