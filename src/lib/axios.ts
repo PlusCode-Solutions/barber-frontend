@@ -1,7 +1,9 @@
 import axios from "axios";
+import { env } from "../config/env";
+
 // Axios instance url backend (API)
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: env.API_URL,
   withCredentials: false,
 });
 
@@ -20,10 +22,11 @@ instance.interceptors.request.use(
 );
 
 
-// Response interceptor to handle 401 Unauthorized
+// Response interceptor to handle errors globally
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Handle 401 Unauthorized - redirect to login
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
@@ -44,7 +47,7 @@ instance.interceptors.response.use(
       }
 
       if (tenantSlug) {
-        // Ensure we don't injecting a JSON object string if legacy data persists
+        // Ensure we don't inject a JSON object string if legacy data persists
         if (tenantSlug.startsWith("{")) {
           try {
             const parsed = JSON.parse(tenantSlug);
@@ -61,6 +64,9 @@ instance.interceptors.response.use(
         window.location.href = "/";
       }
     }
+    
+    // Let the error propagate for handling by individual requests
+    // The error will be converted to ApiError by handleApiError when caught
     return Promise.reject(error);
   }
 );
