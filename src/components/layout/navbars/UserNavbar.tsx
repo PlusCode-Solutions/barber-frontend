@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Link, useParams, useLocation } from "react-router-dom";
-import { Menu, X, Home, CalendarCheck, Users, Scissors, Clock } from "lucide-react";
+import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X, Home, CalendarCheck, Users, Scissors, Clock, LogOut } from "lucide-react";
 import { useTenant } from "../../../context/TenantContext";
 
 export default function UserNavbar() {
@@ -8,8 +8,12 @@ export default function UserNavbar() {
     const { tenantSlug } = useParams();
     const { tenant } = useTenant();
     const location = useLocation();
+    const navigate = useNavigate();
 
     const primary = tenant?.primaryColor ?? "#3b82f6";
+
+    // Fallback for slug
+    const finalSlug = tenantSlug || tenant?.slug;
 
     const menuItems = [
         { icon: Home, label: "Inicio", path: "dashboard" },
@@ -18,6 +22,18 @@ export default function UserNavbar() {
         { icon: Users, label: "Barberos", path: "dashboard/barbers" },
         { icon: Clock, label: "Horarios", path: "dashboard/schedules" }
     ];
+
+    const handleLogout = () => {
+        // Manually clear storage like in TenantAdminNavbar
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+
+        if (finalSlug) {
+            navigate(`/${finalSlug}/auth/login`);
+        } else {
+            navigate('/');
+        }
+    };
 
     return (
         <>
@@ -58,7 +74,7 @@ export default function UserNavbar() {
 
             {/* Menu lateral */}
             <nav
-                className={`fixed top-0 right-0 h-full w-72 bg-white z-50 shadow-2xl transform transition-transform duration-300 ${menuOpen ? "translate-x-0" : "translate-x-full"
+                className={`fixed top-0 right-0 h-full w-72 bg-white z-50 shadow-2xl transform transition-transform duration-300 flex flex-col ${menuOpen ? "translate-x-0" : "translate-x-full"
                     }`}
             >
                 {/* Header del menú */}
@@ -88,15 +104,15 @@ export default function UserNavbar() {
                 </div>
 
                 {/* Items del menú */}
-                <div className="p-4">
+                <div className="p-4 flex-1 overflow-y-auto">
                     {menuItems.map((item) => {
                         const Icon = item.icon;
-                        const isActive = location.pathname === `/${tenantSlug}/${item.path}`;
+                        const isActive = location.pathname === `/${finalSlug}/${item.path}`;
 
                         return (
                             <Link
                                 key={item.path}
-                                to={`/${tenantSlug}/${item.path}`}
+                                to={`/${finalSlug}/${item.path}`}
                                 onClick={() => setMenuOpen(false)}
                                 className={`flex items-center gap-4 p-4 rounded-xl transition-colors mb-2 group ${isActive ? 'shadow-md' : 'hover:bg-gray-50'
                                     }`}
@@ -132,6 +148,19 @@ export default function UserNavbar() {
                             </Link>
                         );
                     })}
+                </div>
+
+                {/* Footer / Logout */}
+                <div className="p-4 border-t border-gray-100">
+                    <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 p-4 rounded-xl hover:bg-red-50 text-red-600 transition-colors group"
+                    >
+                        <div className="w-11 h-11 rounded-xl bg-red-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <LogOut size={22} />
+                        </div>
+                        <span className="font-semibold text-base">Cerrar Sesión</span>
+                    </button>
                 </div>
             </nav>
 
