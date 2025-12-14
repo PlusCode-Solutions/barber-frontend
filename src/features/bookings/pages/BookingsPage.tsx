@@ -2,6 +2,7 @@ import { useUserBookings } from "../hooks/useUserBookings";
 import { BookingsTable } from "../components/BookingsTable";
 import BookingsSkeleton from "../components/BookingsSkeleton";
 import { formatRelativeDate, formatHour } from "../../../utils/dateUtils";
+import SEO from "../../../components/shared/SEO";
 
 export default function BookingsPage() {
     const { bookings, loading } = useUserBookings();
@@ -23,6 +24,8 @@ export default function BookingsPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pb-8">
+            <SEO title="Mis Citas" description="Revisa y administra tus próximas citas de barbería." />
+
             {/* HEADER */}
             <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 pt-8 pb-6 shadow-lg sticky top-16 z-10">
                 <div className="flex items-center justify-between">

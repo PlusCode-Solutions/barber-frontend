@@ -3,6 +3,7 @@ import { Plus, CheckCircle } from "lucide-react";
 import { useTenant } from "../../context/TenantContext";
 import CreateBookingModal from "../../features/bookings/components/CreateBookingModal";
 import NextAppointmentCard from "../../features/bookings/components/NextAppointmentCard";
+import SEO from "../../components/shared/SEO";
 
 export default function DashboardHome() {
     const { tenant } = useTenant();
@@ -16,6 +17,10 @@ export default function DashboardHome() {
 
     return (
         <div className="min-h-screen bg-gray-50 px-5 py-6">
+            <SEO
+                title="Inicio"
+                description={`Bienvenido a ${tenant?.name || 'tu barbería'}. Gestiona tus citas y servicios fácilmente.`}
+            />
 
             {/* Success Message */}
             {showSuccess && (

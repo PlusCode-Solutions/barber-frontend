@@ -10,8 +10,11 @@ import { useAuth } from "../../../context/AuthContext";
 import { Button } from "../../../components/ui/Button";
 import Toast from "../../../components/ui/Toast";
 import { useBarbers } from "../../../features/barbers/hooks/useBarbers";
+import SEO from "../../../components/shared/SEO";
+import { useTenant } from "../../../context/TenantContext";
 
 export default function SchedulesPage() {
+    const { tenant } = useTenant();
     const { user } = useAuth();
     const isAdmin = user?.role === 'TENANT_ADMIN';
 
@@ -57,6 +60,7 @@ export default function SchedulesPage() {
 
     return (
         <div className="min-h-screen bg-gray-50/50 pb-12">
+            <SEO title="Horarios" description={`Consulta nuestros horarios de atención y días festivos en ${tenant?.name}.`} />
             <Toast
                 message={toastState.message}
                 type={toastState.type}

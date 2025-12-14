@@ -8,6 +8,7 @@ import BarberCard from "../components/BarberCard";
 import BarberModal from "../components/BarberModal";
 import DeleteBarberModal from "../components/DeleteBarberModal";
 import Toast from "../../../components/ui/Toast";
+import SEO from "../../../components/shared/SEO";
 import type { Barber } from "../types";
 
 export default function BarbersPage() {
@@ -36,6 +37,7 @@ export default function BarbersPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pb-8">
+            <SEO title="Barberos" description="Conoce a nuestro equipo de barberos." />
             {/* HEADER */}
             <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-6 pt-8 pb-6 shadow-lg sticky top-16 z-10">
                 <div className="flex items-center justify-between">
