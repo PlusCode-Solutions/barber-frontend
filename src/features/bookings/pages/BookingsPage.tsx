@@ -8,16 +8,18 @@ export default function BookingsPage() {
 
     if (loading) return <BookingsSkeleton />;
 
-    const formattedBookings = bookings.map((b) => ({
-        ...b,
-        date: formatRelativeDate(b.date),
-        startTime: formatHour(b.startTime),
-        endTime: formatHour(b.endTime),
-        service: {
-            ...b.service,
-            price: b.service?.price ? `$${b.service.price}` : "—",
-        },
-    }));
+    const formattedBookings = bookings
+        .slice(0, 10) // Limit to 10 latest entries
+        .map((b) => ({
+            ...b,
+            date: formatRelativeDate(b.date),
+            startTime: formatHour(b.startTime),
+            endTime: formatHour(b.endTime),
+            service: {
+                ...b.service,
+                price: b.service?.price ? `$${b.service.price}` : "—",
+            },
+        }));
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pb-8">

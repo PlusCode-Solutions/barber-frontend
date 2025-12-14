@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus, CheckCircle } from "lucide-react";
 import { useTenant } from "../../context/TenantContext";
 import CreateBookingModal from "../../features/bookings/components/CreateBookingModal";
+import NextAppointmentCard from "../../features/bookings/components/NextAppointmentCard";
 
 export default function DashboardHome() {
     const { tenant } = useTenant();
@@ -24,7 +25,10 @@ export default function DashboardHome() {
                 </div>
             )}
 
-            {/* Card principal */}
+            {/* Next Appointment Card */}
+            <NextAppointmentCard />
+
+            {/* Dashboard Content */}
             <div className="bg-white rounded-3xl shadow-md p-6 border border-gray-100">
 
                 {/* Encabezado con logo y nombre */}

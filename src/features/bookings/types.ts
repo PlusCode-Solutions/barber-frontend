@@ -3,6 +3,7 @@ export interface Booking {
     date: string;
     startTime: string;
     endTime: string;
+    status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
     notes?: string | null;
     service?: {
         name: string;
