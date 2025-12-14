@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { type Schedule, type CreateScheduleDto } from "../types";
 import { useAdminSchedules } from "./useAdminSchedules";
+import { useSchedules } from "./useSchedules"; // Fetch tenant schedules
+import { validateScheduleMargin } from "../utils/validation";
 
 interface UseWeekScheduleEditorProps {
     currentSchedules: Schedule[];
@@ -21,6 +23,7 @@ const DAYS = [
 
 export function useWeekScheduleEditor({ currentSchedules, onUpdate, onShowToast, barberId }: UseWeekScheduleEditorProps) {
     const { updateSchedule } = useAdminSchedules();
+    const { schedules: tenantSchedules } = useSchedules(undefined, false); // Get Tenant General Hours
     const [savingDay, setSavingDay] = useState<number | null>(null);
     const [formData, setFormData] = useState<Record<number, CreateScheduleDto>>({});
 
@@ -44,8 +47,6 @@ export function useWeekScheduleEditor({ currentSchedules, onUpdate, onShowToast,
         const data = formData[dayOfWeek];
         if (!data) return;
 
-        setSavingDay(dayOfWeek);
-        
         const payload = {
             ...data,
             barberId,
@@ -58,6 +59,23 @@ export function useWeekScheduleEditor({ currentSchedules, onUpdate, onShowToast,
         const sanitizedPayload: any = { ...payload };
         if (!sanitizedPayload.lunchStartTime) delete sanitizedPayload.lunchStartTime;
         if (!sanitizedPayload.lunchEndTime) delete sanitizedPayload.lunchEndTime;
+
+        // VALIDATION: If editing a barber, validate against Tenant Schedule
+        if (barberId && tenantSchedules.length > 0) {
+            const tenantDay = tenantSchedules.find(s => s.dayOfWeek === dayOfWeek);
+            const { isValid, error } = validateScheduleMargin({
+                startTime: sanitizedPayload.startTime,
+                endTime: sanitizedPayload.endTime,
+                isClosed: sanitizedPayload.isClosed
+            }, tenantDay);
+
+            if (!isValid) {
+                onShowToast?.(error || "Horario inválido", "error");
+                return;
+            }
+        }
+
+        setSavingDay(dayOfWeek);
 
         const res = await updateSchedule(sanitizedPayload);
         setSavingDay(null);

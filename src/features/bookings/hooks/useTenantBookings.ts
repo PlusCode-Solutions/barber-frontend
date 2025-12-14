@@ -5,7 +5,7 @@ import { useErrorHandler } from "../../../hooks/useErrorHandler";
 import { useTenant } from "../../../context/TenantContext";
 import type { Booking } from "../types";
 
-export function useTenantBookings() {
+export function useTenantBookings(filters?: { barberId?: string }) {
     const { tenant } = useTenant();
     const { user, token } = useAuth();
     const { handleError } = useErrorHandler();
@@ -21,9 +21,12 @@ export function useTenantBookings() {
 
         async function load() {
             if (!tenant?.slug) return;
+            setLoading(true); // Reset loading state on filter change
 
             try {
-                const data = await BookingsService.getTenantBookings(tenant.slug);
+                // Pass barberId filter if present.
+                // We pass undefined for dates to fetch all (or let backend default).
+                const data = await BookingsService.getTenantBookings(undefined, undefined, filters?.barberId);
                 setBookings(data);
             } catch (err) {
                 const message = handleError(err, 'useTenantBookings');
@@ -34,7 +37,7 @@ export function useTenantBookings() {
         }
 
         load();
-    }, [user?.tenantId, token, tenant?.slug, handleError]);
+    }, [user?.tenantId, token, tenant?.slug, handleError, filters?.barberId]); // Re-run when barberId changes
 
     return { bookings, loading, error };
 }

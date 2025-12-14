@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { BarbersService } from "../api/barbers.service";
 import { useTenant } from "../../../context/TenantContext";
 
-export function useBarbers() {
+export function useBarbers(options: { enabled?: boolean } = {}) {
     const { tenant } = useTenant();
     const slug = tenant?.slug;
 
@@ -13,7 +13,7 @@ export function useBarbers() {
     } = useQuery({
         queryKey: ['barbers', slug],
         queryFn: () => BarbersService.getAll(slug!),
-        enabled: !!slug
+        enabled: !!slug && (options.enabled !== false)
     });
 
     return { 

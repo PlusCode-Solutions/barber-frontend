@@ -12,8 +12,13 @@ export function useUserBookings() {
         isLoading: loading, 
         error 
     } = useQuery({
-        queryKey: ['bookings', user?.id, tenant?.slug],
-        queryFn: () => BookingsService.getUserBookings(user!.id),
+        queryKey: ['bookings', user?.id, tenant?.slug, user?.role],
+        queryFn: () => {
+            if (user?.role === 'TENANT_ADMIN') {
+                return BookingsService.getTenantBookings();
+            }
+            return BookingsService.getUserBookings(user!.id);
+        },
         enabled: !!user?.id && !!token && !!tenant?.slug,
     });
 

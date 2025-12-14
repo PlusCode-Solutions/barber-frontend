@@ -6,6 +6,7 @@ import { BookingsService } from "../api/bookings.service";
 import { validateBookingForm, type FormValidationError } from "../utils/validation";
 import { calculateEndTime, generateTimeSlots } from "../utils/timeUtils";
 import { SchedulesService } from "../../schedules/api/schedules.service";
+import { useAuth } from "../../../context/AuthContext";
 import { useTenant } from "../../../context/TenantContext";
 import type { Closure, Schedule } from "../../schedules/types";
 import { normalizeDateString } from "../../../utils/dateUtils";
@@ -26,6 +27,7 @@ type Step = 1 | 2 | 3 | 4;
  */
 export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => void) {
     const { tenant } = useTenant();
+    const { user } = useAuth();
     const [step, setStep] = useState<Step>(1);
     const [selectedService, setSelectedService] = useState<Service | null>(null);
     const [selectedBarber, setSelectedBarber] = useState<Barber | null>(null);
@@ -42,20 +44,23 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
     // New state for schedules and closures
     const [closures, setClosures] = useState<Closure[]>([]);
 	const [schedules, setSchedules] = useState<Schedule[]>([]);
+    const [tenantSchedules, setTenantSchedules] = useState<Schedule[]>([]);
 
     useEffect(() => {
         if (selectedBarber && tenant?.slug) {
             Promise.all([
                 SchedulesService.getClosures(selectedBarber.id),
                 SchedulesService.getSchedules(selectedBarber.id),
-                SchedulesService.getClosures() 
+                SchedulesService.getClosures(),
+                SchedulesService.getSchedules() // Tenant General Schedules
             ])
-            .then(([barberClosures, schedulesData, globalClosures]) => {
+            .then(([barberClosures, schedulesData, globalClosures, tenantSchedulesData]) => {
                 const closureMap = new Map<string, Closure>();
                 [...globalClosures, ...barberClosures].forEach(c => closureMap.set(c.id, c));
                 
                 setClosures(Array.from(closureMap.values()));
                 setSchedules(schedulesData);
+                setTenantSchedules(tenantSchedulesData);
             })
             .catch(console.error);
         }
@@ -74,6 +79,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         setValidationErrors([]);
         setClosures([]);
 		setSchedules([]);
+        setTenantSchedules([]);
     }, []);
 
     const handleClose = useCallback(() => {
@@ -116,17 +122,43 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
             
             // Find schedule
             const schedule = schedules.find(s => Number(s.dayOfWeek) === Number(dayOfWeek));
+            const tenantSchedule = tenantSchedules.find(s => Number(s.dayOfWeek) === Number(dayOfWeek));
             
+            // Validation: Tenant Schedule dictates strict limits
+            if (!tenantSchedule || tenantSchedule.isClosed || !tenantSchedule.startTime || !tenantSchedule.endTime) {
+                 setAllPotentialSlots([]); // Business is closed
+                 setError(`La barbería no abre los ${parsedDate.toLocaleDateString('es-ES', { weekday: 'long' })}s.`);
+                 // Note: we continue to try fetching availableSlots below? no, probably allow "Unavailable"
+                 // But UI will show red anyway if allPotentialSlots is empty? No, it will show NOTHING.
+                 // If error is set, user knows.
+                 return;
+            }
+
             if (schedule && !schedule.isClosed && schedule.startTime && schedule.endTime) {
-                // Generate all potential slots based on schedule
-                const slots = generateTimeSlots(
-                    schedule.startTime, 
-                    schedule.endTime, 
-                    30, // Default interval 30 mins, maybe dynamic later
-                    schedule.lunchStartTime,
-                    schedule.lunchEndTime
-                );
-                setAllPotentialSlots(slots);
+                // CLAMPING: Intersection of Barber Hours and Tenant Hours
+                // Barber cannot open before tenant or close after tenant.
+                
+                // Helper to compare HH:mm strings
+                const maxTime = (t1: string, t2: string) => t1 > t2 ? t1 : t2;
+                const minTime = (t1: string, t2: string) => t1 < t2 ? t1 : t2;
+
+                const effectiveStartTime = maxTime(schedule.startTime, tenantSchedule.startTime);
+                const effectiveEndTime = minTime(schedule.endTime, tenantSchedule.endTime);
+
+                // If effective interval is invalid (start >= end)
+                if (effectiveStartTime >= effectiveEndTime) {
+                     setAllPotentialSlots([]);
+                } else {
+                    // Generate all potential slots based on CLAMPED schedule
+                    const slots = generateTimeSlots(
+                        effectiveStartTime, 
+                        effectiveEndTime, 
+                        30, // Default interval 30 mins
+                        schedule.lunchStartTime,
+                        schedule.lunchEndTime
+                    );
+                    setAllPotentialSlots(slots);
+                }
             } else {
                 // No schedule or closed
                 setAllPotentialSlots([]); 
@@ -136,18 +168,46 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
             try {
                 if (!tenant?.slug) return;
 
-                // Fetch availability from public endpoint
-                const availabilityRes = await BookingsService.checkAvailability(selectedBarber.id, date);
+                // DUAL CHECK STRATEGY:
+                // 1. Public Availability (The standard way)
+                // 2. Direct Bookings Check (Authorized way - for admin verification)
+                // We run both to ensure that if one fails or excludes "PENDING", the other catches it.
                 
+                const availabilityPromise = BookingsService.checkAvailability(selectedBarber.id, date);
+                
+                // Only Attempt to fetch actual bookings if ADMIN (avoids 403 for regular users)
+                const isAdmin = user?.role === 'TENANT_ADMIN' || user?.role === 'SUPER_ADMIN';
+                const bookingsPromise = isAdmin && tenant?.slug
+                    ? BookingsService.getTenantBookings(date, date, selectedBarber.id).catch(() => [])
+                    : Promise.resolve([]);
+
+                const [availabilityRes, existingBookings] = await Promise.all([availabilityPromise, bookingsPromise]);
+
                 const rawSlots: AvailabilitySlot[] = availabilityRes.slots || [];
 
-                // Filter only available slots AND normalize to HH:mm
-                const stringSlots = rawSlots
+                // 1. Get explicitly Busy slots from existing bookings
+                const busyTimes = new Set<string>();
+                existingBookings.forEach((b: any) => {
+                     // Status check: Pending/Confirmed/Completed are BUSY. Only Cancelled is free.
+                     if (b.status !== 'CANCELLED') {
+                         // Normalize time "09:00:00" -> "09:00"
+                         const time = b.startTime ? b.startTime.substring(0, 5) : "";
+                         if (time) busyTimes.add(time);
+                     }
+                });
+
+                // 2. Filter available slots from API
+                const apiAvailableTimes = rawSlots
                     .filter(s => s.available)
                     .map((s) => s.time.substring(0, 5));
                 
-                setAvailableSlots(stringSlots);
+                // 3. MERGE: Slot is available IF API says Yes AND it's not in our explicit busy list
+                const finalAvailableSlots = apiAvailableTimes.filter(time => !busyTimes.has(time));
+                
+                setAvailableSlots(finalAvailableSlots);
+
             } catch (err) {
+                console.error("Availability error", err);
                 setError("No se pudo verificar la disponibilidad. Por favor intenta de nuevo.");
                 setAvailableSlots([]);
             } finally {

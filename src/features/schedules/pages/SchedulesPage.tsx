@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { Clock, Calendar, Settings, ArrowLeft, User } from "lucide-react";
 import { useSchedules } from "../hooks/useSchedules";
 import ScheduleCard from "../components/ScheduleCard";
@@ -19,17 +19,12 @@ export default function SchedulesPage() {
     const isAdmin = user?.role === 'TENANT_ADMIN';
 
     // Obtener barberos para identificar el principal y permitir selección
-    const { barbers } = useBarbers();
+    const { barbers } = useBarbers({ enabled: isAdmin });
 
     // Estado para el barbero seleccionado
     const [selectedBarberId, setSelectedBarberId] = useState<string | undefined>(undefined);
 
-    // Inicializar con el primer barbero cuando carguen
-    useEffect(() => {
-        if (barbers.length > 0 && !selectedBarberId) {
-            setSelectedBarberId(barbers[0].id);
-        }
-    }, [barbers, selectedBarberId]);
+    // Removed auto-selection effect to allow viewing Tenant schedules by default
 
     // Cargar horarios del barbero seleccionado
     const { schedules, loading, error, refresh } = useSchedules(selectedBarberId, false);
@@ -105,9 +100,10 @@ export default function SchedulesPage() {
                                 <User className="w-4 h-4 ml-2 opacity-80" />
                                 <select
                                     value={selectedBarberId || ""}
-                                    onChange={(e) => setSelectedBarberId(e.target.value)}
+                                    onChange={(e) => setSelectedBarberId(e.target.value || undefined)}
                                     className="bg-transparent border-none text-white text-sm font-medium focus:ring-0 cursor-pointer [&>option]:text-gray-900"
                                 >
+                                    <option value="">🕒 Horarios Generales (Barbería)</option>
                                     {barbers.map(barber => (
                                         <option key={barber.id} value={barber.id}>
                                             {barber.name}

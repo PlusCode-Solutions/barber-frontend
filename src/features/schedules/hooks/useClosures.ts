@@ -1,20 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
 import { SchedulesService } from "../api/schedules.service";
 import { safeDate } from "../../../utils/dateUtils";
+import { useTenant } from "../../../context/TenantContext";
 
 export function useClosures(barberId?: string) {
+    const { tenant } = useTenant();
+    const slug = tenant?.slug;
+
     const { 
         data: closures = [], 
         isLoading: loading, 
         error,
         refetch 
     } = useQuery({
-        queryKey: ['closures', barberId],
+        queryKey: ['closures', slug, barberId],
         queryFn: async () => {
-            if (!barberId) return [];
             return SchedulesService.getClosures(barberId);
         },
-        enabled: !!barberId,
+        enabled: !!slug,
         select: (data) => {
             const today = new Date();
             today.setHours(0, 0, 0, 0);

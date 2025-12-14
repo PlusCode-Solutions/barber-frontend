@@ -16,7 +16,7 @@ export function useSchedules(barberId?: string, fetchAll: boolean = false) {
         queryFn: () => fetchAll 
             ? SchedulesService.getAllSchedules()
             : SchedulesService.getSchedules(barberId),
-        enabled: !!slug && (fetchAll || !!barberId), 
+        enabled: !!slug, 
     });
 
     return { 
