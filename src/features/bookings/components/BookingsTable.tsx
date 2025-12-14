@@ -1,4 +1,5 @@
 import { Calendar, Clock, Scissors, DollarSign } from "lucide-react";
+import { useTenant } from "../../../context/TenantContext";
 
 interface Column {
     header: string;
@@ -34,6 +35,8 @@ const getValueColor = (header: string) => {
 };
 
 export function BookingsTable<T>({ data, columns }: TableProps<T>) {
+    const { tenant } = useTenant();
+
     if (!data.length) {
         return (
             <div className="flex flex-col items-center justify-center py-20 text-center bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl border-2 border-dashed border-blue-200 shadow-sm">
@@ -53,8 +56,13 @@ export function BookingsTable<T>({ data, columns }: TableProps<T>) {
                     key={i}
                     className="group bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-md border border-gray-200 hover:shadow-2xl hover:border-blue-300 transition-all duration-300 overflow-hidden"
                 >
-                    {/* Barra superior decorativa con gradiente */}
-                    <div className="h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+                    {/* Barra superior decorativa con color secundario */}
+                    <div
+                        className="h-1.5"
+                        style={{
+                            background: tenant?.secondaryColor || 'linear-gradient(to right, #3b82f6, #a855f7, #ec4899)'
+                        }}
+                    ></div>
 
                     <div className="p-5">
                         {columns.map((col, index) => {

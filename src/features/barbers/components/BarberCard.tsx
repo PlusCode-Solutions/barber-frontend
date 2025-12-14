@@ -12,7 +12,12 @@ export default function BarberCard({ barber, isAdmin = false, onEdit, onDelete }
     return (
         <div className="group bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-md border border-gray-200 hover:shadow-2xl hover:border-purple-300 transition-all duration-300 overflow-hidden">
             {/* Barra superior decorativa */}
-            <div className="h-1.5 bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500"></div>
+            <div
+                className="h-1.5"
+                style={{
+                    background: `linear-gradient(to right, var(--primary-color, #a855f7), var(--secondary-color, #ec4899))`
+                }}
+            ></div>
 
             <div className="p-6">
                 {/* Header con foto y nombre */}
@@ -23,11 +28,19 @@ export default function BarberCard({ barber, isAdmin = false, onEdit, onDelete }
                             <img
                                 src={barber.avatar}
                                 alt={barber.name}
-                                className="w-20 h-20 rounded-2xl object-cover shadow-lg border-2 border-purple-100"
+                                className="w-20 h-20 rounded-2xl object-cover shadow-lg border-2"
+                                style={{ borderColor: 'rgba(var(--primary-rgb, 168, 85, 247), 0.2)' }}
                             />
                         ) : (
-                            <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl flex items-center justify-center shadow-lg border-2 border-purple-100">
-                                <Users className="w-10 h-10 text-purple-600" />
+                            <div
+                                className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg border-2"
+                                style={{
+                                    backgroundColor: 'rgba(var(--primary-rgb, 168, 85, 247), 0.1)',
+                                    borderColor: 'rgba(var(--primary-rgb, 168, 85, 247), 0.2)',
+                                    color: 'var(--primary-color, #a855f7)'
+                                }}
+                            >
+                                <Users className="w-10 h-10" />
                             </div>
                         )}
                         {/* Badge de estado */}
@@ -43,8 +56,16 @@ export default function BarberCard({ barber, isAdmin = false, onEdit, onDelete }
                         <h3 className="text-xl font-bold text-gray-900 mb-1">{barber.name}</h3>
                         {barber.specialty && (
                             <div className="flex items-center gap-2 mb-2">
-                                <Award className="w-4 h-4 text-purple-600" />
-                                <p className="text-sm text-purple-600 font-semibold">{barber.specialty}</p>
+                                <Award
+                                    className="w-4 h-4"
+                                    style={{ color: 'var(--secondary-color, #9333ea)' }}
+                                />
+                                <p
+                                    className="text-sm font-semibold"
+                                    style={{ color: 'var(--secondary-color, #9333ea)' }}
+                                >
+                                    {barber.specialty}
+                                </p>
                             </div>
                         )}
                         <div className="flex items-center gap-1">

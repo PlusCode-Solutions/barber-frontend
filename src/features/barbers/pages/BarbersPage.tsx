@@ -9,9 +9,11 @@ import BarberModal from "../components/BarberModal";
 import DeleteBarberModal from "../components/DeleteBarberModal";
 import Toast from "../../../components/ui/Toast";
 import SEO from "../../../components/shared/SEO";
+import { useTenant } from "../../../context/TenantContext";
 import type { Barber } from "../types";
 
 export default function BarbersPage() {
+    const { tenant } = useTenant();
     const { can, isRole } = usePermissions();
     const { barbers, loading, error, submitting, createBarber, updateBarber, deleteBarber } = useManageBarbers();
     const [showCreate, setShowCreate] = useState(false);
@@ -23,7 +25,7 @@ export default function BarbersPage() {
 
     const isAdmin = can(PERMISSIONS.BARBERS_MANAGE) || isRole("TENANT_ADMIN");
 
-    if (loading) return <BarbersSkeleton />;
+    if (loading || !tenant) return <BarbersSkeleton />;
 
     if (error) {
         return (
@@ -39,15 +41,18 @@ export default function BarbersPage() {
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pb-8">
             <SEO title="Barberos" description="Conoce a nuestro equipo de barberos." />
             {/* HEADER */}
-            <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-6 pt-8 pb-6 shadow-lg sticky top-16 z-10">
+            <div
+                className="px-6 pt-8 pb-6 shadow-lg sticky top-16 z-10 text-white"
+                style={{ backgroundColor: tenant?.primaryColor || tenant?.secondaryColor || '#2563eb' }}
+            >
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-black text-white mb-2 tracking-tight">
+                        <h1 className="text-3xl font-black mb-2 tracking-tight">
                             {isAdmin ? "Barberos del tenant" : "Nuestros Barberos"}
                         </h1>
                         <div className="flex items-center gap-2">
                             <div className="bg-white/25 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/30">
-                                <span className="text-white font-bold text-sm">
+                                <span className="font-bold text-sm">
                                     {barbers.length}{" "}
                                     {barbers.length === 1 ? "barbero" : "barberos"}
                                 </span>
@@ -62,7 +67,8 @@ export default function BarbersPage() {
                             <button
                                 type="button"
                                 onClick={() => setShowCreate(true)}
-                                className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-purple-700 shadow-lg transition hover:shadow-xl"
+                                className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold shadow-lg transition hover:shadow-xl"
+                                style={{ color: tenant?.primaryColor || '#9333ea' }}
                             >
                                 <Plus className="h-4 w-4" />
                                 Nuevo barbero

@@ -6,7 +6,7 @@ import { Input } from "../../../components/ui/Input";
 
 export default function LoginForm() {
   const { login, error, loading } = useLogin();
-  const { tenant } = useTenant();
+  const { tenant, setTenant } = useTenant();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -16,6 +16,11 @@ export default function LoginForm() {
     e.preventDefault();
     const result = await login(email, password);
     if (result.ok && result.user) {
+      // Ensure tenant is persisted to localStorage (fixes visual flash on next page)
+      if (tenant) {
+        setTenant(tenant);
+      }
+
       if (result.user.role === 'TENANT_ADMIN') {
         navigate(`/${tenant?.slug}/admin/dashboard`);
       } else if (result.user.role === 'SUPER_ADMIN') {

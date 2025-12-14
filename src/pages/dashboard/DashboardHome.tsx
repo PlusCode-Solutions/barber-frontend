@@ -59,7 +59,10 @@ export default function DashboardHome() {
                 {/* Mensaje principal */}
                 <p className="text-gray-700 text-base leading-relaxed">
                     Gestiona tus citas, barberos, servicios y más desde este panel.
-                    <span className="font-semibold text-blue-600">
+                    <span
+                        className="font-semibold block mt-1"
+                        style={{ color: tenant?.primaryColor || tenant?.secondaryColor || '#2563eb' }}
+                    >
                         Agenda tu cita cuando quieras — ¡tu tiempo es nuestra prioridad!
                     </span>
                 </p>
@@ -67,7 +70,8 @@ export default function DashboardHome() {
                 {/* CTA Button - Nueva Cita */}
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="mt-6 w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 group"
+                    className="mt-6 w-full text-white font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 group"
+                    style={{ backgroundColor: tenant?.primaryColor || '#2563eb' }}
                 >
                     <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center group-hover:scale-110 transition">
                         <Plus size={20} />
@@ -76,8 +80,17 @@ export default function DashboardHome() {
                 </button>
 
                 {/* CTA bonito */}
-                <div className="mt-6 bg-blue-50 border border-blue-100 rounded-2xl p-4">
-                    <p className="text-blue-700 text-sm font-medium">
+                <div
+                    className="mt-6 border rounded-2xl p-4"
+                    style={{
+                        borderColor: `${tenant?.primaryColor || '#2563eb'}40`,
+                        backgroundColor: `${tenant?.primaryColor || '#2563eb'}10`
+                    }}
+                >
+                    <p
+                        className="text-sm font-medium"
+                        style={{ color: tenant?.primaryColor || '#2563eb' }}
+                    >
                         ✨ Consejo: Revisa tus citas recientes para mantener todo bajo control.
                     </p>
                 </div>

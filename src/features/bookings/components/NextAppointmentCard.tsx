@@ -68,8 +68,12 @@ export default function NextAppointmentCard() {
     const statusParams = getStatusParams(nextBooking.status);
 
     return (
-        <div className={`bg-white rounded-3xl shadow-md p-6 border-l-4 mb-6 relative overflow-hidden ${nextBooking.status === 'CANCELLED' ? 'border-red-500' : 'border-blue-600'
-            }`}>
+        <div
+            className={`bg-white rounded-3xl shadow-md p-6 border-l-4 mb-6 relative overflow-hidden`}
+            style={{
+                borderColor: nextBooking.status === 'CANCELLED' ? '#ef4444' : 'var(--secondary-color, #2563eb)'
+            }}
+        >
             {/* Background decoration */}
             <div className="absolute top-0 right-0 p-4 opacity-5">
                 <Calendar size={120} />
@@ -92,7 +96,13 @@ export default function NextAppointmentCard() {
 
                 <div className="bg-gray-50 rounded-2xl p-4 space-y-3">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                        <div
+                            className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+                            style={{
+                                backgroundColor: 'rgba(var(--secondary-rgb, 37, 99, 235), 0.1)',
+                                color: 'var(--secondary-color, #2563eb)'
+                            }}
+                        >
                             <Calendar size={20} />
                         </div>
                         <div>
@@ -104,7 +114,13 @@ export default function NextAppointmentCard() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600">
+                        <div
+                            className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+                            style={{
+                                backgroundColor: 'rgba(var(--secondary-rgb, 79, 70, 229), 0.1)',
+                                color: 'var(--secondary-color, #4f46e5)'
+                            }}
+                        >
                             <Clock size={20} />
                         </div>
                         <div>

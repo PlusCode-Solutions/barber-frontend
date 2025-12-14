@@ -3,9 +3,11 @@ import { BookingsTable } from "../components/BookingsTable";
 import BookingsSkeleton from "../components/BookingsSkeleton";
 import { formatRelativeDate, formatHour } from "../../../utils/dateUtils";
 import SEO from "../../../components/shared/SEO";
+import { useTenant } from "../../../context/TenantContext";
 
 export default function BookingsPage() {
     const { bookings, loading } = useUserBookings();
+    const { tenant } = useTenant();
 
     if (loading) return <BookingsSkeleton />;
 
@@ -27,15 +29,18 @@ export default function BookingsPage() {
             <SEO title="Mis Citas" description="Revisa y administra tus próximas citas de barbería." />
 
             {/* HEADER */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 pt-8 pb-6 shadow-lg sticky top-16 z-10">
+            <div
+                className="px-6 pt-8 pb-6 shadow-lg sticky top-16 z-10 text-white"
+                style={{ backgroundColor: tenant?.primaryColor || tenant?.secondaryColor || '#2563eb' }}
+            >
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-black text-white mb-2 tracking-tight">
+                        <h1 className="text-3xl font-black mb-2 tracking-tight">
                             Mis Citas
                         </h1>
                         <div className="flex items-center gap-2">
                             <div className="bg-white/25 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/30">
-                                <span className="text-white font-bold text-sm">
+                                <span className="font-bold text-sm">
                                     {formattedBookings.length}{" "}
                                     {formattedBookings.length === 1 ? "cita" : "citas"}
                                 </span>
@@ -43,7 +48,7 @@ export default function BookingsPage() {
                         </div>
                     </div>
                     <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
-                        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                     </div>

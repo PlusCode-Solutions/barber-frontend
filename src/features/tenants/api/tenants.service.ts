@@ -6,6 +6,7 @@ interface Tenant {
     slug: string;
     logoUrl?: string;
     primaryColor?: string;
+    secondaryColor?: string;
     createdAt: string;
     updatedAt: string;
 }

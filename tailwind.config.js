@@ -5,7 +5,14 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}"
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        primary: {
+          DEFAULT: 'rgb(var(--primary-rgb, 37 99 235) / <alpha-value>)', // Fallback to blue-600 (37 99 235)
+          foreground: '#ffffff',
+        }
+      }
+    },
   },
   plugins: [],
 }

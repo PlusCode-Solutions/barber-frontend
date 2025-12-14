@@ -1,8 +1,15 @@
+import { useTenant } from "../../../context/TenantContext";
+
 export default function BarbersSkeleton() {
+    const { tenant } = useTenant();
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pb-8">
             {/* HEADER SKELETON */}
-            <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-6 pt-8 pb-6 shadow-lg sticky top-16 z-10">
+            <div
+                className="px-6 pt-8 pb-6 shadow-lg sticky top-16 z-10 transition-colors duration-300"
+                style={{ backgroundColor: tenant?.primaryColor || '#6b7280' }} // Gray-500 fallback
+            >
                 <div className="flex items-center justify-between">
                     <div>
                         <div className="h-9 w-56 bg-white/20 rounded-lg mb-3 animate-pulse"></div>
@@ -20,7 +27,7 @@ export default function BarbersSkeleton() {
                         className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden"
                     >
                         {/* Barra superior */}
-                        <div className="h-1.5 bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500"></div>
+                        <div className="h-1.5 bg-gray-200"></div>
 
                         <div className="p-6">
                             {/* Header */}

@@ -10,8 +10,6 @@ export default function TenantAdminNavbar() {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const primary = tenant?.primaryColor ?? "#3b82f6";
-
     const menuItems = [
         { icon: LayoutDashboard, label: "Dashboard", path: "admin/dashboard" },
         { icon: FileText, label: "Citas", path: "admin/bookings" },
@@ -30,11 +28,11 @@ export default function TenantAdminNavbar() {
     return (
         <>
             <header
-                className="w-full fixed top-0 left-0 z-50 shadow-lg"
-                style={{ backgroundColor: primary }}
+                className="w-full fixed top-0 left-0 z-50 shadow-lg text-white"
+                style={{ backgroundColor: tenant?.primaryColor || tenant?.secondaryColor || '#2563eb' }}
             >
-                <div className="flex items-center justify-between px-5 py-4">
-                    <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between px-6 h-16">
+                    <div className="flex items-center gap-4">
                         {tenant?.logoUrl && (
                             <img
                                 src={tenant.logoUrl}
@@ -43,7 +41,7 @@ export default function TenantAdminNavbar() {
                             />
                         )}
                         <div>
-                            <span className="text-white font-bold text-xl block leading-tight">
+                            <span className="font-bold text-xl block leading-tight">
                                 {tenant?.name ?? "Barbería"}
                             </span>
                             <span className="text-white/80 text-xs font-medium bg-white/20 px-2 py-0.5 rounded-full">
@@ -53,7 +51,7 @@ export default function TenantAdminNavbar() {
                     </div>
 
                     <button
-                        className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center text-white hover:bg-white/30 transition-all active:scale-95"
+                        className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 transition-all active:scale-95"
                         onClick={() => setMenuOpen(!menuOpen)}
                     >
                         {menuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -75,10 +73,7 @@ export default function TenantAdminNavbar() {
                     }`}
             >
                 {/* Header del menú */}
-                <div
-                    className="p-5 flex items-center justify-between border-b border-gray-200"
-                    style={{ backgroundColor: `${primary}08` }}
-                >
+                <div className="p-5 flex items-center justify-between border-b border-gray-200 bg-primary/5">
                     <div className="flex items-center gap-3">
                         {tenant?.logoUrl && (
                             <img
@@ -111,39 +106,39 @@ export default function TenantAdminNavbar() {
                                 key={item.path}
                                 to={`/${tenantSlug}/${item.path}`}
                                 onClick={() => setMenuOpen(false)}
-                                className={`flex items-center gap-4 p-4 rounded-xl transition-colors mb-2 group ${isActive ? 'shadow-md' : 'hover:bg-gray-50'
+                                className={`flex items-center gap-4 p-4 rounded-xl transition-colors mb-2 group ${isActive
+                                    ? 'shadow-sm font-semibold'
+                                    : 'hover:bg-gray-50 text-gray-600'
                                     }`}
-                                style={isActive ? { backgroundColor: `${primary}10` } : {}}
+                                style={isActive ? {
+                                    backgroundColor: 'rgba(var(--secondary-rgb, 37, 99, 235), 0.1)',
+                                    color: 'var(--secondary-color, #2563eb)'
+                                } : undefined}
                             >
                                 <div
-                                    className="w-11 h-11 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"
-                                    style={{
-                                        backgroundColor: isActive ? primary : `${primary}15`,
-                                    }}
+                                    className={`w-11 h-11 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${!isActive && 'bg-gray-100 text-gray-500'}`}
+                                    style={isActive ? {
+                                        backgroundColor: 'rgba(var(--secondary-rgb, 37, 99, 235), 0.1)',
+                                        color: 'var(--secondary-color, #2563eb)'
+                                    } : undefined}
                                 >
                                     <Icon
                                         size={22}
-                                        style={{ color: isActive ? 'white' : primary }}
                                         strokeWidth={2}
                                     />
                                 </div>
-                                <span
-                                    className="font-semibold text-base flex-1"
-                                    style={{ color: isActive ? primary : '#374151' }}
-                                >
+                                <span className="flex-1">
                                     {item.label}
                                 </span>
-                                <svg
-                                    className="w-5 h-5"
-                                    style={{ color: isActive ? primary : '#9ca3af' }}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                </svg>
+                                {isActive && (
+                                    <div
+                                        className="w-1.5 h-1.5 rounded-full"
+                                        style={{ backgroundColor: 'var(--secondary-color, #2563eb)' }}
+                                    />
+                                )}
                             </Link>
                         );
+
                     })}
                 </div>
 

@@ -5,6 +5,8 @@ interface ScheduleCardProps {
     schedule: Schedule;
 }
 
+import { useTenant } from "../../../context/TenantContext";
+
 const DAYS = [
     "Domingo",
     "Lunes",
@@ -16,6 +18,7 @@ const DAYS = [
 ];
 
 export default function ScheduleCard({ schedule }: ScheduleCardProps) {
+    const { tenant } = useTenant();
     const dayName = DAYS[schedule.dayOfWeek];
 
     // Helper to safely get properties (handles potential casing mismatch)
@@ -45,20 +48,28 @@ export default function ScheduleCard({ schedule }: ScheduleCardProps) {
     return (
         <div className={`group relative overflow-hidden rounded-2xl border transition-all duration-300 ${schedule.isClosed
             ? "bg-gray-50 border-gray-200 opacity-80"
-            : "bg-white border-gray-100 shadow-sm hover:shadow-md hover:border-blue-200"
-            }`}>
+            : "bg-white border-gray-100 shadow-sm hover:shadow-md"
+            }`}
+            style={!schedule.isClosed ? { borderColor: `${tenant?.primaryColor || '#bfdbfe'}40` } : {}}
+        >
             {/* Indicador lateral de estado */}
-            <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${schedule.isClosed
-                ? "bg-gray-300"
-                : "bg-gradient-to-b from-blue-500 to-indigo-600"
-                }`}></div>
+            <div
+                className={`absolute left-0 top-0 bottom-0 w-1.5 ${schedule.isClosed ? "bg-gray-300" : ""}`}
+                style={!schedule.isClosed ? { backgroundColor: tenant?.primaryColor || '#3b82f6' } : {}}
+            ></div>
 
             <div className="p-5 pl-7 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${schedule.isClosed
-                        ? "bg-gray-100 text-gray-400"
-                        : "bg-blue-50 text-blue-600"
-                        }`}>
+                    <div
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${schedule.isClosed
+                            ? "bg-gray-100 text-gray-400"
+                            : ""
+                            }`}
+                        style={!schedule.isClosed ? {
+                            backgroundColor: `${tenant?.primaryColor || '#eff6ff'}20`,
+                            color: tenant?.primaryColor || '#2563eb'
+                        } : {}}
+                    >
                         {schedule.isClosed ? <CalendarOff size={20} /> : <Clock size={20} />}
                     </div>
 

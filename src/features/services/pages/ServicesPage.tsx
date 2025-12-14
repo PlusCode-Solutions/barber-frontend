@@ -35,7 +35,7 @@ export default function ServicesPage() {
     // Considerar rol de tenant admin además del permiso explícito
     const isAdmin = can(PERMISSIONS.SERVICES_MANAGE) || isRole("TENANT_ADMIN");
 
-    if (loading) return <ServicesSkeleton />;
+    if (loading || !tenant) return <ServicesSkeleton />;
 
     if (error) {
         return (
@@ -63,15 +63,18 @@ export default function ServicesPage() {
             <SEO title="Servicios" description={`Explora nuestros servicios y precios en ${tenant?.name || 'la barbería'}.`} />
 
             {/* HEADER */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 pt-8 pb-6 shadow-lg sticky top-16 z-10">
+            <div
+                className="px-6 pt-8 pb-6 shadow-lg sticky top-16 z-10 text-white"
+                style={{ backgroundColor: tenant?.primaryColor || tenant?.secondaryColor || '#2563eb' }}
+            >
                 <div className="flex items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-black text-white mb-2 tracking-tight">
+                        <h1 className="text-3xl font-black mb-2 tracking-tight">
                             {isAdmin ? "Servicios del tenant" : "Nuestros Servicios"}
                         </h1>
                         <div className="flex items-center gap-2">
                             <div className="bg-white/25 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/30">
-                                <span className="text-white font-bold text-sm">
+                                <span className="font-bold text-sm">
                                     {filteredServices.length}{" "}
                                     {filteredServices.length === 1 ? "servicio" : "servicios"}
                                 </span>
@@ -81,14 +84,14 @@ export default function ServicesPage() {
 
                     <div className="flex items-center gap-3">
                         {/* Search Input */}
-                        <div className="hidden md:flex items-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-2 text-white placeholder-white/70 focus-within:bg-white/20 transition-all">
+                        <div className="hidden md:flex items-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-2 placeholder-white/70 focus-within:bg-white/20 transition-all">
                             <Search className="w-4 h-4 mr-2 opacity-70" />
                             <input
                                 type="text"
                                 placeholder="Buscar servicio..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="bg-transparent border-none outline-none text-sm w-48 placeholder-gray-200"
+                                className="bg-transparent border-none outline-none text-sm w-48 placeholder-gray-200 text-white"
                             />
                         </div>
 
@@ -99,7 +102,8 @@ export default function ServicesPage() {
                             <button
                                 type="button"
                                 onClick={() => setShowCreate(true)}
-                                className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold text-indigo-700 shadow-lg transition hover:shadow-xl"
+                                className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold shadow-lg transition hover:shadow-xl"
+                                style={{ color: tenant?.primaryColor || '#4f46e5' }}
                             >
                                 <Plus className="h-4 w-4" />
                                 <span className="hidden sm:inline">Nuevo servicio</span>
@@ -141,13 +145,24 @@ export default function ServicesPage() {
                                 className="group bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-md border border-gray-200 hover:shadow-2xl hover:border-blue-300 transition-all duration-300 overflow-hidden"
                             >
                                 {/* Barra superior decorativa */}
-                                <div className="h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+                                <div
+                                    className="h-1.5"
+                                    style={{
+                                        background: `linear-gradient(to right, var(--primary-color, #3b82f6), var(--secondary-color, #ec4899))`
+                                    }}
+                                ></div>
 
                                 <div className="p-6">
                                     {/* Nombre del servicio */}
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl flex items-center justify-center text-blue-600 shadow-sm">
+                                            <div
+                                                className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm"
+                                                style={{
+                                                    backgroundColor: 'rgba(var(--secondary-rgb, 37, 99, 235), 0.1)',
+                                                    color: 'var(--secondary-color, #2563eb)'
+                                                }}
+                                            >
                                                 <Scissors className="w-6 h-6" />
                                             </div>
                                             <div>

@@ -42,14 +42,14 @@ export default function SchedulesPage() {
         setToastState(prev => ({ ...prev, isVisible: false }));
     }, []);
 
-    if (loading) return <SchedulesSkeleton />;
+    if (loading || !tenant) return <SchedulesSkeleton />;
 
     if (error) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
                 <div className="text-center">
                     <p className="text-red-600 font-semibold">{error}</p>
-                    <Button variant="ghost" className="mt-4" onClick={refresh}>Reintentar</Button>
+                    <Button variant="ghost" className="mt-4" onClick={() => refresh()}>Reintentar</Button>
                 </div>
             </div>
         );
@@ -69,17 +69,20 @@ export default function SchedulesPage() {
             />
 
             {/* Encabezado */}
-            <div className="bg-white border-b border-gray-200 px-6 py-6 sticky top-0 z-20 shadow-sm">
+            <div
+                className="px-6 py-6 sticky top-0 z-20 shadow-sm transition-colors duration-300 text-white"
+                style={{ backgroundColor: tenant?.primaryColor || tenant?.secondaryColor || '#2563eb' }}
+            >
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-200">
-                            <Clock className="w-6 h-6 text-white" />
+                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shadow-lg backdrop-blur-sm">
+                            <Clock className="w-6 h-6 text-current" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+                            <h1 className="text-2xl font-bold tracking-tight">
                                 {isEditing ? 'Gestión de Horarios' : 'Horarios de Atención'}
                             </h1>
-                            <p className="text-gray-500 text-sm">
+                            <p className="opacity-90 text-sm">
                                 {isEditing ? 'Configura la disponibilidad semanal y días libres.' : 'Consulta nuestra disponibilidad semanal.'}
                             </p>
                         </div>
@@ -89,8 +92,8 @@ export default function SchedulesPage() {
                         <div>
                             <Button
                                 onClick={() => setIsEditing(!isEditing)}
-                                variant={isEditing ? "ghost" : "primary"}
-                                className={isEditing ? "text-gray-600" : "shadow-md shadow-indigo-200"}
+                                variant={isEditing ? "ghost" : "secondary"}
+                                className={isEditing ? "text-white hover:bg-white/10" : "shadow-md text-gray-900 bg-white hover:bg-gray-100 border-none"}
                             >
                                 {isEditing ? (
                                     <>

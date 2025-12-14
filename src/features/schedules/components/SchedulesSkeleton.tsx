@@ -1,8 +1,15 @@
+import { useTenant } from "../../../context/TenantContext";
+
 export default function SchedulesSkeleton() {
+    const { tenant } = useTenant();
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pb-8">
             {/* HEADER SKELETON */}
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 pt-8 pb-6 shadow-lg sticky top-16 z-10">
+            <div
+                className="px-6 pt-8 pb-6 shadow-lg sticky top-16 z-10 transition-colors duration-300"
+                style={{ backgroundColor: tenant?.primaryColor || '#6b7280' }} // Gray-500 fallback
+            >
                 <div className="flex items-center justify-between">
                     <div>
                         <div className="h-9 w-48 bg-white/20 rounded-lg mb-3 animate-pulse"></div>
