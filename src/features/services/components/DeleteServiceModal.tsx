@@ -1,5 +1,6 @@
 import { X, Trash2 } from "lucide-react";
 import type { Service } from "../types";
+import { formatCurrency } from "../../../utils/formatUtils";
 
 interface Props {
     open: boolean;
@@ -38,7 +39,7 @@ export default function DeleteServiceModal({ open, service, submitting = false, 
                         <div>
                             <p className="font-semibold">¿Seguro que deseas eliminar este servicio?</p>
                             <p className="text-sm text-red-600/80">
-                                {service.name} — ${service.price} · {service.durationMinutes} min
+                                {service.name} — {formatCurrency(service.price)} · {service.durationMinutes} min
                             </p>
                             <p className="mt-2 text-xs text-red-500">Esta acción no se puede deshacer.</p>
                         </div>

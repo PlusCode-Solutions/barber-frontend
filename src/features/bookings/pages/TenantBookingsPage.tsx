@@ -10,6 +10,7 @@ import {
 } from "../../../utils/dateUtils";
 import TenantBookingsDateFilter from "../components/TenantBookingsDateFilter";
 import { useBarbers } from "../../barbers/hooks/useBarbers"; // Import useBarbers
+import { formatCurrency } from "../../../utils/formatUtils";
 import { Filter } from "lucide-react"; // Icons
 
 export default function TenantBookingsPage() {
@@ -45,7 +46,7 @@ export default function TenantBookingsPage() {
         // Robust handling for nested service object
         service: {
             ...b.service,
-            price: b.service?.price ? `$${b.service.price}` : "—",
+            price: b.service?.price ? formatCurrency(b.service.price) : "—",
         },
         customerName: b.user?.name || "Cliente Desconocido",
         barberName: b.barber?.name || "Barbero Asignado"
