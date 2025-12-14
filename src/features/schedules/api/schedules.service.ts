@@ -6,7 +6,7 @@ import type { Schedule, Closure, CreateScheduleDto, CreateClosureDto } from "../
 const normalizeSchedule = (s: any): Schedule => ({
     ...s,
     id: s.id,
-    dayOfWeek: s.dayOfWeek ?? s.day_of_week,
+    dayOfWeek: Number(s.dayOfWeek ?? s.day_of_week),
     startTime: s.startTime ?? s.start_time,
     endTime: s.endTime ?? s.end_time,
     isClosed: s.isClosed ?? s.is_closed,

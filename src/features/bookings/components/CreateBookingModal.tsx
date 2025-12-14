@@ -24,6 +24,7 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess }: Creat
         selectedSlot,
         notes,
         availableSlots,
+        allPotentialSlots,
         loadingSlots,
         submitting,
         error,
@@ -114,6 +115,7 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess }: Creat
                         <SelectDateTimeStep
                             selectedDate={selectedDate}
                             availableSlots={availableSlots}
+                            allPotentialSlots={allPotentialSlots}
                             loadingSlots={loadingSlots}
                             closures={closures}
                             schedules={schedules}

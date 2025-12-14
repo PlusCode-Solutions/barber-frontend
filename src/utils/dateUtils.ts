@@ -1,107 +1,129 @@
-// src/utils/dateUtils.ts
+import { format, parseISO } from "date-fns";
+import { toZonedTime, fromZonedTime, format as formatTz } from "date-fns-tz";
+import { es } from "date-fns/locale";
 
-/** Valida si una fecha es válida */
+const CR_TIMEZONE = "America/Costa_Rica";
+
+/** Verifica si la fecha es válida */
 export function isValidDate(dateStr: string): boolean {
     const d = new Date(dateStr);
     return !isNaN(d.getTime());
 }
 
-/** Parsea fecha de forma segura (si falla devuelve null) 
- *  ESTRATEGIA MEDIODÍA: Si recibe "YYYY-MM-DD", fuerza la hora a las 12:00:00
- *  para asegurar que la zona horaria no reste horas y cambie el día.
+/** 
+ * Parsea una fecha asegurando que se interprete en la zona horaria de Costa Rica (UTC-6).
+ * Si recibe "YYYY-MM-DD", retorna el objeto Date que corresponde a las 00:00:00 de ese día en CR.
  */
 export function safeDate(dateStr: string): Date | null {
     if (!dateStr) return null;
-    
-    // Si es formato YYYY-MM-DD estricto, forzar mediodía (12:00)
-    if (typeof dateStr === 'string' && dateStr.length === 10 && dateStr.includes('-')) {
-        const d = new Date(dateStr + 'T12:00:00'); 
+
+    try {
+        // Si es formato YYYY-MM-DD simple
+        if (typeof dateStr === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+            // "2023-10-25" -> "2023-10-25 00:00:00" en CR
+            return fromZonedTime(`${dateStr} 00:00:00`, CR_TIMEZONE);
+        }
+
+        // Si es ISO completo con zona, date-fns lo maneja. Si no tiene zona, asumimos UTC o local?
+        // Mejor asegurar consistencia: parsedDate
+        const d = new Date(dateStr);
         return isNaN(d.getTime()) ? null : d;
+    } catch (e) {
+        return null;
     }
-    
-    const d = new Date(dateStr);
-    return isNaN(d.getTime()) ? null : d;
 }
 
-/** Devuelve "Hoy", "Mañana" o fecha corta estilo "lun 3 feb" */
-export function formatRelativeDate(dateStr: string): string {
-    const date = safeDate(dateStr);
+/** Retorna la fecha actual en la zona horaria de Costa Rica */
+export function getCostaRicaNow(): Date {
+    return toZonedTime(new Date(), CR_TIMEZONE);
+}
+
+/** Formatea fecha relativa (Hoy, Mañana, lun 3 feb) basado en CR */
+export function formatRelativeDate(dateInput: string | Date): string {
+    let date = typeof dateInput === 'string' ? safeDate(dateInput) : dateInput;
     if (!date) return "Fecha inválida";
 
-    const today = new Date();
-    const tomorrow = new Date();
-    tomorrow.setDate(today.getDate() + 1);
+    // Convertir todo a "tiempo CR" para comparar días calendarios
+    const nowCR = getCostaRicaNow();
+    const targetCR = toZonedTime(date, CR_TIMEZONE);
 
-    if (date.toDateString() === today.toDateString()) return "Hoy";
-    if (date.toDateString() === tomorrow.toDateString()) return "Mañana";
+    // Resetear horas para comparar solo fechas
+    const cleanNow = new Date(nowCR.getFullYear(), nowCR.getMonth(), nowCR.getDate());
+    const cleanTarget = new Date(targetCR.getFullYear(), targetCR.getMonth(), targetCR.getDate());
 
-    return date.toLocaleDateString("es-ES", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-    });
+    const diffTime = cleanTarget.getTime() - cleanNow.getTime();
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+    if (diffDays === 0) return "Hoy";
+    if (diffDays === 1) return "Mañana";
+
+    return formatTz(date, "EEE d MMM", { timeZone: CR_TIMEZONE, locale: es });
 }
 
-/** Fecha larga estilo: "lunes, 3 de febrero de 2025" */
-export function formatFullDate(dateStr: string): string {
-    const date = safeDate(dateStr);
+/** Fecha larga estilo: "lunes, 3 de febrero de 2025" (Zona CR) */
+export function formatFullDate(dateStr: string | Date): string {
+    const date = typeof dateStr === 'string' ? safeDate(dateStr) : dateStr;
     if (!date) return "Fecha inválida";
 
-    return date.toLocaleDateString("es-ES", {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-    });
+    return formatTz(date, "EEEE, d 'de' MMMM 'de' yyyy", { timeZone: CR_TIMEZONE, locale: es });
 }
 
-/** Formatea hora (ej: "14:00") a 12h o 24h */
+/** Formatea hora en zona CR, ej: "14:00" */
 export function formatHour(timeStr: string, mode: "12h" | "24h" = "24h"): string {
     if (!timeStr) return "";
+    
+    // Si viene solo "HH:mm", ya es abstracto, no tiene zona. Lo devolvemos tal cual o formateado.
+    // Si queremos formatear un Date objeto a hora CR:
+    if (timeStr.includes('T') || timeStr.includes('Z')) {
+        const d = safeDate(timeStr);
+        if(!d) return "";
+        return formatTz(d, mode === "24h" ? "HH:mm" : "hh:mm a", { timeZone: CR_TIMEZONE });
+    }
 
+    // Tratamiento legacy string "14:00"
     const [h, m] = timeStr.split(":").map(Number);
     if (isNaN(h) || isNaN(m)) return timeStr;
 
     if (mode === "24h") return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
 
-    // Modo 12h
     const suffix = h >= 12 ? "pm" : "am";
     const hour12 = ((h + 11) % 12 + 1);
     return `${hour12}:${m.toString().padStart(2, "0")} ${suffix}`;
 }
 
-/** Verifica si la fecha proporcionada coincide con el día indicado (ignorando horas/zona) */
-export function isSameDay(dateStr: string, target: Date): boolean {
-    const date = safeDate(dateStr);
-    if (!date) return false;
+/** Verifica si una fecha string corresponde al mismo día que un target Date (en CR) */
+export function isSameDay(dateStr: string, targetDate: Date): boolean {
+    const d1 = safeDate(dateStr);
+    if (!d1) return false;
+
+    // Convertir ambas a CR y comparar componentes YMD
+    const cr1 = toZonedTime(d1, CR_TIMEZONE);
+    const cr2 = toZonedTime(targetDate, CR_TIMEZONE);
 
     return (
-        date.getFullYear() === target.getFullYear() &&
-        date.getMonth() === target.getMonth() &&
-        date.getDate() === target.getDate()
+        cr1.getFullYear() === cr2.getFullYear() &&
+        cr1.getMonth() === cr2.getMonth() &&
+        cr1.getDate() === cr2.getDate()
     );
 }
 
-/** Formatea un objeto Date al formato yyyy-MM-dd para inputs de tipo date */
+/**
+ * Formatea un objeto Date a "YYYY-MM-DD" basado en su valor en Costa Rica.
+ * Útil para enviar al backend o settear inputs fecha.
+ */
 export function formatDateForInput(date: Date): string {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
+    return formatTz(date, "yyyy-MM-dd", { timeZone: CR_TIMEZONE });
 }
 
-/** Devuelve una cadena amigable tipo: "lunes, 3 de febrero" (sin año) */
+/** "lunes, 3 de febrero" (CR) */
 export function formatFriendlyDay(date: Date): string {
-    return date.toLocaleDateString("es-ES", {
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-    });
+    return formatTz(date, "EEEE, d 'de' MMMM", { timeZone: CR_TIMEZONE, locale: es });
 }
 
-/** Normaliza un string de fecha a formato yyyy-MM-dd (retorna null si es inválida) */
+/** Normaliza string -> YYYY-MM-DD (CR) */
 export function normalizeDateString(dateStr: string): string | null {
     const date = safeDate(dateStr);
     if (!date) return null;
     return formatDateForInput(date);
 }
+

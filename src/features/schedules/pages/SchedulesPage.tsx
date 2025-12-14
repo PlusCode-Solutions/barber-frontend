@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { Clock, Calendar, Settings, ArrowLeft } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
+import { Clock, Calendar, Settings, ArrowLeft, User } from "lucide-react";
 import { useSchedules } from "../hooks/useSchedules";
 import ScheduleCard from "../components/ScheduleCard";
 import SchedulesSkeleton from "../components/SchedulesSkeleton";
@@ -18,12 +18,21 @@ export default function SchedulesPage() {
     const { user } = useAuth();
     const isAdmin = user?.role === 'TENANT_ADMIN';
 
-    // Obtener barberos para identificar el principal
+    // Obtener barberos para identificar el principal y permitir selección
     const { barbers } = useBarbers();
-    const shopBarberId = barbers?.[0]?.id;
 
-    // Cargar horarios globales usando el ID del barbero principal
-    const { schedules, loading, error, refresh } = useSchedules(shopBarberId, false);
+    // Estado para el barbero seleccionado
+    const [selectedBarberId, setSelectedBarberId] = useState<string | undefined>(undefined);
+
+    // Inicializar con el primer barbero cuando carguen
+    useEffect(() => {
+        if (barbers.length > 0 && !selectedBarberId) {
+            setSelectedBarberId(barbers[0].id);
+        }
+    }, [barbers, selectedBarberId]);
+
+    // Cargar horarios del barbero seleccionado
+    const { schedules, loading, error, refresh } = useSchedules(selectedBarberId, false);
 
     const [isEditing, setIsEditing] = useState(false);
 
@@ -42,7 +51,8 @@ export default function SchedulesPage() {
         setToastState(prev => ({ ...prev, isVisible: false }));
     }, []);
 
-    if (loading || !tenant) return <SchedulesSkeleton />;
+    if (loading && !schedules.length) return <SchedulesSkeleton />;
+    if (!tenant) return <SchedulesSkeleton />;
 
     if (error) {
         return (
@@ -74,18 +84,38 @@ export default function SchedulesPage() {
                 style={{ backgroundColor: tenant?.primaryColor || tenant?.secondaryColor || '#2563eb' }}
             >
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shadow-lg backdrop-blur-sm">
-                            <Clock className="w-6 h-6 text-current" />
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shadow-lg backdrop-blur-sm">
+                                <Clock className="w-6 h-6 text-current" />
+                            </div>
+                            <div>
+                                <h1 className="text-2xl font-bold tracking-tight">
+                                    {isEditing ? 'Gestión de Horarios' : 'Horarios de Atención'}
+                                </h1>
+                                <p className="opacity-90 text-sm">
+                                    {isEditing ? 'Configura la disponibilidad.' : 'Consulta nuestra disponibilidad.'}
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <h1 className="text-2xl font-bold tracking-tight">
-                                {isEditing ? 'Gestión de Horarios' : 'Horarios de Atención'}
-                            </h1>
-                            <p className="opacity-90 text-sm">
-                                {isEditing ? 'Configura la disponibilidad semanal y días libres.' : 'Consulta nuestra disponibilidad semanal.'}
-                            </p>
-                        </div>
+
+                        {/* Selector de Barbero (Solo Admin) */}
+                        {isAdmin && isEditing && (
+                            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md p-1.5 rounded-lg border border-white/20 sm:ml-4">
+                                <User className="w-4 h-4 ml-2 opacity-80" />
+                                <select
+                                    value={selectedBarberId || ""}
+                                    onChange={(e) => setSelectedBarberId(e.target.value)}
+                                    className="bg-transparent border-none text-white text-sm font-medium focus:ring-0 cursor-pointer [&>option]:text-gray-900"
+                                >
+                                    {barbers.map(barber => (
+                                        <option key={barber.id} value={barber.id}>
+                                            {barber.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
                     </div>
 
                     {isAdmin && (
@@ -98,7 +128,7 @@ export default function SchedulesPage() {
                                 {isEditing ? (
                                     <>
                                         <ArrowLeft className="w-4 h-4 mr-2" />
-                                        Volver a la vista normal
+                                        Volver a la vista pública
                                     </>
                                 ) : (
                                     <>
@@ -119,22 +149,29 @@ export default function SchedulesPage() {
                         {/* Columna Izquierda: Editor Semanal */}
                         <div className="lg:col-span-2">
                             <WeekScheduleEditor
+                                key={selectedBarberId} // Force re-mount on barber change to reset form state
                                 currentSchedules={schedules}
                                 onUpdate={refresh}
                                 onShowToast={handleShowToast}
-                                barberId={shopBarberId}
+                                barberId={selectedBarberId}
                             />
                         </div>
 
                         {/* Columna Derecha: Días Libres */}
                         <div className="lg:col-span-1">
                             <div className="sticky top-32">
-                                <ClosureManager onShowToast={handleShowToast} barberId={shopBarberId} />
+                                <ClosureManager
+                                    key={`closure-${selectedBarberId}`}
+                                    onShowToast={handleShowToast}
+                                    barberId={selectedBarberId}
+                                />
                             </div>
                         </div>
                     </div>
                 ) : (
-                    // Vista Pública
+                    // Vista Pública (Siempre muestra horarios del primer barbero/tienda por defecto o el seleccionado si quisiéramos)
+                    // Para vista pública habitual, solemos mostrar "Horarios de la Tienda" (General). 
+                    // Si la tienda usa el perfil del primer barbero como "General", está bien.
                     <div>
                         {sortedSchedules.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-3xl border border-gray-200 shadow-sm max-w-2xl mx-auto">
@@ -160,7 +197,7 @@ export default function SchedulesPage() {
                             </div>
                         )}
 
-                        <PublicClosuresView barberId={shopBarberId} />
+                        <PublicClosuresView barberId={selectedBarberId} />
                     </div>
                 )}
             </div>

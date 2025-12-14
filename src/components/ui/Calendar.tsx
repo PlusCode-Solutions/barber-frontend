@@ -9,16 +9,13 @@ import {
     endOfWeek,
     eachDayOfInterval,
     isSameMonth,
-    isSameDay,
-    isToday,
-    isBefore,
     startOfDay,
     getDay
 } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Closure, Schedule } from '../../features/schedules/types';
-import { safeDate } from '../../utils/dateUtils';
+import { getCostaRicaNow, formatDateForInput, normalizeDateString } from '../../utils/dateUtils';
 
 interface CalendarProps {
     selectedDate: Date | null;
@@ -35,9 +32,18 @@ export default function Calendar({
     closures = [],
     schedules = [],
     className = "",
-    minDate = startOfDay(new Date())
+    minDate // We'll handle default inside
 }: CalendarProps) {
-    const [currentMonth, setCurrentMonth] = useState(new Date());
+    // Current "now" in Costa Rica
+    const nowCR = getCostaRicaNow();
+
+    // Default minDate to today in CR (start of day) if not provided
+    // Note: minDate prop is expected to be a Date object. 
+    // If strict compliance is needed, we should normalise it.
+    const effectiveMinDate = minDate || startOfDay(nowCR);
+
+    const [currentMonth, setCurrentMonth] = useState(nowCR);
+
 
     const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
     const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
@@ -55,20 +61,27 @@ export default function Calendar({
     const weekDays = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
     const getDayStatus = (day: Date) => {
-        const isPast = isBefore(day, minDate);
-        if (isPast) return 'disabled';
+        // Normalize "day" to its label (YYYY-MM-DD) as perceived by the user (Calendar shows local days)
+        // We fundamentally assume the user selects "Feb 3" and means "Feb 3".
+        const dayLabel = format(day, 'yyyy-MM-dd');
+        const minDateLabel = formatDateForInput(effectiveMinDate);
+
+        // String comparison serves as date-only comparison
+        if (dayLabel < minDateLabel) return 'disabled';
 
         // Check for specific closure
         const closure = closures.find(c => {
-            const closureDate = safeDate(c.date);
-            return closureDate && isSameDay(closureDate, day);
+            // Normalize closure date to ensure YYYY-MM-DD matches
+            // e.g. "2025-12-16T00:00:00Z" -> "2025-12-16"
+            return normalizeDateString(c.date) === dayLabel;
         });
         if (closure) return 'closed';
 
         // Check for work schedule
-        // date-fns getDay returns 0 for Sunday, 1 for Monday... matching our Schedule type
+        // date-fns getDay returns 0 for Sunday...
+        // We ensure robust comparison by casting both to Number to handle potential string/number mismatches
         const dayOfWeek = getDay(day);
-        const schedule = schedules.find(s => s.dayOfWeek === dayOfWeek);
+        const schedule = schedules.find(s => Number(s.dayOfWeek) === Number(dayOfWeek));
 
         // If no schedule found for this day OR schedule says isClosed => OFF SCHEDULE
         if (!schedule || schedule.isClosed) {
@@ -113,7 +126,15 @@ export default function Calendar({
             <div className="grid grid-cols-7 gap-1">
                 {days.map(day => {
                     const status = getDayStatus(day);
-                    const isSelected = selectedDate && isSameDay(day, selectedDate);
+
+                    // Comparison Logic (String based for Timezone Safety)
+                    // We compare the "Label" of the day (YYYY-MM-DD)
+                    const dayLabel = format(day, 'yyyy-MM-dd');
+                    const selectedLabel = selectedDate ? formatDateForInput(selectedDate) : null;
+                    const todayLabel = formatDateForInput(nowCR);
+
+                    const isSelected = dayLabel === selectedLabel;
+                    const isDayToday = dayLabel === todayLabel;
                     const isCurrentMonth = isSameMonth(day, currentMonth);
 
                     let buttonClass = "h-10 w-full rounded-lg flex flex-col items-center justify-center text-sm transition-all relative ";
@@ -132,7 +153,7 @@ export default function Calendar({
                         buttonClass += "text-gray-700 hover:bg-blue-50 hover:text-blue-600 font-medium";
                     }
 
-                    if (isToday(day) && !isSelected) {
+                    if (isDayToday && !isSelected) {
                         buttonClass += " border border-blue-200";
                     }
 

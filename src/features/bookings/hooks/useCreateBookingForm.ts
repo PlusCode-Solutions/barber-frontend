@@ -4,13 +4,26 @@ import type { Barber } from "../../barbers/types";
 import type { CreateBookingDto, AvailabilitySlot } from "../types";
 import { BookingsService } from "../api/bookings.service";
 import { validateBookingForm, type FormValidationError } from "../utils/validation";
-import { calculateEndTime } from "../utils/timeUtils";
+import { calculateEndTime, generateTimeSlots } from "../utils/timeUtils";
 import { SchedulesService } from "../../schedules/api/schedules.service";
 import { useTenant } from "../../../context/TenantContext";
 import type { Closure, Schedule } from "../../schedules/types";
+import { normalizeDateString } from "../../../utils/dateUtils";
+import { getDay, parse } from "date-fns";
 
 type Step = 1 | 2 | 3 | 4;
 
+/**
+ * Custom hook to manage the state and logic of the Booking Creation Wizard.
+ * Handles step navigation, data fetching (schedules, closures, availability),
+ * and form validation.
+ * 
+ * Visual Busy Slots Strategy:
+ * 1. We calculate `allPotentialSlots` locally based on the barber's weekly schedule (Start - End time).
+ * 2. We fetch `availableSlots` from the API, which returns only the truly free times.
+ * 3. The UI compares these lists: Any slot present in `allPotentialSlots` but missing from `availableSlots`
+ *    is rendered as "Occupied" (Red/Disabled).
+ */
 export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => void) {
     const { tenant } = useTenant();
     const [step, setStep] = useState<Step>(1);
@@ -20,6 +33,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
     const [selectedSlot, setSelectedSlot] = useState("");
     const [notes, setNotes] = useState("");
     const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+    const [allPotentialSlots, setAllPotentialSlots] = useState<string[]>([]);
     const [loadingSlots, setLoadingSlots] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -31,13 +45,16 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
 
     useEffect(() => {
         if (selectedBarber && tenant?.slug) {
-            // Fetch closures and schedules in parallel
             Promise.all([
                 SchedulesService.getClosures(selectedBarber.id),
-                SchedulesService.getSchedules(selectedBarber.id)
+                SchedulesService.getSchedules(selectedBarber.id),
+                SchedulesService.getClosures() 
             ])
-            .then(([closuresData, schedulesData]) => {
-                setClosures(closuresData);
+            .then(([barberClosures, schedulesData, globalClosures]) => {
+                const closureMap = new Map<string, Closure>();
+                [...globalClosures, ...barberClosures].forEach(c => closureMap.set(c.id, c));
+                
+                setClosures(Array.from(closureMap.values()));
                 setSchedules(schedulesData);
             })
             .catch(console.error);
@@ -52,6 +69,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         setSelectedSlot("");
         setNotes("");
         setAvailableSlots([]);
+        setAllPotentialSlots([]);
         setError(null);
         setValidationErrors([]);
         setClosures([]);
@@ -79,24 +97,55 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         setSelectedDate(date);
         setSelectedSlot("");
         setError(null);
-        setAvailableSlots([]); // Clear slots on date change
+        setAvailableSlots([]);
+        setAllPotentialSlots([]);
 
         if (selectedBarber && date) {
-            // Check for closures
-            const closure = closures.find(c => c.date === date);
+            // Check closures
+            const closure = closures.find(c => normalizeDateString(c.date) === date);
             if (closure) {
                 setError(`La barbería está cerrada este día por: ${closure.reason}`);
                 return;
             }
 
+            // Calculations for ALL slots
+            // Get day of week for the selected date
+            // We parse strictly as local YYYY-MM-DD to avoid timezone shifts at midnight
+            const parsedDate = parse(date, 'yyyy-MM-dd', new Date());
+            const dayOfWeek = getDay(parsedDate); // 0-6 (Sun-Sat)
+            
+            // Find schedule
+            const schedule = schedules.find(s => Number(s.dayOfWeek) === Number(dayOfWeek));
+            
+            if (schedule && !schedule.isClosed && schedule.startTime && schedule.endTime) {
+                // Generate all potential slots based on schedule
+                const slots = generateTimeSlots(
+                    schedule.startTime, 
+                    schedule.endTime, 
+                    30, // Default interval 30 mins, maybe dynamic later
+                    schedule.lunchStartTime,
+                    schedule.lunchEndTime
+                );
+                setAllPotentialSlots(slots);
+            } else {
+                // No schedule or closed
+                setAllPotentialSlots([]); 
+            }
+
             setLoadingSlots(true);
             try {
                 if (!tenant?.slug) return;
-                const result = await BookingsService.checkAvailability(selectedBarber.id, date);
 
-                // Map availability slots to strings (time) strictly
-                const rawSlots: AvailabilitySlot[] = result.slots || [];
-                const stringSlots = rawSlots.map((s) => s.time);
+                // Fetch availability from public endpoint
+                const availabilityRes = await BookingsService.checkAvailability(selectedBarber.id, date);
+                
+                const rawSlots: AvailabilitySlot[] = availabilityRes.slots || [];
+
+                // Filter only available slots AND normalize to HH:mm
+                const stringSlots = rawSlots
+                    .filter(s => s.available)
+                    .map((s) => s.time.substring(0, 5));
+                
                 setAvailableSlots(stringSlots);
             } catch (err) {
                 setError("No se pudo verificar la disponibilidad. Por favor intenta de nuevo.");
@@ -105,7 +154,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
                 setLoadingSlots(false);
             }
         }
-    }, [selectedBarber, selectedService?.id, closures]);
+    }, [selectedBarber, selectedService?.id, closures, schedules]);
 
     const handleSlotSelect = useCallback((slot: string) => {
         setSelectedSlot(slot);
@@ -185,6 +234,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         selectedSlot,
         notes,
         availableSlots,
+        allPotentialSlots, // Exposed
         loadingSlots,
         submitting,
         error,

@@ -22,3 +22,46 @@ export function calculateEndTime(startTime: string, durationMinutes: number): st
         return `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
     }
 }
+
+/**
+ * Generate time slots between start and end time
+ */
+export function generateTimeSlots(
+    startTime: string,
+    endTime: string,
+    intervalMinutes: number = 30,
+    lunchStart?: string | null,
+    lunchEnd?: string | null
+): string[] {
+    const slots: string[] = [];
+    const today = new Date();
+    
+    // Helper to ensure HH:mm format (strip seconds if present)
+    const normalize = (t: string) => t.length > 5 ? t.substring(0, 5) : t;
+
+    // Parse times
+    let current = parse(normalize(startTime), 'HH:mm', today);
+    const end = parse(normalize(endTime), 'HH:mm', today);
+    const lStart = lunchStart ? parse(normalize(lunchStart), 'HH:mm', today) : null;
+    const lEnd = lunchEnd ? parse(normalize(lunchEnd), 'HH:mm', today) : null;
+
+    // Generate slots
+    while (current < end) {
+        // If lunch break is defined, skip slots that fall inside it
+        // A slot is "inside" if it starts >= lunchStart AND start < lunchEnd
+        let isLunch = false;
+        if (lStart && lEnd) {
+            if (current >= lStart && current < lEnd) {
+                isLunch = true;
+            }
+        }
+
+        if (!isLunch) {
+            slots.push(format(current, 'HH:mm'));
+        }
+
+        current = addMinutes(current, intervalMinutes);
+    }
+
+    return slots;
+}

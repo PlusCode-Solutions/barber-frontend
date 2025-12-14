@@ -12,13 +12,17 @@ export const BookingsService = {
 
     // Get tenant bookings
     // Endpoint: GET /bookings
+    // Get tenant bookings
+    // Endpoint: GET /bookings
     getTenantBookings: async (
         startDate?: string,
-        endDate?: string
+        endDate?: string,
+        barberId?: string
     ): Promise<Booking[]> => {
         const params: Record<string, string> = {};
         if (startDate) params.startDate = startDate;
         if (endDate) params.endDate = endDate;
+        if (barberId) params.barberId = barberId;
 
         const res = await axios.get(`/bookings`, { params });
         return res.data;

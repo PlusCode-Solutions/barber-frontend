@@ -2,13 +2,13 @@ import { Calendar as CalendarIcon, ChevronLeft, Clock } from "lucide-react";
 import Calendar from "../../../../components/ui/Calendar";
 import type { Closure, Schedule } from "../../../schedules/types";
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
-import { safeDate } from "../../../../utils/dateUtils";
+import { safeDate, formatFriendlyDay } from "../../../../utils/dateUtils";
 import { useTenant } from "../../../../context/TenantContext";
 
 interface SelectDateTimeStepProps {
     selectedDate: string;
     availableSlots: string[];
+    allPotentialSlots?: string[];
     loadingSlots: boolean;
     closures?: Closure[];
     schedules?: Schedule[];
@@ -20,6 +20,7 @@ interface SelectDateTimeStepProps {
 export default function SelectDateTimeStep({
     selectedDate,
     availableSlots,
+    allPotentialSlots = [],
     loadingSlots,
     closures = [],
     schedules = [],
@@ -29,8 +30,10 @@ export default function SelectDateTimeStep({
 }: SelectDateTimeStepProps) {
     const { tenant } = useTenant();
     const primaryColor = tenant?.primaryColor || tenant?.secondaryColor || '#2563eb';
-    // Usar safeDate para evitar errores de zona horaria
     const dateObj = selectedDate ? safeDate(selectedDate) : null;
+
+    // Use all potential slots if available, otherwise fallback to available only (legacy behavior)
+    const displaySlots = allPotentialSlots.length > 0 ? allPotentialSlots : availableSlots;
 
     return (
         <div role="region" aria-label="Selección de fecha y hora">
@@ -59,7 +62,7 @@ export default function SelectDateTimeStep({
                     <label className="block text-sm font-semibold text-gray-700 mb-3">
                         Horarios disponibles
                         {dateObj && <span className="font-normal text-gray-500 ml-1">
-                            para el {format(dateObj, "EEEE d 'de' MMMM", { locale: es })}
+                            para el {formatFriendlyDay(dateObj)}
                         </span>}
                     </label>
 
@@ -76,7 +79,7 @@ export default function SelectDateTimeStep({
                             ></div>
                             <p>Buscando disponibilidad...</p>
                         </div>
-                    ) : availableSlots.length === 0 ? (
+                    ) : displaySlots.length === 0 ? (
                         <div className="h-64 border-2 border-gray-100 bg-gray-50 rounded-xl flex flex-col items-center justify-center text-gray-500 p-6 text-center">
                             <Clock size={48} className="mb-2 opacity-20" />
                             <p className="font-medium text-gray-900">No hay horarios disponibles</p>
@@ -84,20 +87,31 @@ export default function SelectDateTimeStep({
                         </div>
                     ) : (
                         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar" role="group" aria-label="Horarios disponibles">
-                            {availableSlots.map((slot) => (
-                                <button
-                                    key={slot}
-                                    onClick={() => onSelectSlot(slot)}
-                                    // Use standard hover + conditional style won't work easily without state.
-                                    // But we can use 'hover:bg-primary hover:text-white' if define custom classes?
-                                    // Standard Tailwind usage: hover:border-primary ...
-                                    // For simplicity and matching user's request:
-                                    className="border border-gray-200 rounded-xl py-2.5 px-2 text-sm font-medium hover:border-primary hover:bg-primary/10 hover:text-primary transition focus:ring-2 focus:ring-primary focus:outline-none"
-                                    aria-label={`Seleccionar horario ${slot}`}
-                                >
-                                    {slot}
-                                </button>
-                            ))}
+                            {displaySlots.map((slot) => {
+                                const isAvailable = availableSlots.includes(slot);
+                                // A slot is occupied if it's in the potential schedule but NOT in available slots
+                                // Note: if we are falling back to displaySlots=availableSlots, isAvailable is always true
+                                const isOccupied = !isAvailable && allPotentialSlots.length > 0;
+
+                                return (
+                                    <button
+                                        key={slot}
+                                        onClick={() => isAvailable && onSelectSlot(slot)}
+                                        disabled={isOccupied}
+                                        className={`
+                                            border rounded-xl py-2.5 px-2 text-sm font-medium transition focus:outline-none
+                                            ${isOccupied
+                                                ? 'bg-red-50 border-red-200 text-red-400 cursor-not-allowed opacity-80'
+                                                : 'border-gray-200 hover:border-primary hover:bg-primary/10 hover:text-primary focus:ring-2 focus:ring-primary'
+                                            }
+                                        `}
+                                        aria-label={isOccupied ? `Horario ocupado ${slot}` : `Seleccionar horario ${slot}`}
+                                        title={isOccupied ? 'Horario ocupado' : 'Seleccionar horario'}
+                                    >
+                                        {slot}
+                                    </button>
+                                );
+                            })}
                         </div>
                     )}
                 </div>
