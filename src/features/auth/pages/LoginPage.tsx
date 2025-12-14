@@ -79,7 +79,7 @@ export default function LoginPage() {
           </h1>
           <p
             className="text-lg font-semibold mt-1 tracking-wide"
-            style={{ color: tenant.primaryColor ?? "#6366f1" }}
+            style={{ color: tenant.primaryColor ?? "#2563eb" }}
           >
             {tenant.name}
           </p>
@@ -94,7 +94,7 @@ export default function LoginPage() {
             ¿No tienes cuenta?{" "}
             <Link
               to={`/${tenantSlug}/auth/register`}
-              style={{ color: tenant.primaryColor ?? "#4f46e5" }}
+              style={{ color: tenant.primaryColor ?? "#2563eb" }}
               className="font-semibold hover:underline transition-colors"
             >
               Regístrate aquí

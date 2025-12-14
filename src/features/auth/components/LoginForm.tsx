@@ -7,6 +7,7 @@ import { Input } from "../../../components/ui/Input";
 export default function LoginForm() {
   const { login, error, loading } = useLogin();
   const { tenant, setTenant } = useTenant();
+  const primaryColor = tenant?.primaryColor || tenant?.secondaryColor || '#2563eb';
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -43,7 +44,7 @@ export default function LoginForm() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         required
-        placeholder={`usuario@${tenant?.slug}.com`}
+        placeholder={`usuario@${tenant?.slug || 'dominio'}.com`}
       />
 
       <Input
@@ -58,7 +59,8 @@ export default function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-indigo-600 text-white py-2 rounded disabled:bg-indigo-300"
+        className="w-full text-white py-2 rounded disabled:opacity-50"
+        style={{ backgroundColor: primaryColor }}
       >
         {loading ? "Entrando..." : "Iniciar sesión"}
       </button>

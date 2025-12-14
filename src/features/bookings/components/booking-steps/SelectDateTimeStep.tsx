@@ -4,6 +4,7 @@ import type { Closure, Schedule } from "../../../schedules/types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { safeDate } from "../../../../utils/dateUtils";
+import { useTenant } from "../../../../context/TenantContext";
 
 interface SelectDateTimeStepProps {
     selectedDate: string;
@@ -26,13 +27,15 @@ export default function SelectDateTimeStep({
     onSelectSlot,
     onBack
 }: SelectDateTimeStepProps) {
+    const { tenant } = useTenant();
+    const primaryColor = tenant?.primaryColor || tenant?.secondaryColor || '#2563eb';
     // Usar safeDate para evitar errores de zona horaria
     const dateObj = selectedDate ? safeDate(selectedDate) : null;
 
     return (
         <div role="region" aria-label="Selección de fecha y hora">
             <div className="flex items-center gap-2 mb-6">
-                <CalendarIcon className="text-blue-600" size={24} aria-hidden="true" />
+                <CalendarIcon size={24} aria-hidden="true" style={{ color: primaryColor }} />
                 <h3 className="text-xl font-bold text-gray-900">Fecha y Hora</h3>
             </div>
 
@@ -67,7 +70,10 @@ export default function SelectDateTimeStep({
                         </div>
                     ) : loadingSlots ? (
                         <div className="h-64 border-2 border-gray-100 rounded-xl flex flex-col items-center justify-center text-gray-500">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-3"></div>
+                            <div
+                                className="animate-spin rounded-full h-8 w-8 border-b-2 mb-3"
+                                style={{ borderColor: primaryColor }}
+                            ></div>
                             <p>Buscando disponibilidad...</p>
                         </div>
                     ) : availableSlots.length === 0 ? (
@@ -82,7 +88,11 @@ export default function SelectDateTimeStep({
                                 <button
                                     key={slot}
                                     onClick={() => onSelectSlot(slot)}
-                                    className="border border-gray-200 rounded-xl py-2.5 px-2 text-sm font-medium hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 transition focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                    // Use standard hover + conditional style won't work easily without state.
+                                    // But we can use 'hover:bg-primary hover:text-white' if define custom classes?
+                                    // Standard Tailwind usage: hover:border-primary ...
+                                    // For simplicity and matching user's request:
+                                    className="border border-gray-200 rounded-xl py-2.5 px-2 text-sm font-medium hover:border-primary hover:bg-primary/10 hover:text-primary transition focus:ring-2 focus:ring-primary focus:outline-none"
                                     aria-label={`Seleccionar horario ${slot}`}
                                 >
                                     {slot}

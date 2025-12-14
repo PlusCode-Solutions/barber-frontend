@@ -1,6 +1,7 @@
 import { Scissors, ChevronRight } from "lucide-react";
 import { useServices } from "../../../services/hooks/useServices";
 import type { Service } from "../../../services/types";
+import { useTenant } from "../../../../context/TenantContext";
 
 interface SelectServiceStepProps {
     onSelectService: (service: Service) => void;
@@ -8,11 +9,13 @@ interface SelectServiceStepProps {
 
 export default function SelectServiceStep({ onSelectService }: SelectServiceStepProps) {
     const { services, loading } = useServices();
+    const { tenant } = useTenant();
+    const primaryColor = tenant?.primaryColor || tenant?.secondaryColor || '#2563eb';
 
     return (
         <div role="region" aria-label="Selección de servicio">
             <div className="flex items-center gap-2 mb-4">
-                <Scissors className="text-blue-600" size={24} aria-hidden="true" />
+                <Scissors size={24} aria-hidden="true" style={{ color: primaryColor }} />
                 <h3 className="text-xl font-bold text-gray-900">Selecciona un Servicio</h3>
             </div>
             {loading ? (
@@ -25,7 +28,7 @@ export default function SelectServiceStep({ onSelectService }: SelectServiceStep
                         <button
                             key={service.id}
                             onClick={() => onSelectService(service)}
-                            className="w-full bg-white border-2 border-gray-200 rounded-2xl p-4 hover:border-blue-500 hover:shadow-md transition text-left"
+                            className="w-full bg-white border-2 border-gray-200 rounded-2xl p-4 hover:border-primary hover:shadow-md transition text-left"
                             aria-label={`Seleccionar ${service.name}, precio $${service.price}`}
                         >
                             <div className="flex justify-between items-center">

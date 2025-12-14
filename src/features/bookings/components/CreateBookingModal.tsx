@@ -4,6 +4,7 @@ import SelectServiceStep from "./booking-steps/SelectServiceStep";
 import SelectBarberStep from "./booking-steps/SelectBarberStep";
 import SelectDateTimeStep from "./booking-steps/SelectDateTimeStep";
 import ConfirmBookingStep from "./booking-steps/ConfirmBookingStep";
+import { useTenant } from "../../../context/TenantContext";
 
 interface CreateBookingModalProps {
     isOpen: boolean;
@@ -12,6 +13,9 @@ interface CreateBookingModalProps {
 }
 
 export default function CreateBookingModal({ isOpen, onClose, onSuccess }: CreateBookingModalProps) {
+    const { tenant } = useTenant();
+    const primaryColor = tenant?.primaryColor || tenant?.secondaryColor || '#2563eb';
+
     const {
         step,
         selectedService,
@@ -47,7 +51,10 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess }: Creat
         >
             <div className="bg-white w-full md:max-w-2xl md:rounded-3xl rounded-t-3xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5 flex items-center justify-between">
+                <div
+                    className="px-6 py-5 flex items-center justify-between"
+                    style={{ backgroundColor: primaryColor }}
+                >
                     <div>
                         <h2 id="modal-title" className="text-2xl font-bold text-white">Nueva Cita</h2>
                         <p className="text-blue-100 text-sm" aria-live="polite">Paso {step} de 4</p>
@@ -66,7 +73,8 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess }: Creat
                     {[1, 2, 3, 4].map((s) => (
                         <div
                             key={s}
-                            className={`flex-1 h-1 transition-all ${s <= step ? 'bg-blue-600' : 'bg-gray-200'}`}
+                            className={`flex-1 h-1 transition-all ${s <= step ? '' : 'bg-gray-200'}`}
+                            style={{ backgroundColor: s <= step ? primaryColor : undefined }}
                             aria-label={`Paso ${s}${s <= step ? ' completado' : ''}`}
                         />
                     ))}

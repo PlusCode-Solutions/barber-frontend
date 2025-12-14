@@ -1,6 +1,7 @@
 import { Users, ChevronRight, ChevronLeft } from "lucide-react";
 import { useBarbers } from "../../../barbers/hooks/useBarbers";
 import type { Barber } from "../../../barbers/types";
+import { useTenant } from "../../../../context/TenantContext";
 
 interface SelectBarberStepProps {
     onSelectBarber: (barber: Barber) => void;
@@ -9,11 +10,13 @@ interface SelectBarberStepProps {
 
 export default function SelectBarberStep({ onSelectBarber, onBack }: SelectBarberStepProps) {
     const { barbers, loading } = useBarbers();
+    const { tenant } = useTenant();
+    const primaryColor = tenant?.primaryColor || tenant?.secondaryColor || '#2563eb';
 
     return (
         <div role="region" aria-label="Selección de barbero">
             <div className="flex items-center gap-2 mb-4">
-                <Users className="text-blue-600" size={24} aria-hidden="true" />
+                <Users size={24} aria-hidden="true" style={{ color: primaryColor }} />
                 <h3 className="text-xl font-bold text-gray-900">Selecciona un Barbero</h3>
             </div>
             {loading ? (
@@ -26,7 +29,7 @@ export default function SelectBarberStep({ onSelectBarber, onBack }: SelectBarbe
                         <button
                             key={barber.id}
                             onClick={() => onSelectBarber(barber)}
-                            className="w-full bg-white border-2 border-gray-200 rounded-2xl p-4 hover:border-blue-500 hover:shadow-md transition text-left"
+                            className="w-full bg-white border-2 border-gray-200 rounded-2xl p-4 hover:border-primary hover:shadow-md transition text-left"
                             aria-label={`Seleccionar a ${barber.name}, ${barber.specialty || 'Barbero profesional'}`}
                         >
                             <div className="flex items-center gap-4">
@@ -37,8 +40,12 @@ export default function SelectBarberStep({ onSelectBarber, onBack }: SelectBarbe
                                         className="w-12 h-12 rounded-full object-cover"
                                     />
                                 ) : (
-                                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center" aria-hidden="true">
-                                        <Users className="text-blue-600" size={24} />
+                                    <div
+                                        className="w-12 h-12 rounded-full flex items-center justify-center"
+                                        aria-hidden="true"
+                                        style={{ backgroundColor: `${primaryColor}20` }}
+                                    >
+                                        <Users size={24} style={{ color: primaryColor }} />
                                     </div>
                                 )}
                                 <div className="flex-1">
@@ -53,7 +60,8 @@ export default function SelectBarberStep({ onSelectBarber, onBack }: SelectBarbe
             )}
             <button
                 onClick={onBack}
-                className="mt-4 flex items-center gap-2 text-blue-600 font-semibold hover:underline"
+                className="mt-4 flex items-center gap-2 font-semibold hover:underline"
+                style={{ color: primaryColor }}
                 aria-label="Volver al paso anterior"
             >
                 <ChevronLeft size={20} aria-hidden="true" />
