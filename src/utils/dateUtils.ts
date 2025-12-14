@@ -6,13 +6,16 @@ export function isValidDate(dateStr: string): boolean {
     return !isNaN(d.getTime());
 }
 
-/** Parsea fecha de forma segura (si falla devuelve null) */
+/** Parsea fecha de forma segura (si falla devuelve null) 
+ *  ESTRATEGIA MEDIODÍA: Si recibe "YYYY-MM-DD", fuerza la hora a las 12:00:00
+ *  para asegurar que la zona horaria no reste horas y cambie el día.
+ */
 export function safeDate(dateStr: string): Date | null {
     if (!dateStr) return null;
     
-    // Si es formato YYYY-MM-DD estricto, forzar hora local
+    // Si es formato YYYY-MM-DD estricto, forzar mediodía (12:00)
     if (typeof dateStr === 'string' && dateStr.length === 10 && dateStr.includes('-')) {
-        const d = new Date(dateStr + 'T00:00:00');
+        const d = new Date(dateStr + 'T12:00:00'); 
         return isNaN(d.getTime()) ? null : d;
     }
     

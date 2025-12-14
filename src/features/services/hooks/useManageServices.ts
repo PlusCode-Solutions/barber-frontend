@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTenant } from "../../../context/TenantContext";
 import { useErrorHandler } from "../../../hooks/useErrorHandler";
 import type { Service } from "../types";
@@ -7,76 +7,70 @@ import { ServicesService } from "../api/services.service";
 export function useManageServices() {
     const { tenant } = useTenant();
     const { handleError } = useErrorHandler();
-    const [services, setServices] = useState<Service[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [submitting, setSubmitting] = useState(false);
+    const queryClient = useQueryClient();
+    const slug = tenant?.slug;
 
-    useEffect(() => {
-        if (!tenant?.slug) {
-            setLoading(false);
-            return;
+    // LEER
+    const {
+        data: services = [],
+        isLoading: loading,
+        error
+    } = useQuery({
+        queryKey: ['services', slug],
+        queryFn: () => ServicesService.getAll(slug!),
+        enabled: !!slug
+    });
+
+    // CREAR
+    const createMutation = useMutation({
+        mutationFn: (payload: Partial<Service>) => {
+            if (!slug) throw new Error("Tenant no disponible");
+            return ServicesService.create(slug, payload);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['services', slug] });
+        },
+        onError: (err) => {
+            handleError(err, 'createService');
         }
+    });
 
-        async function load() {
-            if (!tenant?.slug) return;
-
-            try {
-                const data = await ServicesService.getAll(tenant.slug);
-                setServices(data);
-            } catch (err) {
-                const message = handleError(err, 'useManageServices');
-                setError(message);
-            } finally {
-                setLoading(false);
-            }
+    // ACTUALIZAR
+    const updateMutation = useMutation({
+        mutationFn: ({ id, payload }: { id: string; payload: Partial<Service> }) => {
+            if (!slug) throw new Error("Tenant no disponible");
+            return ServicesService.update(slug, id, payload);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['services', slug] });
+        },
+        onError: (err) => {
+            handleError(err, 'updateService');
         }
+    });
 
-        load();
-    }, [tenant?.slug, handleError]);
-
-    const handleCreate = async (payload: Partial<Service>) => {
-        if (!tenant?.slug) throw new Error("Tenant no disponible");
-        setSubmitting(true);
-        try {
-            const created = await ServicesService.create(tenant.slug, payload);
-            setServices((prev) => [created, ...prev]);
-            return created;
-        } finally {
-            setSubmitting(false);
+    // ELIMINAR
+    const deleteMutation = useMutation({
+        mutationFn: (id: string) => {
+            if (!slug) throw new Error("Tenant no disponible");
+            return ServicesService.delete(slug, id);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['services', slug] });
+        },
+        onError: (err) => {
+            handleError(err, 'deleteService');
         }
-    };
-
-    const handleUpdate = async (serviceId: string, payload: Partial<Service>) => {
-        if (!tenant?.slug) throw new Error("Tenant no disponible");
-        setSubmitting(true);
-        try {
-            const updated = await ServicesService.update(tenant.slug, serviceId, payload);
-            setServices((prev) => prev.map((s) => (s.id === serviceId ? updated : s)));
-            return updated;
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    const handleDelete = async (serviceId: string) => {
-        if (!tenant?.slug) throw new Error("Tenant no disponible");
-        setSubmitting(true);
-        try {
-            await ServicesService.delete(tenant.slug, serviceId);
-            setServices((prev) => prev.filter((s) => s.id !== serviceId));
-        } finally {
-            setSubmitting(false);
-        }
-    };
+    });
 
     return {
         services,
         loading,
-        error,
-        submitting,
-        createService: handleCreate,
-        updateService: handleUpdate,
-        deleteService: handleDelete,
+        error: error ? (error as Error).message : null,
+        submitting: createMutation.isPending || updateMutation.isPending || deleteMutation.isPending,
+        
+        createService: (payload: Partial<Service>) => createMutation.mutateAsync(payload),
+        updateService: (id: string, payload: Partial<Service>) => updateMutation.mutateAsync({ id, payload }),
+        deleteService: (id: string) => deleteMutation.mutateAsync(id),
     };
 }

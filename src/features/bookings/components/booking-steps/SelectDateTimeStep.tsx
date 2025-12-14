@@ -3,6 +3,7 @@ import Calendar from "../../../../components/ui/Calendar";
 import type { Closure, Schedule } from "../../../schedules/types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { safeDate } from "../../../../utils/dateUtils";
 
 interface SelectDateTimeStepProps {
     selectedDate: string;
@@ -25,6 +26,9 @@ export default function SelectDateTimeStep({
     onSelectSlot,
     onBack
 }: SelectDateTimeStepProps) {
+    // Usar safeDate para evitar errores de zona horaria
+    const dateObj = selectedDate ? safeDate(selectedDate) : null;
+
     return (
         <div role="region" aria-label="Selección de fecha y hora">
             <div className="flex items-center gap-2 mb-6">
@@ -39,7 +43,7 @@ export default function SelectDateTimeStep({
                         Selecciona la fecha
                     </label>
                     <Calendar
-                        selectedDate={selectedDate ? new Date(selectedDate.replace(/-/g, '/')) : null}
+                        selectedDate={dateObj}
                         onDateSelect={(date) => onDateChange(format(date, 'yyyy-MM-dd'))}
                         closures={closures}
                         schedules={schedules}
@@ -51,8 +55,8 @@ export default function SelectDateTimeStep({
                 <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-3">
                         Horarios disponibles
-                        {selectedDate && <span className="font-normal text-gray-500 ml-1">
-                            para el {format(new Date(selectedDate.replace(/-/g, '/')), "EEEE d 'de' MMMM", { locale: es })}
+                        {dateObj && <span className="font-normal text-gray-500 ml-1">
+                            para el {format(dateObj, "EEEE d 'de' MMMM", { locale: es })}
                         </span>}
                     </label>
 

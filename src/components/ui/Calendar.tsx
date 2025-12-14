@@ -18,6 +18,7 @@ import {
 import { es } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Closure, Schedule } from '../../features/schedules/types';
+import { safeDate } from '../../utils/dateUtils';
 
 interface CalendarProps {
     selectedDate: Date | null;
@@ -58,7 +59,10 @@ export default function Calendar({
         if (isPast) return 'disabled';
 
         // Check for specific closure
-        const closure = closures.find(c => isSameDay(new Date(c.date), day));
+        const closure = closures.find(c => {
+            const closureDate = safeDate(c.date);
+            return closureDate && isSameDay(closureDate, day);
+        });
         if (closure) return 'closed';
 
         // Check for work schedule

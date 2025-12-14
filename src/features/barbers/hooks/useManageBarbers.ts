@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTenant } from "../../../context/TenantContext";
 import { useErrorHandler } from "../../../hooks/useErrorHandler";
 import type { Barber } from "../types";
@@ -7,35 +7,21 @@ import { BarbersService } from "../api/barbers.service";
 export function useManageBarbers() {
     const { tenant } = useTenant();
     const { handleError } = useErrorHandler();
-    const [barbers, setBarbers] = useState<Barber[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [submitting, setSubmitting] = useState(false);
+    const queryClient = useQueryClient();
+    const slug = tenant?.slug;
 
-    useEffect(() => {
-        if (!tenant?.slug) {
-            setLoading(false);
-            return;
-        }
+    // LEER
+    const {
+        data: barbers = [],
+        isLoading: loading,
+        error
+    } = useQuery({
+        queryKey: ['barbers', slug],
+        queryFn: () => BarbersService.getAll(slug!),
+        enabled: !!slug
+    });
 
-        async function load() {
-            if (!tenant?.slug) return;
-
-            try {
-                const data = await BarbersService.getAll(tenant.slug);
-                setBarbers(data);
-            } catch (err) {
-                const message = handleError(err, 'useManageBarbers');
-                setError(message);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        load();
-    }, [tenant?.slug, handleError]);
-
-    // Clean payload before sending
+    // Clean payload helper
     const cleanPayload = (payload: Partial<Barber>) => {
         const body: Record<string, unknown> = {};
 
@@ -57,50 +43,58 @@ export function useManageBarbers() {
         return body;
     };
 
-    const createBarber = async (payload: Partial<Barber>) => {
-        if (!tenant?.slug) throw new Error("Tenant no disponible");
-        setSubmitting(true);
-        try {
+    // CREAR
+    const createMutation = useMutation({
+        mutationFn: (payload: Partial<Barber>) => {
+            if (!slug) throw new Error("Tenant no disponible");
             const body = cleanPayload(payload);
-            const created = await BarbersService.create(tenant.slug, body);
-            setBarbers((prev) => [created, ...prev]);
-            return created;
-        } finally {
-            setSubmitting(false);
+            return BarbersService.create(slug, body);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['barbers', slug] });
+        },
+        onError: (err) => {
+            handleError(err, 'createBarber');
         }
-    };
+    });
 
-    const updateBarber = async (id: string, payload: Partial<Barber>) => {
-        if (!tenant?.slug) throw new Error("Tenant no disponible");
-        setSubmitting(true);
-        try {
+    // ACTUALIZAR
+    const updateMutation = useMutation({
+        mutationFn: ({ id, payload }: { id: string; payload: Partial<Barber> }) => {
+            if (!slug) throw new Error("Tenant no disponible");
             const body = cleanPayload(payload);
-            const updated = await BarbersService.update(tenant.slug, id, body);
-            setBarbers((prev) => prev.map((b) => (b.id === id ? updated : b)));
-            return updated;
-        } finally {
-            setSubmitting(false);
+            return BarbersService.update(slug, id, body);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['barbers', slug] });
+        },
+        onError: (err) => {
+            handleError(err, 'updateBarber');
         }
-    };
+    });
 
-    const deleteBarber = async (id: string) => {
-        if (!tenant?.slug) throw new Error("Tenant no disponible");
-        setSubmitting(true);
-        try {
-            await BarbersService.delete(tenant.slug, id);
-            setBarbers((prev) => prev.filter((b) => b.id !== id));
-        } finally {
-            setSubmitting(false);
+    // ELIMINAR
+    const deleteMutation = useMutation({
+        mutationFn: (id: string) => {
+            if (!slug) throw new Error("Tenant no disponible");
+            return BarbersService.delete(slug, id);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['barbers', slug] });
+        },
+        onError: (err) => {
+            handleError(err, 'deleteBarber');
         }
-    };
+    });
 
     return {
         barbers,
         loading,
-        error,
-        submitting,
-        createBarber,
-        updateBarber,
-        deleteBarber,
+        error: error ? (error as Error).message : null,
+        submitting: createMutation.isPending || updateMutation.isPending || deleteMutation.isPending,
+        
+        createBarber: (payload: Partial<Barber>) => createMutation.mutateAsync(payload),
+        updateBarber: (id: string, payload: Partial<Barber>) => updateMutation.mutateAsync({ id, payload }),
+        deleteBarber: (id: string) => deleteMutation.mutateAsync(id),
     };
 }
