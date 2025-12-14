@@ -32,6 +32,8 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess }: Creat
         setNotes,
         goToStep,
         clearError,
+        closures,
+        schedules,
     } = useCreateBookingForm(onSuccess, onClose);
 
     if (!isOpen) return null;
@@ -105,6 +107,8 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess }: Creat
                             selectedDate={selectedDate}
                             availableSlots={availableSlots}
                             loadingSlots={loadingSlots}
+                            closures={closures}
+                            schedules={schedules}
                             onDateChange={handleDateChange}
                             onSelectSlot={handleSlotSelect}
                             onBack={() => goToStep(2)}

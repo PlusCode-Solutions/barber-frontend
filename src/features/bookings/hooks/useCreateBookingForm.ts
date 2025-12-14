@@ -7,7 +7,7 @@ import { validateBookingForm, type FormValidationError } from "../utils/validati
 import { calculateEndTime } from "../utils/timeUtils";
 import { SchedulesService } from "../../schedules/api/schedules.service";
 import { useTenant } from "../../../context/TenantContext";
-import type { Closure } from "../../schedules/types";
+import type { Closure, Schedule } from "../../schedules/types";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -25,14 +25,22 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
     const [error, setError] = useState<string | null>(null);
     const [validationErrors, setValidationErrors] = useState<FormValidationError[]>([]);
     
-    // New state for closures
+    // New state for schedules and closures
     const [closures, setClosures] = useState<Closure[]>([]);
+	const [schedules, setSchedules] = useState<Schedule[]>([]);
 
     useEffect(() => {
         if (selectedBarber && tenant?.slug) {
-            SchedulesService.getClosures(selectedBarber.id)
-                .then(data => setClosures(data))
-                .catch(console.error);
+            // Fetch closures and schedules in parallel
+            Promise.all([
+                SchedulesService.getClosures(selectedBarber.id),
+                SchedulesService.getSchedules(selectedBarber.id)
+            ])
+            .then(([closuresData, schedulesData]) => {
+                setClosures(closuresData);
+                setSchedules(schedulesData);
+            })
+            .catch(console.error);
         }
     }, [selectedBarber, tenant?.slug]);
 
@@ -47,6 +55,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         setError(null);
         setValidationErrors([]);
         setClosures([]);
+		setSchedules([]);
     }, []);
 
     const handleClose = useCallback(() => {
@@ -181,6 +190,8 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         error,
         validationErrors,
         canProceedToConfirm,
+        closures,
+		schedules,
 
         // Actions
         handleClose,
