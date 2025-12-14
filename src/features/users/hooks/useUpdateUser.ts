@@ -16,7 +16,7 @@ export function useUpdateUser() {
 
         setLoading(true);
         try {
-            const updated = await UsersService.update(tenant.slug, userId, data);
+            const updated = await UsersService.update(userId, data);
             return updated;
         } catch (err) {
             handleError(err, 'useUpdateUser');

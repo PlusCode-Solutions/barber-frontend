@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { UserCircle, Mail, Calendar, Search } from "lucide-react";
+import { useState, useMemo } from "react";
+import { UserCircle, Mail, Calendar } from "lucide-react";
 import { useTenantUsers } from "../hooks/useTenantUsers";
 import { formatRelativeDate } from "../../../utils/dateUtils";
 import type { User } from "../types";
@@ -7,6 +7,8 @@ import EditUserModal from "../components/EditUserModal";
 import DeleteUserModal from "../components/DeleteUserModal";
 import UserActionsMenu from "../components/UserActionsMenu";
 import Toast from "../../../components/ui/Toast";
+import SearchBar from "../../../components/ui/SearchBar";
+import Pagination from "../../../components/ui/Pagination";
 
 export default function TenantCustomersPage() {
     const { users, loading } = useTenantUsers();
@@ -15,6 +17,31 @@ export default function TenantCustomersPage() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [toastMessage, setToastMessage] = useState("");
     const [showToast, setShowToast] = useState(false);
+
+    // Search & Pagination State
+    const [searchTerm, setSearchTerm] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 5;
+
+    // Filter Users
+    const filteredUsers = useMemo(() => {
+        if (!searchTerm) return users;
+        const lowerTerm = searchTerm.toLowerCase();
+        return users.filter(user =>
+            (user.name?.toLowerCase() || "").includes(lowerTerm) ||
+            (user.email?.toLowerCase() || "").includes(lowerTerm)
+        );
+    }, [users, searchTerm]);
+
+    // Paginate Users
+    const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+    const paginatedUsers = useMemo(() => {
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        return filteredUsers.slice(start, start + ITEMS_PER_PAGE);
+    }, [filteredUsers, currentPage]);
+
+    // Handlers
+
 
     const handleEdit = (user: User) => {
         setSelectedUser(user);
@@ -72,15 +99,16 @@ export default function TenantCustomersPage() {
 
             {/* Content */}
             <div className="px-6">
-                {/* Search Bar Placeholder */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6 flex items-center gap-3">
-                    <Search className="text-gray-400" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Buscar cliente por nombre o correo..."
-                        className="flex-1 outline-none text-gray-700 placeholder:text-gray-400"
-                    />
-                </div>
+                {/* Search Bar */}
+                <SearchBar
+                    placeholder="Buscar cliente por nombre o correo..."
+                    value={searchTerm}
+                    onChange={(val) => {
+                        setSearchTerm(val);
+                        setCurrentPage(1);
+                    }}
+                    className="mb-6"
+                />
 
                 {/* Desktop Table View */}
                 <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -96,7 +124,7 @@ export default function TenantCustomersPage() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {users.map((user) => (
+                                {paginatedUsers.map((user) => (
                                     <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
@@ -138,10 +166,10 @@ export default function TenantCustomersPage() {
                                         </td>
                                     </tr>
                                 ))}
-                                {users.length === 0 && (
+                                {paginatedUsers.length === 0 && (
                                     <tr>
-                                        <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
-                                            No se encontraron clientes registrados.
+                                        <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                                            No se encontraron clientes que coincidan con "{searchTerm}".
                                         </td>
                                     </tr>
                                 )}
@@ -152,12 +180,12 @@ export default function TenantCustomersPage() {
 
                 {/* Mobile Card View */}
                 <div className="md:hidden space-y-4">
-                    {users.length === 0 ? (
+                    {paginatedUsers.length === 0 ? (
                         <div className="bg-white rounded-xl p-8 text-center text-gray-500 border border-gray-200">
-                            No se encontraron clientes registrados.
+                            No se encontraron clientes que coincidan con la búsqueda.
                         </div>
                     ) : (
-                        users.map((user) => (
+                        paginatedUsers.map((user) => (
                             <div key={user.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
                                 {/* Header con Avatar y Nombre */}
                                 <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-100">
@@ -200,6 +228,18 @@ export default function TenantCustomersPage() {
                         ))
                     )}
                 </div>
+
+                {/* Pagination Controls */}
+                {filteredUsers.length > 0 && (
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        totalItems={filteredUsers.length}
+                        onPageChange={setCurrentPage}
+                        itemsName="clientes" // Optional custom name
+                        className="mt-6"
+                    />
+                )}
             </div>
 
             {/* Modals */}

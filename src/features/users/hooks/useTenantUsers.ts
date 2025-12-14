@@ -19,7 +19,7 @@ export function useTenantUsers() {
 
             try {
                 setLoading(true);
-                const data = await UsersService.getTenantUsers(tenant.slug);
+                const data = await UsersService.getTenantUsers();
                 setUsers(data);
             } catch (err) {
                 const message = handleError(err, 'useTenantUsers');

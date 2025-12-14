@@ -3,8 +3,8 @@ import type { User } from "../types";
 
 export const UsersService = {
     // Get tenant users
-    getTenantUsers: async (tenantSlug: string): Promise<User[]> => {
-        const res = await axios.get(`/${tenantSlug}/users`);
+    getTenantUsers: async (): Promise<User[]> => {
+        const res = await axios.get(`/users`);
 
         if (Array.isArray(res.data)) {
             return res.data;
@@ -19,16 +19,15 @@ export const UsersService = {
 
     // Update user
     update: async (
-        tenantSlug: string,
         userId: string,
         data: Partial<User>
     ): Promise<User> => {
-        const res = await axios.put(`/${tenantSlug}/users/${userId}`, data);
+        const res = await axios.patch(`/users/${userId}`, data); // Backend uses @Patch
         return res.data;
     },
 
     // Delete user
-    delete: async (tenantSlug: string, userId: string): Promise<void> => {
-        await axios.delete(`/${tenantSlug}/users/${userId}`);
+    delete: async (userId: string): Promise<void> => {
+        await axios.delete(`/users/${userId}`);
     },
 };

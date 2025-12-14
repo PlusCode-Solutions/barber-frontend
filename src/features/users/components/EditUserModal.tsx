@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import type { User, UpdateUserDto } from "../types";
+import type { UserRole } from "../../../config/roles";
 import { useUpdateUser } from "../hooks/useUpdateUser";
 
 interface EditUserModalProps {
@@ -11,24 +12,63 @@ interface EditUserModalProps {
 }
 
 export default function EditUserModal({ user, isOpen, onClose, onSuccess }: EditUserModalProps) {
-    const { updateUser, loading, error } = useUpdateUser();
+    // 1. Remove 'error' from destructuring, as the hook doesn't return it
+    const { updateUser, loading } = useUpdateUser();
+
+    // 2. Local state for error handling
+    const [localError, setLocalError] = useState<string | null>(null);
+
     const [name, setName] = useState(user.name || "");
+    const [role, setRole] = useState<UserRole>(user.role);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLocalError(null);
 
         // Only send changed data
-        const updateData: UpdateUserDto = { name: name.trim() };
+        const updateData: UpdateUserDto = {};
 
-        const result = await updateUser(user.id, updateData);
-        if (result) {
-            onSuccess();
+        if (name.trim() !== user.name) {
+            updateData.name = name.trim();
+        }
+
+        if (role !== user.role) {
+            updateData.role = role;
+        }
+
+        if (Object.keys(updateData).length === 0) {
             onClose();
+            return;
+        }
+
+        try {
+            const result = await updateUser(user.id, updateData);
+            if (result) {
+                onSuccess();
+                onClose();
+            }
+        } catch (err: any) {
+            console.error("Update error:", err);
+
+            const msg = err.response?.data?.message;
+            const msgs = Array.isArray(msg) ? msg : [msg || err.message];
+
+            const hasRoleError = msgs.some((m: any) =>
+                typeof m === 'string' && (m.includes('role') || m.includes('not exist'))
+            );
+
+            if (hasRoleError) {
+                setLocalError("El Backend no permite editar el Rol (Falta 'role' en UpdateUserDto).");
+            } else {
+                setLocalError(msgs[0] || "Error al actualizar el usuario.");
+            }
         }
     };
 
     const handleClose = () => {
-        setName(user.name || ""); // Reset on close
+        setName(user.name || "");
+        setRole(user.role);
+        setLocalError(null);
         onClose();
     };
 
@@ -51,9 +91,9 @@ export default function EditUserModal({ user, isOpen, onClose, onSuccess }: Edit
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    {error && (
+                    {localError && (
                         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                            {error}
+                            {localError}
                         </div>
                     )}
 
@@ -71,18 +111,28 @@ export default function EditUserModal({ user, isOpen, onClose, onSuccess }: Edit
                         />
                     </div>
 
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                            Rol
+                        </label>
+                        <select
+                            value={role}
+                            onChange={(e) => setRole(e.target.value as UserRole)}
+                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                        >
+                            <option value="USER">Usuario (Cliente)</option>
+                            <option value="TENANT_ADMIN">Administrador</option>
+                        </select>
+                    </div>
+
                     {/* Read-only info */}
                     <div className="bg-gray-50 rounded-lg p-4 space-y-2">
                         <div className="flex justify-between text-sm">
                             <span className="text-gray-500">Email:</span>
                             <span className="font-medium text-gray-900">{user.email}</span>
                         </div>
-                        <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">Rol:</span>
-                            <span className="font-medium text-gray-900">{user.role}</span>
-                        </div>
                         <p className="text-xs text-gray-400 mt-2">
-                            * Email y Rol no se pueden modificar
+                            * El email no se puede modificar
                         </p>
                     </div>
 
