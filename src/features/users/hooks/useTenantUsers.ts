@@ -1,38 +1,23 @@
-import { useState, useEffect } from "react";
-import type { User } from "../types";
+import { useQuery } from "@tanstack/react-query";
 import { UsersService } from "../api/users.service";
 import { useAuth } from "../../../context/AuthContext";
-import { useErrorHandler } from "../../../hooks/useErrorHandler";
 import { useTenant } from "../../../context/TenantContext";
 
 export function useTenantUsers() {
     const { tenant } = useTenant();
     const { token } = useAuth();
-    const { handleError } = useErrorHandler();
-    const [users, setUsers] = useState<User[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        async function fetchUsers() {
-            if (!tenant?.slug) return;
+    const { data, isLoading, error, refetch } = useQuery({
+        queryKey: ['tenant-users', tenant?.slug],
+        queryFn: UsersService.getTenantUsers,
+        enabled: !!token && !!tenant?.slug,
+        staleTime: 1000 * 60, // 1 minute
+    });
 
-            try {
-                setLoading(true);
-                const data = await UsersService.getTenantUsers();
-                setUsers(data);
-            } catch (err) {
-                const message = handleError(err, 'useTenantUsers');
-                setError(message);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        if (token && tenant?.slug) {
-            fetchUsers();
-        }
-    }, [token, tenant?.slug, handleError]);
-
-    return { users, loading, error };
+    return { 
+        users: data || [], 
+        loading: isLoading, 
+        error: error ? (error as Error).message : null, 
+        refetch 
+    };
 }
