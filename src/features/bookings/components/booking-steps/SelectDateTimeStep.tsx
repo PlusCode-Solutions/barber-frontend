@@ -1,0 +1,130 @@
+import { Calendar as CalendarIcon, ChevronLeft, Clock } from "lucide-react";
+import Calendar from "../../../../components/ui/Calendar";
+import type { Closure, Schedule } from "../../../schedules/types";
+import { format } from "date-fns";
+import { safeDate, formatFriendlyDay } from "../../../../utils/dateUtils";
+import { useTenant } from "../../../../context/TenantContext";
+
+interface SelectDateTimeStepProps {
+    selectedDate: string;
+    availableSlots: string[];
+    allPotentialSlots?: string[];
+    loadingSlots: boolean;
+    closures?: Closure[];
+    schedules?: Schedule[];
+    onDateChange: (date: string) => void;
+    onSelectSlot: (slot: string) => void;
+    onBack: () => void;
+}
+
+export default function SelectDateTimeStep({
+    selectedDate,
+    availableSlots,
+    allPotentialSlots = [],
+    loadingSlots,
+    closures = [],
+    schedules = [],
+    onDateChange,
+    onSelectSlot,
+    onBack
+}: SelectDateTimeStepProps) {
+    const { tenant } = useTenant();
+    const primaryColor = tenant?.primaryColor || tenant?.secondaryColor || '#2563eb';
+    const dateObj = selectedDate ? safeDate(selectedDate) : null;
+
+    // Use all potential slots if available, otherwise fallback to available only (legacy behavior)
+    const displaySlots = allPotentialSlots.length > 0 ? allPotentialSlots : availableSlots;
+
+    return (
+        <div role="region" aria-label="Selección de fecha y hora">
+            <div className="flex items-center gap-2 mb-6">
+                <CalendarIcon size={24} aria-hidden="true" style={{ color: primaryColor }} />
+                <h3 className="text-xl font-bold text-gray-900">Fecha y Hora</h3>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+                {/* Column 1: Calendar */}
+                <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                        Selecciona la fecha
+                    </label>
+                    <Calendar
+                        selectedDate={dateObj}
+                        onDateSelect={(date) => onDateChange(format(date, 'yyyy-MM-dd'))}
+                        closures={closures}
+                        schedules={schedules}
+                        className="w-full"
+                    />
+                </div>
+
+                {/* Column 2: Slots */}
+                <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                        Horarios disponibles
+                        {dateObj && <span className="font-normal text-gray-500 ml-1">
+                            para el {formatFriendlyDay(dateObj)}
+                        </span>}
+                    </label>
+
+                    {!selectedDate ? (
+                        <div className="h-64 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center text-gray-400 p-6 text-center">
+                            <CalendarIcon size={48} className="mb-2 opacity-20" />
+                            <p>Selecciona una fecha en el calendario para ver los horarios</p>
+                        </div>
+                    ) : loadingSlots ? (
+                        <div className="h-64 border-2 border-gray-100 rounded-xl flex flex-col items-center justify-center text-gray-500">
+                            <div
+                                className="animate-spin rounded-full h-8 w-8 border-b-2 mb-3"
+                                style={{ borderColor: primaryColor }}
+                            ></div>
+                            <p>Buscando disponibilidad...</p>
+                        </div>
+                    ) : displaySlots.length === 0 ? (
+                        <div className="h-64 border-2 border-gray-100 bg-gray-50 rounded-xl flex flex-col items-center justify-center text-gray-500 p-6 text-center">
+                            <Clock size={48} className="mb-2 opacity-20" />
+                            <p className="font-medium text-gray-900">No hay horarios disponibles</p>
+                            <p className="text-sm mt-1">Intenta seleccionar otra fecha o barbero.</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar" role="group" aria-label="Horarios disponibles">
+                            {displaySlots.map((slot) => {
+                                const isAvailable = availableSlots.includes(slot);
+                                // A slot is occupied if it's in the potential schedule but NOT in available slots
+                                // Note: if we are falling back to displaySlots=availableSlots, isAvailable is always true
+                                const isOccupied = !isAvailable && allPotentialSlots.length > 0;
+
+                                return (
+                                    <button
+                                        key={slot}
+                                        onClick={() => isAvailable && onSelectSlot(slot)}
+                                        disabled={isOccupied}
+                                        className={`
+                                            border rounded-xl py-2.5 px-2 text-sm font-medium transition focus:outline-none
+                                            ${isOccupied
+                                                ? 'bg-red-50 border-red-200 text-red-400 cursor-not-allowed opacity-80'
+                                                : 'border-gray-200 hover:border-primary hover:bg-primary/10 hover:text-primary focus:ring-2 focus:ring-primary'
+                                            }
+                                        `}
+                                        aria-label={isOccupied ? `Horario ocupado ${slot}` : `Seleccionar horario ${slot}`}
+                                        title={isOccupied ? 'Horario ocupado' : 'Seleccionar horario'}
+                                    >
+                                        {slot}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <button
+                onClick={onBack}
+                className="mt-8 flex items-center gap-2 text-gray-500 font-medium hover:text-gray-900 transition-colors"
+                aria-label="Volver al paso anterior"
+            >
+                <ChevronLeft size={20} aria-hidden="true" />
+                Volver a selección de barbero
+            </button>
+        </div>
+    );
+}
