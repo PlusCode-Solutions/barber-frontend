@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getUserBookings } from "../../api/getUserBookings";
+import { BookingsService } from "../../api/bookings.service";
 import type { Booking } from "../../types";
 
 export function useUserBookings() {
@@ -18,7 +18,7 @@ export function useUserBookings() {
 
         async function load() {
             try {
-                const data = await getUserBookings(user.id, token as string);
+                const data = await BookingsService.getUserBookings(user.id);
                 setBookings(data);
             } catch (err) {
                 console.error("Error cargando citas del usuario", err);

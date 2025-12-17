@@ -12,7 +12,7 @@ interface Props {
     onClose: () => void;
     onSubmit: (data: {
         name: string;
-        email: string;
+        email?: string;
         phone?: string;
         specialty?: string;
         avatar?: string;

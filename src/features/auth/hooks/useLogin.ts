@@ -1,12 +1,11 @@
 import { useAuth } from "../../../context/AuthContext";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+
 import { useTenant } from "../../../context/TenantContext";
 import { AuthService } from "../api/auth.service";
 import { useErrorHandler } from "../../../hooks/useErrorHandler";
 
 export function useLogin() {
-  const navigate = useNavigate();
   const { tenant } = useTenant();
   const { login: authLogin } = useAuth();
   const { handleError } = useErrorHandler();
