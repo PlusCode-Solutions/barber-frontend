@@ -14,7 +14,7 @@ interface SelectDateTimeStepProps {
     schedules?: Schedule[];
     onDateChange: (date: string) => void;
     onSelectSlot: (slot: string) => void;
-    onBack: () => void;
+    onBack?: () => void;
 }
 
 export default function SelectDateTimeStep({
@@ -54,6 +54,7 @@ export default function SelectDateTimeStep({
                         closures={closures}
                         schedules={schedules}
                         className="w-full"
+                        maxDate={new Date(new Date().getFullYear(), 11, 31)}
                     />
                 </div>
 
@@ -117,14 +118,16 @@ export default function SelectDateTimeStep({
                 </div>
             </div>
 
-            <button
-                onClick={onBack}
-                className="mt-8 flex items-center gap-2 text-gray-500 font-medium hover:text-gray-900 transition-colors"
-                aria-label="Volver al paso anterior"
-            >
-                <ChevronLeft size={20} aria-hidden="true" />
-                Volver a selección de barbero
-            </button>
+            {onBack && (
+                <button
+                    onClick={onBack}
+                    className="mt-8 flex items-center gap-2 text-gray-500 font-medium hover:text-gray-900 transition-colors"
+                    aria-label="Volver al paso anterior"
+                >
+                    <ChevronLeft size={20} aria-hidden="true" />
+                    Volver a selección de barbero
+                </button>
+            )}
         </div>
     );
 }

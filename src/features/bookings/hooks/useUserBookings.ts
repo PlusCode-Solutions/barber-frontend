@@ -11,7 +11,8 @@ export function useUserBookings() {
     const { 
         data: bookings = [], 
         isLoading: loading, 
-        error 
+        error,
+        refetch
     } = useQuery({
         queryKey: ['bookings', user?.id, tenant?.slug, user?.role],
         queryFn: () => {
@@ -21,6 +22,9 @@ export function useUserBookings() {
             return BookingsService.getUserBookings(user!.id);
         },
         enabled: !!user?.id && !!token && !!tenant?.slug,
+        staleTime: 1000 * 60 * 5, // 5 minutes (Aggressive caching as requested)
+        gcTime: 1000 * 60 * 10,   // 10 minutes (Keep in cache longer)
+        refetchOnWindowFocus: false, // Do not refetch on window focus
     });
 
     const { mutateAsync: cancelBooking, isPending: cancelling } = useMutation({
@@ -30,11 +34,22 @@ export function useUserBookings() {
         },
     });
 
+    const { mutateAsync: updateBooking, isPending: updating } = useMutation({
+        mutationFn: ({ id, data }: { id: string; data: any }) => 
+            BookingsService.updateBooking(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['bookings'] });
+        },
+    });
+
     return { 
         bookings, 
         loading, 
         error: error ? (error as Error).message : null,
+        refetch,
         cancelBooking,
-        cancelling
+        cancelling,
+        updateBooking,
+        updating
     };
 }

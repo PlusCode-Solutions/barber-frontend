@@ -2,17 +2,20 @@ import { useState } from "react";
 import { useUserBookings } from "../hooks/useUserBookings";
 import { BookingsTable } from "../components/BookingsTable";
 import BookingsSkeleton from "../components/BookingsSkeleton";
-import { formatRelativeDate, formatHour } from "../../../utils/dateUtils";
+import { formatRelativeDate, formatHour, isPastBooking } from "../../../utils/dateUtils";
 import SEO from "../../../components/shared/SEO";
 import { useTenant } from "../../../context/TenantContext";
-import { Trash2, AlertTriangle } from "lucide-react";
+import { Trash2, AlertTriangle, Pencil } from "lucide-react";
+import RescheduleBookingModal from "../components/RescheduleBookingModal";
+import type { Booking } from "../types";
 import Toast from "../../../components/ui/Toast";
 import { Button } from "../../../components/ui/Button";
 
 export default function BookingsPage() {
-    const { bookings, loading, cancelBooking } = useUserBookings();
+    const { bookings, loading, cancelBooking, refetch } = useUserBookings();
     const { tenant } = useTenant();
     const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
+    const [bookingToReschedule, setBookingToReschedule] = useState<Booking | null>(null);
     const [isCancelling, setIsCancelling] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: "success" | "error"; isVisible: boolean }>({
         message: "",
@@ -59,6 +62,16 @@ export default function BookingsPage() {
         } finally {
             setIsCancelling(false);
         }
+    };
+
+    const handleRescheduleSuccess = () => {
+        setToast({
+            message: "Cita reprogramada exitosamente",
+            type: "success",
+            isVisible: true,
+        });
+        setBookingToReschedule(null);
+        refetch();
     };
 
     return (
@@ -115,14 +128,42 @@ export default function BookingsPage() {
                         // Only show cancel button if status is PENDING or CONFIRMED (assuming user can cancel confirmed)
                         if (booking.status === 'CANCELLED' || booking.status === 'COMPLETED') return null;
 
+                        const originalBooking = bookings.find(b => b.id === booking.id);
+                        const isPast = originalBooking
+                            ? isPastBooking(originalBooking.date, originalBooking.startTime)
+                            : true;
+
                         return (
-                            <button
-                                onClick={() => setBookingToCancel(booking.id)}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors border border-red-100"
-                            >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                Cancelar
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => {
+                                        if (originalBooking) setBookingToReschedule(originalBooking);
+                                    }}
+                                    disabled={isPast}
+                                    title={isPast ? "No se pueden editar citas pasadas" : "Editar cita"}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border
+                                        ${isPast
+                                            ? "bg-gray-100 text-gray-400 border-gray-100 cursor-not-allowed"
+                                            : "bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100"
+                                        }`}
+                                >
+                                    <Pencil className="w-3.5 h-3.5" />
+                                    Editar
+                                </button>
+                                <button
+                                    onClick={() => setBookingToCancel(booking.id)}
+                                    disabled={isPast}
+                                    title={isPast ? "No se pueden cancelar citas pasadas" : "Cancelar cita"}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border
+                                        ${isPast
+                                            ? "bg-gray-100 text-gray-400 border-gray-100 cursor-not-allowed"
+                                            : "bg-red-50 text-red-600 border-red-100 hover:bg-red-100"
+                                        }`}
+                                >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    Cancelar
+                                </button>
+                            </div>
                         );
                     }}
                 />
@@ -163,6 +204,14 @@ export default function BookingsPage() {
                     </div>
                 </div>
             )}
+
+            {/* Modal de Reprogramación */}
+            <RescheduleBookingModal
+                isOpen={!!bookingToReschedule}
+                booking={bookingToReschedule}
+                onClose={() => setBookingToReschedule(null)}
+                onSuccess={handleRescheduleSuccess}
+            />
         </div>
     );
 }

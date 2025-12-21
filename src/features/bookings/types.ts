@@ -30,6 +30,14 @@ export interface CreateBookingDto {
     notes?: string;
 }
 
+export interface UpdateBookingDto {
+    date?: string;
+    startTime?: string;
+    endTime?: string;
+    notes?: string;
+    status?: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
+}
+
 export interface AvailabilitySlot {
     time: string;
     available: boolean;

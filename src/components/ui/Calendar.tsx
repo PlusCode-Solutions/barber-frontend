@@ -24,6 +24,7 @@ interface CalendarProps {
     schedules?: Schedule[];
     className?: string;
     minDate?: Date;
+    maxDate?: Date;
 }
 
 export default function Calendar({
@@ -32,7 +33,8 @@ export default function Calendar({
     closures = [],
     schedules = [],
     className = "",
-    minDate // We'll handle default inside
+    minDate, // We'll handle default inside
+    maxDate
 }: CalendarProps) {
     // Current "now" in Costa Rica
     const nowCR = getCostaRicaNow();
@@ -68,6 +70,7 @@ export default function Calendar({
 
         // String comparison serves as date-only comparison
         if (dayLabel < minDateLabel) return 'disabled';
+        if (maxDate && dayLabel > formatDateForInput(maxDate)) return 'disabled';
 
         // Check for specific closure
         const closure = closures.find(c => {
