@@ -9,6 +9,7 @@ interface Column {
 interface TableProps<T> {
     data: T[];
     columns: Column[];
+    renderActions?: (item: T) => React.ReactNode;
 }
 
 function getNestedValue(obj: any, path: string) {
@@ -34,7 +35,7 @@ const getValueColor = (header: string) => {
     return "text-gray-900 font-semibold";
 };
 
-export function BookingsTable<T>({ data, columns }: TableProps<T>) {
+export function BookingsTable<T>({ data, columns, renderActions }: TableProps<T>) {
     const { tenant } = useTenant();
 
     if (!data.length) {
@@ -97,16 +98,19 @@ export function BookingsTable<T>({ data, columns }: TableProps<T>) {
                         })}
                     </div>
 
-                    {/* Footer decorativo opcional */}
-                    <div className="px-5 pb-4 pt-2">
+                    {/* Footer decorativo con acciones */}
+                    <div className="px-5 pb-4 pt-2 border-t border-gray-100/50">
                         <div className="flex items-center justify-between text-xs text-gray-400">
                             <span className="flex items-center gap-1">
                                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                                 Confirmada
                             </span>
-                            <span className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                Ver detalles →
-                            </span>
+
+                            {renderActions && (
+                                <div className="flex items-center gap-2">
+                                    {renderActions(row)}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

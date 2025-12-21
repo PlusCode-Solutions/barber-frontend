@@ -46,4 +46,10 @@ export const BookingsService = {
         });
         return res.data;
     },
+
+    // Cancel booking (Delete)
+    // Endpoint: DELETE /bookings/:id
+    cancelBooking: async (id: string): Promise<void> => {
+        await axios.delete(`/bookings/${id}`);
+    },
 };

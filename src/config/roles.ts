@@ -43,6 +43,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
         PERMISSIONS.BOOKINGS_VIEW_OWN,
         PERMISSIONS.BOOKINGS_CREATE,
         PERMISSIONS.BOOKINGS_UPDATE, // Can update own bookings
+        PERMISSIONS.BOOKINGS_DELETE, // Can cancel (delete) own bookings
 
         // Read-only access to resources needed for booking
         PERMISSIONS.SERVICES_VIEW,
