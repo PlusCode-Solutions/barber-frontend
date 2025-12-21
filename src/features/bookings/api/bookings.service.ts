@@ -1,5 +1,5 @@
 import axios from "../../../lib/axios";
-import type { Booking, AvailabilityResponse } from "../types";
+import type { Booking, AvailabilityResponse, UpdateBookingDto } from "../types";
 
 export const BookingsService = {
     
@@ -45,6 +45,20 @@ export const BookingsService = {
             params: { barberId, date },
         });
         return res.data;
+    },
+
+    // Update booking
+    // Endpoint: PATCH /bookings/:id
+    /**
+     * Actualiza una cita existente.
+     * Realiza una petición PATCH para modificar fecha y hora (u otros campos permitidos).
+     * 
+     * @param id - Identificador único de la cita
+     * @param dto - Objeto con los datos a actualizar (UpdateBookingDto)
+     */
+    updateBooking: async (id: string, dto: UpdateBookingDto): Promise<Booking> => {
+        const { data } = await axios.patch<Booking>(`/bookings/${id}`, dto);
+        return data;
     },
 
     // Cancel booking (Delete)

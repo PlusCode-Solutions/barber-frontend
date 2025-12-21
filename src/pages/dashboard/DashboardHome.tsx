@@ -4,13 +4,27 @@ import { useTenant } from "../../context/TenantContext";
 import CreateBookingModal from "../../features/bookings/components/CreateBookingModal";
 import NextAppointmentCard from "../../features/bookings/components/NextAppointmentCard";
 import SEO from "../../components/shared/SEO";
+import { useUserBookings } from "../../features/bookings/hooks/useUserBookings";
+import { isPastBooking } from "../../utils/dateUtils";
 
 export default function DashboardHome() {
     const { tenant } = useTenant();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+    const { bookings, refetch } = useUserBookings();
 
-    const handleSuccess = () => {
+    // Logic: Limit to 2 active future bookings
+    const activeBookingsCount = bookings.filter(b =>
+        (b.status === 'CONFIRMED' || b.status === 'PENDING') &&
+        !isPastBooking(b.date, b.startTime)
+    ).length;
+
+    const limitReached = activeBookingsCount >= 2;
+
+    const handleSuccess = async () => {
+        // Explicitly fetch from server to update the limit immediately
+        await refetch();
+
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 3000);
     };
@@ -69,14 +83,19 @@ export default function DashboardHome() {
 
                 {/* CTA Button - Nueva Cita */}
                 <button
-                    onClick={() => setIsModalOpen(true)}
-                    className="mt-6 w-full text-white font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-3 group"
+                    onClick={() => !limitReached && setIsModalOpen(true)}
+                    disabled={limitReached}
+                    title={limitReached ? "Has alcanzado el límite de 2 citas activas." : "Crear nueva cita"}
+                    className={`mt-6 w-full text-white font-bold py-4 px-6 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-3 group
+                        ${limitReached ? 'opacity-50 cursor-not-allowed grayscale' : 'hover:shadow-xl'}`}
                     style={{ backgroundColor: tenant?.primaryColor || '#2563eb' }}
                 >
                     <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center group-hover:scale-110 transition">
                         <Plus size={20} />
                     </div>
-                    <span className="text-lg">Nueva Cita</span>
+                    <span className="text-lg">
+                        {limitReached ? "Límite de citas alcanzado (2/2)" : "Nueva Cita"}
+                    </span>
                 </button>
 
                 {/* CTA bonito */}

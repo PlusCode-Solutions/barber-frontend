@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Calendar, Clock, User as UserIcon } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { useAuth } from '../../../context/AuthContext';
 import { BookingsService } from '../api/bookings.service';
 import type { Booking } from '../types';
+import { formatFullDate, safeDate } from '../../../utils/dateUtils';
 
 export default function NextAppointmentCard() {
     const { user } = useAuth();
@@ -18,16 +17,34 @@ export default function NextAppointmentCard() {
             try {
                 const bookings = await BookingsService.getUserBookings(user.id);
 
-                // Show the LATEST appointment by date (Desc), regardless of status or if it's past/future
-                // as per user request: "ultima cita en agregar"
-                const sortedBookings = bookings
+                // Filter for "ACTIVE" bookings (Pending/Confirmed and Future)
+                // And sort ASCENDING (Closest date first)
+                const now = new Date();
+                const activeBookings = bookings
+                    .filter(b => {
+                        if (b.status === 'CANCELLED' || b.status === 'COMPLETED') return false;
+                        const bDate = safeDate(b.date);
+                        if (!bDate) return false;
+
+                        // Check if it's future (including today if time hasn't passed)
+                        // We can use isPastBooking logic manually or just date check to be safe
+                        // Simple check: date >= today (ignoring time precision for list filter)
+                        return bDate >= new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    })
                     .sort((a, b) => {
-                        const dateA = parseISO(`${a.date}T${a.startTime}`);
-                        const dateB = parseISO(`${b.date}T${b.startTime}`);
-                        return dateB.getTime() - dateA.getTime(); // Descending (Newest first)
+                        const dateA = safeDate(a.date)?.getTime() || 0;
+                        const dateB = safeDate(b.date)?.getTime() || 0;
+                        // Determine order:
+                        // 1. Primary: Date Ascending
+                        if (dateA !== dateB) return dateA - dateB;
+
+                        // 2. Secondary: Time Ascending
+                        const timeA = parseInt(a.startTime.replace(':', ''));
+                        const timeB = parseInt(b.startTime.replace(':', ''));
+                        return timeA - timeB;
                     });
 
-                setNextBooking(sortedBookings[0] || null);
+                setNextBooking(activeBookings[0] || null);
             } catch (error) {
                 console.error("Error fetching next appointment:", error);
             } finally {
@@ -64,7 +81,7 @@ export default function NextAppointmentCard() {
 
     if (!nextBooking) return null;
 
-    const date = parseISO(nextBooking.date);
+    const dateStr = nextBooking.date;
     const statusParams = getStatusParams(nextBooking.status);
 
     return (
@@ -82,7 +99,7 @@ export default function NextAppointmentCard() {
             <div className="relative z-10">
                 <div className="flex justify-between items-start mb-4">
                     <div>
-                        <h2 className="text-lg font-bold text-gray-900">Tu Última Cita</h2>
+                        <h2 className="text-lg font-bold text-gray-900">Tu Próxima Cita</h2>
                         <p className="text-gray-500 text-sm">
                             {nextBooking.status === 'CANCELLED'
                                 ? 'Esta cita está cancelada'
@@ -108,7 +125,7 @@ export default function NextAppointmentCard() {
                         <div>
                             <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Fecha</p>
                             <p className="font-bold text-gray-900 capitalize">
-                                {format(date, "EEEE d 'de' MMMM", { locale: es })}
+                                {formatFullDate(dateStr)}
                             </p>
                         </div>
                     </div>
