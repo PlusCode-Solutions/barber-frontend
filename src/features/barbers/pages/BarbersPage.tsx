@@ -42,7 +42,7 @@ export default function BarbersPage() {
             <SEO title="Barberos" description="Conoce a nuestro equipo de barberos." />
             {/* HEADER */}
             <div
-                className="px-6 pt-8 pb-6 shadow-lg sticky top-16 z-10 text-white"
+                className="mx-4 mt-4 px-6 py-6 shadow-xl sticky top-20 z-10 text-white rounded-3xl"
                 style={{ backgroundColor: tenant?.primaryColor || tenant?.secondaryColor || '#2563eb' }}
             >
                 <div className="flex items-center justify-between">

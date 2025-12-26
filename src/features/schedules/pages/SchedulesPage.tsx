@@ -75,7 +75,7 @@ export default function SchedulesPage() {
 
             {/* Encabezado */}
             <div
-                className="px-6 py-6 sticky top-0 z-20 shadow-sm transition-colors duration-300 text-white"
+                className="mx-4 mt-4 px-6 py-6 sticky top-0 z-20 shadow-xl transition-colors duration-300 text-white rounded-3xl"
                 style={{ backgroundColor: tenant?.primaryColor || tenant?.secondaryColor || '#2563eb' }}
             >
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">

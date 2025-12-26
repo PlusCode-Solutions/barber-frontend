@@ -12,7 +12,7 @@ import Toast from "../../../components/ui/Toast";
 import { Button } from "../../../components/ui/Button";
 
 export default function BookingsPage() {
-    const { bookings, loading, cancelBooking, refetch } = useUserBookings();
+    const { bookings, loading, error, cancelBooking, refetch } = useUserBookings();
     const { tenant } = useTenant();
     const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
     const [bookingToReschedule, setBookingToReschedule] = useState<Booking | null>(null);
@@ -22,6 +22,25 @@ export default function BookingsPage() {
         type: "success",
         isVisible: false,
     });
+
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+                <div className="text-center max-w-md">
+                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <AlertTriangle className="w-8 h-8 text-red-600" />
+                    </div>
+                    <h2 className="text-xl font-bold text-gray-900 mb-2">Error al cargar citas</h2>
+                    <p className="text-gray-500 mb-6">
+                        No pudimos obtener tu historial de citas. Por favor,Verificar que tengas citas programadas o verifica tu conexión o inténtalo de nuevo más tarde.
+                    </p>
+                    <Button onClick={() => refetch()} variant="secondary">
+                        Reintentar
+                    </Button>
+                </div>
+            </div>
+        );
+    }
 
     if (loading) return <BookingsSkeleton />;
 
@@ -34,7 +53,7 @@ export default function BookingsPage() {
             endTime: formatHour(b.endTime),
             service: {
                 ...b.service,
-                price: b.service?.price ? `$${b.service.price}` : "—",
+                price: b.service?.price ? `₡${b.service.price}` : "—",
             },
         }));
 
@@ -87,7 +106,7 @@ export default function BookingsPage() {
 
             {/* HEADER */}
             <div
-                className="px-6 pt-8 pb-6 shadow-lg sticky top-16 z-10 text-white transition-colors duration-300"
+                className="mx-4 mt-4 px-6 py-6 shadow-xl sticky top-20 z-10 text-white rounded-3xl transition-colors duration-300"
                 style={{ backgroundColor: tenant?.primaryColor || tenant?.secondaryColor || '#2563eb' }}
             >
                 <div className="flex items-center justify-between">

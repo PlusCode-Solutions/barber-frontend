@@ -42,30 +42,32 @@ export default function LoginPage() {
       {/* CARD PRINCIPAL */}
       <div className="
         relative 
-        bg-white/90 
+        bg-black/30 
         backdrop-blur-xl 
-        p-7 
-        sm:p-10 
+        px-7 py-10
+        sm:px-10 sm:py-12
         rounded-3xl 
         shadow-2xl 
         w-full 
         max-w-sm 
-        border border-gray-200 
+        border border-white/10
         animate-fadeIn
       ">
 
         {/* LOGO */}
         {tenant.logoUrl && (
-          <div className="flex justify-center mb-7">
+          <div className="flex justify-center -mt-24 mb-6 relative z-10">
             <div
               className="
-                bg-white p-4 rounded-full shadow-lg border border-gray-200 
+                bg-black/40 backdrop-blur-md p-1.5 rounded-full shadow-2xl border-2 
                 transition-transform duration-300 hover:scale-105
+                w-36 h-36 flex items-center justify-center
               "
+              style={{ borderColor: tenant.primaryColor ?? '#ffffff' }}
             >
               <img
                 src={tenant.logoUrl}
-                className="h-16 sm:h-20 object-contain"
+                className="w-full h-full object-cover rounded-full"
                 alt="Tenant Logo"
               />
             </div>
@@ -74,28 +76,26 @@ export default function LoginPage() {
 
         {/* TEXTOS */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-extrabold text-gray-900 leading-tight">
+          <h1 className="text-3xl font-extrabold text-white leading-tight drop-shadow-sm">
             Bienvenido
           </h1>
           <p
-            className="text-lg font-semibold mt-1 tracking-wide"
-            style={{ color: tenant.primaryColor ?? "#2563eb" }}
+            className="text-lg font-semibold mt-1 tracking-wide text-white/90"
           >
             {tenant.name}
           </p>
         </div>
 
         {/* FORM */}
-        <LoginForm />
+        <LoginForm variant="glass" />
 
         {/* FOOTER */}
-        <div className="mt-8 text-center border-t border-gray-200 pt-6">
-          <p className="text-base text-gray-600">
+        <div className="mt-8 text-center border-t border-white/10 pt-6">
+          <p className="text-base text-gray-200">
             ¿No tienes cuenta?{" "}
             <Link
               to={`/${tenantSlug}/auth/register`}
-              style={{ color: tenant.primaryColor ?? "#2563eb" }}
-              className="font-semibold hover:underline transition-colors"
+              className="font-bold text-white hover:underline transition-colors hover:text-gray-100"
             >
               Regístrate aquí
             </Link>

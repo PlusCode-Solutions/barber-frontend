@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, LayoutDashboard, FileText, Scissors, Users, Calendar, UserCircle, LogOut } from "lucide-react";
+import { Menu, X, LayoutDashboard, FileText, Scissors, Users, Calendar, UserCircle, LogOut, Settings } from "lucide-react";
 import { useTenant } from "../../../context/TenantContext";
 
 export default function TenantAdminNavbar() {
@@ -17,6 +17,7 @@ export default function TenantAdminNavbar() {
         { icon: Users, label: "Barberos", path: "admin/barbers" },
         { icon: Calendar, label: "Horarios", path: "admin/schedules" },
         { icon: UserCircle, label: "Clientes", path: "admin/customers" },
+        { icon: Settings, label: "Configuración", path: "admin/settings" },
     ];
 
     const handleLogout = () => {

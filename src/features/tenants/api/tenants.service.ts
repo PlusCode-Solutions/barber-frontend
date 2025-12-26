@@ -32,4 +32,20 @@ export const TenantsService = {
 
         return [];
     },
+
+
+    // Update tenant
+    update: async (id: string, data: Partial<Tenant>): Promise<Tenant> => {
+        const res = await axios.patch(`/tenants/${id}`, data);
+        return res.data;
+    },
+
+    // Upload logo
+    uploadLogo: async (id: string, file: File): Promise<Tenant> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const res = await axios.post(`/tenants/upload-logo/${id}`, formData);
+        return res.data;
+    },
 };

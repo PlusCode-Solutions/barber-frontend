@@ -29,7 +29,7 @@ export default function SelectServiceStep({ onSelectService }: SelectServiceStep
                             key={service.id}
                             onClick={() => onSelectService(service)}
                             className="w-full bg-white border-2 border-gray-200 rounded-2xl p-4 hover:border-primary hover:shadow-md transition text-left"
-                            aria-label={`Seleccionar ${service.name}, precio $${service.price}`}
+                            aria-label={`Seleccionar ${service.name}, precio ₡${service.price}`}
                         >
                             <div className="flex justify-between items-center">
                                 <div>
@@ -37,7 +37,7 @@ export default function SelectServiceStep({ onSelectService }: SelectServiceStep
                                     <p className="text-sm text-gray-500">{service.description}</p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-lg font-bold text-green-600">${service.price}</p>
+                                    <p className="text-lg font-bold text-green-600">₡{service.price}</p>
                                     <ChevronRight className="text-gray-400" size={20} aria-hidden="true" />
                                 </div>
                             </div>

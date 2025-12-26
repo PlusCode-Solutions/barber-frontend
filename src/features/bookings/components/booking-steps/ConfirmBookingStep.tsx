@@ -43,7 +43,7 @@ export default function ConfirmBookingStep({
                         <p className="text-xs text-gray-600">Servicio</p>
                         <p className="font-bold text-gray-900">{selectedService.name}</p>
                         <p className="text-sm text-green-600" aria-label={`Precio: ${selectedService.price} pesos`}>
-                            ${selectedService.price}
+                            ₡{selectedService.price}
                         </p>
                     </div>
                 </div>

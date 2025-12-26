@@ -103,16 +103,16 @@ export default function ServiceModal({
                     </div>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
-                            <label className="text-sm font-semibold text-gray-700">Precio</label>
+                            <label className="text-sm font-semibold text-gray-700">Precio (₡)</label>
                             <input
                                 required
                                 type="number"
                                 min="0"
-                                step="0.01"
+                                step="1"
                                 value={form.price}
                                 onChange={(e) => handleChange("price", e.target.value)}
                                 className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
-                                placeholder="18.50"
+                                placeholder="5000"
                             />
                         </div>
                         <div>
