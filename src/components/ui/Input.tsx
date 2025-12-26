@@ -3,14 +3,16 @@ import { forwardRef, type InputHTMLAttributes } from 'react';
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
     error?: string;
     label?: string;
+    helperText?: string;
+    containerClassName?: string;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-    ({ className = '', error, label, id, ...props }, ref) => {
+    ({ className = '', containerClassName = '', error, label, helperText, id, ...props }, ref) => {
         const inputId = id || props.name;
 
         return (
-            <div className="w-full">
+            <div className={`w-full ${containerClassName}`}>
                 {label && (
                     <label
                         htmlFor={inputId}
@@ -35,6 +37,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                 {error && (
                     <p className="mt-1 text-sm text-red-600 animate-fadeIn">
                         {error}
+                    </p>
+                )}
+                {helperText && !error && (
+                    <p className="mt-1 text-sm text-gray-500">
+                        {helperText}
                     </p>
                 )}
             </div>
