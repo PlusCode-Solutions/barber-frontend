@@ -10,7 +10,10 @@ import Toast from "../../../components/ui/Toast";
 import SearchBar from "../../../components/ui/SearchBar";
 import Pagination from "../../../components/ui/Pagination";
 
+import { useTenant } from "../../../context/TenantContext";
+
 export default function TenantCustomersPage() {
+    const { tenant } = useTenant();
     const { users, loading, refetch } = useTenantUsers();
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -86,21 +89,24 @@ export default function TenantCustomersPage() {
     return (
         <div className="min-h-screen bg-gray-50/50 pb-8">
             {/* Header */}
-            <div className="bg-white/80 backdrop-blur-sm px-8 py-6 sticky top-0 z-10 border-b border-gray-200/60">
+            <div
+                className="mx-4 mt-4 px-8 py-6 sticky top-0 z-10 border-b border-gray-200/60 rounded-3xl shadow-xl text-white transition-colors duration-300"
+                style={{ backgroundColor: tenant?.primaryColor || tenant?.secondaryColor || '#2563eb' }}
+            >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 max-w-7xl mx-auto">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+                        <h1 className="text-2xl font-bold tracking-tight text-white">
                             Gestión de Usuarios
                         </h1>
-                        <p className="text-gray-500 text-sm mt-1">
+                        <p className="text-white/90 text-sm mt-1">
                             Administra clientes y permisos del sistema.
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <div className="bg-white px-4 py-2 rounded-full border border-gray-200 shadow-sm flex items-center gap-2">
-                            <UsersIcon size={16} className="text-indigo-600" />
-                            <span className="font-bold text-gray-900">{users.length}</span>
-                            <span className="text-xs text-gray-400 font-medium uppercase tracking-wide">Registrados</span>
+                        <div className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full border border-white/30 shadow-sm flex items-center gap-2">
+                            <UsersIcon size={16} className="text-white" />
+                            <span className="font-bold text-white">{users.length}</span>
+                            <span className="text-xs text-white/80 font-medium uppercase tracking-wide">Registrados</span>
                         </div>
                     </div>
                 </div>
@@ -139,7 +145,7 @@ export default function TenantCustomersPage() {
                                 className="appearance-none bg-white border border-gray-200 text-gray-700 py-2.5 pl-4 pr-10 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm font-medium cursor-pointer"
                             >
                                 <option value="ALL">Todos los Roles</option>
-                                <option value="CLIENT">Clientes</option>
+                                <option value="USER">Cliente</option>
                                 <option value="TENANT_ADMIN">Administradores</option>
                             </select>
                             <Filter className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />

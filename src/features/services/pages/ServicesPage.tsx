@@ -64,13 +64,13 @@ export default function ServicesPage() {
 
             {/* HEADER */}
             <div
-                className="px-6 pt-8 pb-6 shadow-lg sticky top-16 z-10 text-white"
+                className="mx-4 mt-4 px-6 py-6 shadow-xl sticky top-20 z-10 text-white rounded-3xl"
                 style={{ backgroundColor: tenant?.primaryColor || tenant?.secondaryColor || '#2563eb' }}
             >
                 <div className="flex items-center justify-between gap-4">
                     <div>
                         <h1 className="text-3xl font-black mb-2 tracking-tight">
-                            {isAdmin ? "Servicios del tenant" : "Nuestros Servicios"}
+                            {isAdmin ? "Servicios" : "Nuestros Servicios"}
                         </h1>
                         <div className="flex items-center gap-2">
                             <div className="bg-white/25 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/30">
@@ -192,7 +192,7 @@ export default function ServicesPage() {
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-xs text-gray-500 uppercase font-semibold">Precio</p>
-                                                <p className="text-lg font-black text-green-600">${service.price}</p>
+                                                <p className="text-lg font-black text-green-600">₡{service.price}</p>
                                             </div>
                                         </div>
                                     </div>
