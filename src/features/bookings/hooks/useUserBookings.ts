@@ -2,6 +2,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { BookingsService } from "../api/bookings.service";
 import { useAuth } from "../../../context/AuthContext";
 import { useTenant } from "../../../context/TenantContext";
+import { APP_CONSTANTS } from "../../../config/constants";
+import type { UpdateBookingDto } from "../types";
 
 export function useUserBookings() {
     const { tenant } = useTenant();
@@ -22,8 +24,8 @@ export function useUserBookings() {
             return BookingsService.getUserBookings(user!.id);
         },
         enabled: !!user?.id && !!token && !!tenant?.slug,
-        staleTime: 1000 * 60 * 5, // 5 minutes (Aggressive caching as requested)
-        gcTime: 1000 * 60 * 10,   // 10 minutes (Keep in cache longer)
+        staleTime: APP_CONSTANTS.QUERY.STALE_TIME,
+        gcTime: APP_CONSTANTS.QUERY.GC_TIME,
         refetchOnWindowFocus: false, // Do not refetch on window focus
     });
 
@@ -35,7 +37,7 @@ export function useUserBookings() {
     });
 
     const { mutateAsync: updateBooking, isPending: updating } = useMutation({
-        mutationFn: ({ id, data }: { id: string; data: any }) => 
+        mutationFn: ({ id, data }: { id: string; data: UpdateBookingDto }) => 
             BookingsService.updateBooking(id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['bookings'] });
