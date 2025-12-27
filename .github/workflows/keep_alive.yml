@@ -3,7 +3,7 @@ name: Keep API Alive
 on:
   # Se ejecuta automáticamente cada 14 minutos
   schedule:
-    - cron: '*/14 * * * *'
+    - cron: '*/10 * * * *'
   # Te permite ejecutarlo manualmente si quieres probarlo ya mismo
   workflow_dispatch:
 
