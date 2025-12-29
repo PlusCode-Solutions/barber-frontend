@@ -23,6 +23,7 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess }: Creat
         selectedDate,
         selectedSlot,
         notes,
+
         availableSlots,
         allPotentialSlots,
         loadingSlots,
@@ -127,13 +128,14 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess }: Creat
 
                     {step === 4 && selectedService && selectedBarber && (
                         <ConfirmBookingStep
-                            selectedService={selectedService}
-                            selectedBarber={selectedBarber}
-                            selectedDate={selectedDate}
-                            selectedSlot={selectedSlot}
+                            service={selectedService}
+                            barber={selectedBarber}
+                            date={selectedDate}
+                            slot={selectedSlot}
                             notes={notes}
-                            submitting={submitting}
                             onNotesChange={setNotes}
+                            submitting={submitting}
+                            error={error}
                             onSubmit={handleSubmit}
                             onBack={() => goToStep(3)}
                         />

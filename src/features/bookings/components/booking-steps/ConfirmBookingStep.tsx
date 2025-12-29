@@ -4,22 +4,23 @@ import type { Barber } from "../../../barbers/types";
 import { useTenant } from "../../../../context/TenantContext";
 
 interface ConfirmBookingStepProps {
-    selectedService: Service;
-    selectedBarber: Barber;
-    selectedDate: string;
-    selectedSlot: string;
+    service: Service;
+    barber: Barber;
+    date: string;
+    slot: string;
     notes: string;
     submitting: boolean;
     onNotesChange: (notes: string) => void;
     onSubmit: () => void;
     onBack: () => void;
+    error: string | null;
 }
 
 export default function ConfirmBookingStep({
-    selectedService,
-    selectedBarber,
-    selectedDate,
-    selectedSlot,
+    service,
+    barber,
+    date,
+    slot,
     notes,
     submitting,
     onNotesChange,
@@ -41,9 +42,9 @@ export default function ConfirmBookingStep({
                     <Scissors size={20} aria-hidden="true" className="mt-1" style={{ color: primaryColor }} />
                     <div>
                         <p className="text-xs text-gray-600">Servicio</p>
-                        <p className="font-bold text-gray-900">{selectedService.name}</p>
-                        <p className="text-sm text-green-600" aria-label={`Precio: ${selectedService.price} pesos`}>
-                            ₡{selectedService.price}
+                        <p className="font-bold text-gray-900">{service.name}</p>
+                        <p className="text-sm text-green-600" aria-label={`Precio: ${service.price} pesos`}>
+                            ₡{service.price}
                         </p>
                     </div>
                 </div>
@@ -51,38 +52,40 @@ export default function ConfirmBookingStep({
                     <Users size={20} aria-hidden="true" className="mt-1" style={{ color: primaryColor }} />
                     <div>
                         <p className="text-xs text-gray-600">Barbero</p>
-                        <p className="font-bold text-gray-900">{selectedBarber.name}</p>
+                        <p className="font-bold text-gray-900">{barber.name}</p>
                     </div>
                 </div>
                 <div className="flex items-start gap-3">
                     <Calendar size={20} aria-hidden="true" className="mt-1" style={{ color: primaryColor }} />
                     <div>
                         <p className="text-xs text-gray-600">Fecha</p>
-                        <p className="font-bold text-gray-900">{selectedDate}</p>
+                        <p className="font-bold text-gray-900">{date}</p>
                     </div>
                 </div>
                 <div className="flex items-start gap-3">
                     <Clock size={20} aria-hidden="true" className="mt-1" style={{ color: primaryColor }} />
                     <div>
                         <p className="text-xs text-gray-600">Hora</p>
-                        <p className="font-bold text-gray-900">{selectedSlot}</p>
+                        <p className="font-bold text-gray-900">{slot}</p>
                     </div>
                 </div>
             </div>
 
             <div className="mb-4">
-                <label htmlFor="booking-notes" className="block text-sm font-semibold text-gray-700 mb-2">
-                    Notas (Opcional)
-                </label>
-                <textarea
-                    id="booking-notes"
-                    value={notes}
-                    onChange={(e) => onNotesChange(e.target.value)}
-                    placeholder="Ej: Corte clásico, lavar cabello..."
-                    className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-primary focus:outline-none resize-none"
-                    rows={3}
-                    aria-label="Notas adicionales para la cita"
-                />
+                <div>
+                    <label htmlFor="booking-notes" className="block text-sm font-semibold text-gray-700 mb-1">
+                        Notas (Opcional)
+                    </label>
+                    <textarea
+                        id="booking-notes"
+                        value={notes}
+                        onChange={(e) => onNotesChange(e.target.value)}
+                        placeholder="Ej: Corte clásico, lavar cabello..."
+                        className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-primary focus:outline-none resize-none"
+                        rows={3}
+                        aria-label="Notas adicionales para la cita"
+                    />
+                </div>
             </div>
 
             <button

@@ -23,6 +23,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
     const [selectedSlot, setSelectedSlot] = useState("");
     const [notes, setNotes] = useState("");
     
+
     // UI State
     const [submitting, setSubmitting] = useState(false);
     const [formError, setFormError] = useState<string | null>(null);
@@ -79,6 +80,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         setSelectedDate("");
         setSelectedSlot("");
         setNotes("");
+
         setFormError(null);
         setValidationErrors([]);
         setClosures([]);
@@ -125,6 +127,12 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
             selectedSlot
         });
 
+        // Availability Safety Check
+        // Ensure the slot is strictly available before submitting
+        if (availableSlots.length > 0 && !availableSlots.includes(selectedSlot)) {
+            errors.push({ field: 'slot', message: 'Este horario ya no está disponible. Por favor selecciona otro.' });
+        }
+
         if (errors.length > 0) {
             setValidationErrors(errors);
             setFormError(errors[0].message);
@@ -161,7 +169,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         } finally {
             setSubmitting(false);
         }
-    }, [selectedService, selectedBarber, selectedDate, selectedSlot, notes, handleClose, onSuccess, tenant?.slug]);
+    }, [selectedService, selectedBarber, selectedDate, selectedSlot, notes, availableSlots, handleClose, onSuccess, tenant?.slug]);
 
     const goToStep = useCallback((newStep: Step) => {
         setStep(newStep);

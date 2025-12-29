@@ -65,3 +65,20 @@ export function generateTimeSlots(
 
     return slots;
 }
+
+/**
+ * Converts "HH:mm" string to minutes from midnight.
+ */
+export function timeToMinutes(time: string): number {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+}
+
+/**
+ * Converts minutes from midnight to "HH:mm" string.
+ */
+export function minutesToTime(totalMinutes: number): string {
+    const hours = Math.floor(totalMinutes / 60) % 24;
+    const mins = totalMinutes % 60;
+    return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+}
