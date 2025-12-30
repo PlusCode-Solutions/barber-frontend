@@ -7,6 +7,7 @@ export function validateBookingForm(data: {
     selectedService: any | null;
     selectedBarber: any | null;
     selectedDate: string;
+
     selectedSlot: string;
 }): FormValidationError[] {
     const errors: FormValidationError[] = [];
@@ -34,6 +35,8 @@ export function validateBookingForm(data: {
     if (!data.selectedSlot) {
         errors.push({ field: 'slot', message: 'Debes seleccionar un horario' });
     }
+
+
 
     return errors;
 }

@@ -35,6 +35,9 @@ export default function SelectDateTimeStep({
     // Use all potential slots if available, otherwise fallback to available only (legacy behavior)
     const displaySlots = allPotentialSlots.length > 0 ? allPotentialSlots : availableSlots;
 
+    const morningSlots = displaySlots.filter(slot => parseInt(slot.split(':')[0]) < 12);
+    const afternoonSlots = displaySlots.filter(slot => parseInt(slot.split(':')[0]) >= 12);
+
     return (
         <div role="region" aria-label="Selección de fecha y hora">
             <div className="flex items-center gap-2 mb-6">
@@ -87,32 +90,66 @@ export default function SelectDateTimeStep({
                             <p className="text-sm mt-1">Intenta seleccionar otra fecha o barbero.</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar" role="group" aria-label="Horarios disponibles">
-                            {displaySlots.map((slot) => {
-                                const isAvailable = availableSlots.includes(slot);
-                                // A slot is occupied if it's in the potential schedule but NOT in available slots
-                                // Note: if we are falling back to displaySlots=availableSlots, isAvailable is always true
-                                const isOccupied = !isAvailable && allPotentialSlots.length > 0;
+                        <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar space-y-6">
+                            {morningSlots.length > 0 && (
+                                <div>
+                                    <h4 className="text-center font-bold text-gray-800 mb-3 text-sm tracking-wide">MAÑANA</h4>
+                                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-3" role="group" aria-label="Horarios de mañana">
+                                        {morningSlots.map((slot) => {
+                                            const isAvailable = availableSlots.includes(slot);
+                                            const isOccupied = !isAvailable && allPotentialSlots.length > 0;
+                                            return (
+                                                <button
+                                                    key={slot}
+                                                    onClick={() => isAvailable && onSelectSlot(slot)}
+                                                    disabled={isOccupied}
+                                                    className={`
+                                                        border rounded-full py-2 px-1 text-sm font-medium transition focus:outline-none whitespace-nowrap
+                                                        ${isOccupied
+                                                            ? 'bg-red-50 border-red-200 text-red-500 cursor-not-allowed opacity-60'
+                                                            : 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100 hover:border-green-300'
+                                                        }
+                                                        ${selectedDate && isAvailable ? 'hover:scale-105 active:scale-95' : ''}
+                                                    `}
+                                                    aria-label={isOccupied ? `Horario ocupado ${slot}` : `Seleccionar horario ${slot}`}
+                                                >
+                                                    {slot}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
 
-                                return (
-                                    <button
-                                        key={slot}
-                                        onClick={() => isAvailable && onSelectSlot(slot)}
-                                        disabled={isOccupied}
-                                        className={`
-                                            border rounded-xl py-2.5 px-2 text-sm font-medium transition focus:outline-none
-                                            ${isOccupied
-                                                ? 'bg-red-50 border-red-200 text-red-400 cursor-not-allowed opacity-80'
-                                                : 'border-gray-200 hover:border-primary hover:bg-primary/10 hover:text-primary focus:ring-2 focus:ring-primary'
-                                            }
-                                        `}
-                                        aria-label={isOccupied ? `Horario ocupado ${slot}` : `Seleccionar horario ${slot}`}
-                                        title={isOccupied ? 'Horario ocupado' : 'Seleccionar horario'}
-                                    >
-                                        {slot}
-                                    </button>
-                                );
-                            })}
+                            {afternoonSlots.length > 0 && (
+                                <div>
+                                    <h4 className="text-center font-bold text-gray-800 mb-3 text-sm tracking-wide">TARDE</h4>
+                                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-3" role="group" aria-label="Horarios de tarde">
+                                        {afternoonSlots.map((slot) => {
+                                            const isAvailable = availableSlots.includes(slot);
+                                            const isOccupied = !isAvailable && allPotentialSlots.length > 0;
+                                            return (
+                                                <button
+                                                    key={slot}
+                                                    onClick={() => isAvailable && onSelectSlot(slot)}
+                                                    disabled={isOccupied}
+                                                    className={`
+                                                        border rounded-full py-2 px-1 text-sm font-medium transition focus:outline-none whitespace-nowrap
+                                                        ${isOccupied
+                                                            ? 'bg-red-50 border-red-200 text-red-500 cursor-not-allowed opacity-60'
+                                                            : 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100 hover:border-green-300'
+                                                        }
+                                                        ${selectedDate && isAvailable ? 'hover:scale-105 active:scale-95' : ''}
+                                                    `}
+                                                    aria-label={isOccupied ? `Horario ocupado ${slot}` : `Seleccionar horario ${slot}`}
+                                                >
+                                                    {slot}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
