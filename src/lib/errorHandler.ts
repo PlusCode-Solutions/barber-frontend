@@ -109,7 +109,18 @@ export function handleApiError(error: any): ApiError {
     }
 
     const { status, data } = error.response;
-    const message = data?.message || data?.error || 'Error en la solicitud';
+    let message = data?.message || data?.error || 'Error en la solicitud';
+
+    if (Array.isArray(message)) {
+        message = message.join(', ');
+    } else if (typeof message === 'object') {
+        // Try to get the "message" property if it exists in the object
+        if (message && typeof message === 'object' && 'message' in message) {
+            message = (message as any).message;
+        } else {
+            message = JSON.stringify(message);
+        }
+    }
 
     // Map HTTP status codes to specific error types
     switch (status) {
