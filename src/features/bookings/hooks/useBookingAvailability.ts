@@ -67,7 +67,7 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude }: Use
             // A. Check Closures
             const closure = closures.find(c => normalizeDateString(c.date) === date);
             if (closure) {
-                setError(`Cerrado: ${closure.reason}`);
+                setError(`Cerrado: ${closure.reason || 'Mantenimiento o Festivo'}`);
                 return;
             }
 

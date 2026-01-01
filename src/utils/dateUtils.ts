@@ -156,6 +156,12 @@ export function formatFriendlyDay(date: Date): string {
  * @param dateStr - Fecha string
  */
 export function normalizeDateString(dateStr: string): string | null {
+    if (!dateStr) return null;
+    // If it's an ISO string or contains T, take the first part
+    if (typeof dateStr === 'string' && dateStr.includes('T')) {
+        return dateStr.split('T')[0];
+    }
+    // Fallback using safeDate for other formats
     const date = safeDate(dateStr);
     if (!date) return null;
     return formatDateForInput(date);

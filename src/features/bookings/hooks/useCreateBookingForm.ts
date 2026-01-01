@@ -204,6 +204,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         canProceedToConfirm,
         closures,
 		schedules,
+        tenantSchedules,
 
         // Actions
         handleClose,

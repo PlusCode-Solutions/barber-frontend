@@ -47,7 +47,7 @@ export function useAvailabilityCalculator({
             // 1. Check Closures
             const closure = closures.find(c => normalizeDateString(c.date) === selectedDate);
             if (closure) {
-                throw new Error(`La barbería está cerrada este día por: ${closure.reason}`);
+                throw new Error(`La barbería está cerrada este día por: ${closure.reason || 'Mantenimiento o Festivo'}`);
             }
 
             // 2. Validate Schedule Restrictions

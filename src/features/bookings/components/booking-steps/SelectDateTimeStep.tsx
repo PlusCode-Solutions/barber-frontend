@@ -13,6 +13,7 @@ interface SelectDateTimeStepProps {
     loadingSlots: boolean;
     closures?: Closure[];
     schedules?: Schedule[];
+    tenantSchedules?: Schedule[]; // New prop
     onDateChange: (date: string) => void;
     onSelectSlot: (slot: string) => void;
     onBack?: () => void;
@@ -26,6 +27,7 @@ export default function SelectDateTimeStep({
     loadingSlots,
     closures = [],
     schedules = [],
+    tenantSchedules = [],
     onDateChange,
     onSelectSlot,
     onBack
@@ -60,6 +62,7 @@ export default function SelectDateTimeStep({
                         onDateSelect={(date) => onDateChange(format(date, 'yyyy-MM-dd'))}
                         closures={closures}
                         schedules={schedules}
+                        tenantSchedules={tenantSchedules}
                         className="w-full"
                         maxDate={new Date(new Date().getFullYear(), 11, 31)}
                     />

@@ -41,6 +41,7 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess }: Creat
         clearError,
         closures,
         schedules,
+        tenantSchedules
     } = useCreateBookingForm(onSuccess, onClose);
 
     if (!isOpen) return null;
@@ -124,6 +125,7 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess }: Creat
                             loadingSlots={loadingSlots}
                             closures={closures}
                             schedules={schedules}
+                            tenantSchedules={tenantSchedules}
                             onDateChange={handleDateChange}
                             onSelectSlot={handleSlotSelect}
                             onBack={() => goToStep(2)}
