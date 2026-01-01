@@ -7,7 +7,6 @@ import type { Barber } from "../../barbers/types";
 import type { Closure, Schedule } from "../../schedules/types";
 import type { Service } from "../../services/types";
 import type { AvailabilitySlot } from "../types";
-import { useAuth } from "../../../context/AuthContext";
 import { useTenant } from "../../../context/TenantContext";
 
 interface UseAvailabilityCalculatorProps {
@@ -28,10 +27,10 @@ export function useAvailabilityCalculator({
     tenantSchedules
 }: UseAvailabilityCalculatorProps) {
     const { tenant } = useTenant();
-    const { user } = useAuth();
 
     const [availableSlots, setAvailableSlots] = useState<string[]>([]);
     const [allPotentialSlots, setAllPotentialSlots] = useState<string[]>([]);
+    const [breakSlots, setBreakSlots] = useState<string[]>([]);
     const [loadingSlots, setLoadingSlots] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -40,6 +39,7 @@ export function useAvailabilityCalculator({
         setError(null);
         setAvailableSlots([]);
         setAllPotentialSlots([]);
+        setBreakSlots([]);
 
         try {
             if (!selectedBarber || !selectedDate) return;
@@ -59,16 +59,28 @@ export function useAvailabilityCalculator({
 
             if (!tenantSchedule || tenantSchedule.isClosed || !tenantSchedule.startTime || !tenantSchedule.endTime) {
                 setAllPotentialSlots([]);
-                throw new Error(`La barbería no abre los ${parsedDate.toLocaleDateString('es-ES', { weekday: 'long' })}s.`);
+                setAvailableSlots([]);
+                setError(`La barbería no abre los ${parsedDate.toLocaleDateString('es-ES', { weekday: 'long' })}s.`);
+                setLoadingSlots(false);
+                return;
             }
 
             // 3. Generate Potential Slots
-            if (schedule && !schedule.isClosed && schedule.startTime && schedule.endTime) {
+            // Use barber schedule if available, otherwise tenant schedule
+            const activeSchedule = (schedule && !schedule.isClosed && schedule.startTime && schedule.endTime) 
+                ? schedule 
+                : tenantSchedule;
+            
+            if (activeSchedule && !activeSchedule.isClosed && activeSchedule.startTime && activeSchedule.endTime) {
                 const maxTime = (t1: string, t2: string) => t1 > t2 ? t1 : t2;
                 const minTime = (t1: string, t2: string) => t1 < t2 ? t1 : t2;
 
-                const effectiveStartTime = maxTime(schedule.startTime, tenantSchedule.startTime);
-                const effectiveEndTime = minTime(schedule.endTime, tenantSchedule.endTime);
+                const effectiveStartTime = maxTime(activeSchedule.startTime, tenantSchedule.startTime);
+                const effectiveEndTime = minTime(activeSchedule.endTime, tenantSchedule.endTime);
+                
+                // Get lunch times from active schedule OR tenant as fallback
+                const lunchStart = activeSchedule.lunchStartTime || tenantSchedule?.lunchStartTime;
+                const lunchEnd = activeSchedule.lunchEndTime || tenantSchedule?.lunchEndTime;
 
                 if (effectiveStartTime >= effectiveEndTime) {
                     setAllPotentialSlots([]);
@@ -77,93 +89,84 @@ export function useAvailabilityCalculator({
                         effectiveStartTime, 
                         effectiveEndTime, 
                         30, 
-                        schedule.lunchStartTime, 
-                        schedule.lunchEndTime
+                        lunchStart, 
+                        lunchEnd
                     );
                     setAllPotentialSlots(slots);
+                    
+                    // Generate break slots for visual display (orange styling)
+                    if (lunchStart && lunchEnd) {
+                        const lunchSlots = generateTimeSlots(
+                            lunchStart,
+                            lunchEnd,
+                            30
+                        );
+                        setBreakSlots(lunchSlots);
+                    }
                 }
             } else {
-                setAllPotentialSlots([]); 
+                setAllPotentialSlots([]);
             }
 
             if (!tenant?.slug) return;
 
-            // 4. Check API Availability & Occupied Ranges
-            const availabilityPromise = BookingsService.checkAvailability(selectedBarber.id, selectedDate);
-            
-            const isAdmin = user?.role === 'TENANT_ADMIN' || user?.role === 'SUPER_ADMIN';
-            const bookingsPromise = isAdmin && tenant?.slug
-                ? BookingsService.getTenantBookings(selectedDate, selectedDate, selectedBarber.id).catch(() => [])
-                : Promise.resolve([]);
-
-            const [availabilityRes, existingBookings] = await Promise.all([availabilityPromise, bookingsPromise]);
-
+            // 4. Check API Availability - Backend is source of truth
+            const availabilityRes = await BookingsService.checkAvailability(selectedBarber.id, selectedDate);
             const rawSlots: AvailabilitySlot[] = availabilityRes.slots || [];
 
-            // Calculate occupied ranges including service durations
-            const occupiedRanges: { start: number, end: number }[] = existingBookings
-                .filter((b: any) => b.status !== 'CANCELLED')
-                .map((b: any) => {
-                    const start = timeToMinutes(b.startTime);
-                    
-                    let end = start + 30; // Default minimum duration
-                    if (b.endTime) {
-                        end = timeToMinutes(b.endTime);
-                    } else if (b.service?.durationMinutes) {
-                        end = start + b.service.durationMinutes;
-                    }
-                    
-                    return { start, end };
-                });
-
-            const serviceDuration = selectedService?.durationMinutes || 30;
+            // Trust the backend: slots with available=true are bookable
+            // Slots with available=false are occupied (shown in red in UI)
             const apiAvailableTimes = rawSlots
                 .filter(s => s.available)
                 .map((s) => s.time.substring(0, 5));
+
+            const serviceDuration = selectedService?.durationMinutes || 30;
             
-            // Filter slots checking against occupied ranges and schedule limits
+            // Additional frontend validation for service duration and schedule limits
             const finalAvailableSlots = apiAvailableTimes.filter(slotTime => {
                 const slotStart = timeToMinutes(slotTime);
                 const slotEnd = slotStart + serviceDuration;
 
-                // Check overlap with existing bookings
-                const hasOverlap = occupiedRanges.some(range => 
-                    (slotStart < range.end) && (slotEnd > range.start)
-                );
-                if (hasOverlap) return false;
-
-                // Check overlap with closing time
-                 const schedule = schedules.find(s => Number(s.dayOfWeek) === Number(dayOfWeek));
-                 if (schedule && schedule.endTime) {
-                     const closingTime = timeToMinutes(schedule.endTime);
-                     if (slotEnd > closingTime) return false;
-                 }
+                // Check if service fits before closing time
+                const activeSchedule = schedules.find(s => Number(s.dayOfWeek) === Number(dayOfWeek));
+                if (activeSchedule && activeSchedule.endTime) {
+                    const closingTime = timeToMinutes(activeSchedule.endTime);
+                    if (slotEnd > closingTime) return false;
+                }
                  
-                 // Check overlap with lunch break
-                 if (schedule && schedule.lunchStartTime) {
-                     const lunchStart = timeToMinutes(schedule.lunchStartTime);
-                     const lunchEnd = schedule.lunchEndTime ? timeToMinutes(schedule.lunchEndTime) : lunchStart + 60;
-                     if ((slotStart < lunchEnd) && (slotEnd > lunchStart)) return false;
-                 }
+                // Check if service overlaps with lunch break
+                const lunchStart = activeSchedule?.lunchStartTime || tenantSchedule?.lunchStartTime;
+                const lunchEnd = activeSchedule?.lunchEndTime || tenantSchedule?.lunchEndTime;
+                if (lunchStart && lunchEnd) {
+                    const lunchStartMin = timeToMinutes(lunchStart);
+                    const lunchEndMin = timeToMinutes(lunchEnd);
+                    if ((slotStart < lunchEndMin) && (slotEnd > lunchStartMin)) return false;
+                }
 
                 return true;
             });
             
+            // Check if we have available slots, if not set informative message
+            if (apiAvailableTimes.length > 0 && finalAvailableSlots.length === 0) {
+                // Backend has slots but none fit the service duration
+                setError(`No hay horarios disponibles para un servicio de ${serviceDuration} minutos. Selecciona otra fecha o un servicio más corto.`);
+            }
+            
             setAvailableSlots(finalAvailableSlots);
 
         } catch (err: any) {
-            console.error("Error calculating availability", err);
-            if (err.message && !err.response) {
-                setError(err.message);
-            } else {
-                setError("No se pudo verificar la disponibilidad.");
+            let errorMessage = "No se pudo verificar la disponibilidad.";
+            if (err.response?.data?.message) {
+                errorMessage = err.response.data.message;
+            } else if (typeof err.message === 'string') {
+                errorMessage = err.message;
             }
+            setError(errorMessage);
             setAvailableSlots([]);
         } finally {
             setLoadingSlots(false);
         }
-    }, [selectedBarber, selectedService, selectedDate, closures, schedules, tenantSchedules, tenant?.slug, user?.role]);
-
+    }, [selectedBarber, selectedService, selectedDate, closures, schedules, tenantSchedules, tenant?.slug]);
 
     // Trigger calculation when dependencies change
     useEffect(() => {
@@ -173,6 +176,7 @@ export function useAvailabilityCalculator({
     return {
         availableSlots,
         allPotentialSlots,
+        breakSlots,
         loadingSlots,
         error
     };

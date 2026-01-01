@@ -79,7 +79,9 @@ function RescheduleBookingModalContent({ booking, onClose, onSuccess, primaryCol
                 {error && (
                     <div className="mx-6 mt-4 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
                         <AlertCircle className="text-red-600 mt-0.5 flex-shrink-0" size={20} />
-                        <p className="text-red-800 font-semibold text-sm">{error}</p>
+                        <p className="text-red-800 font-semibold text-sm">
+                            {typeof error === 'string' ? error : (error as any)?.message || 'Error desconocido'}
+                        </p>
                     </div>
                 )}
 

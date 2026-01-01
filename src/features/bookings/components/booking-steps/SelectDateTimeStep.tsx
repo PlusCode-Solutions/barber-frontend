@@ -9,6 +9,7 @@ interface SelectDateTimeStepProps {
     selectedDate: string;
     availableSlots: string[];
     allPotentialSlots?: string[];
+    breakSlots?: string[]; // Lunch/Break hours
     loadingSlots: boolean;
     closures?: Closure[];
     schedules?: Schedule[];
@@ -21,6 +22,7 @@ export default function SelectDateTimeStep({
     selectedDate,
     availableSlots,
     allPotentialSlots = [],
+    breakSlots = [],
     loadingSlots,
     closures = [],
     schedules = [],
@@ -32,8 +34,10 @@ export default function SelectDateTimeStep({
     const primaryColor = tenant?.primaryColor || tenant?.secondaryColor || '#2563eb';
     const dateObj = selectedDate ? safeDate(selectedDate) : null;
 
-    // Use all potential slots if available, otherwise fallback to available only (legacy behavior)
-    const displaySlots = allPotentialSlots.length > 0 ? allPotentialSlots : availableSlots;
+    // Combine regular slots with break slots for full day view
+    // This ensures break hours appear in the list (styled as orange)
+    const combinedSlots = [...new Set([...allPotentialSlots, ...breakSlots])].sort();
+    const displaySlots = combinedSlots.length > 0 ? combinedSlots : availableSlots;
 
     const morningSlots = displaySlots.filter(slot => parseInt(slot.split(':')[0]) < 12);
     const afternoonSlots = displaySlots.filter(slot => parseInt(slot.split(':')[0]) >= 12);
@@ -97,21 +101,24 @@ export default function SelectDateTimeStep({
                                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-3" role="group" aria-label="Horarios de mañana">
                                         {morningSlots.map((slot) => {
                                             const isAvailable = availableSlots.includes(slot);
-                                            const isOccupied = !isAvailable && allPotentialSlots.length > 0;
+                                            const isBreak = breakSlots.includes(slot);
+                                            const isOccupied = !isAvailable && !isBreak && allPotentialSlots.length > 0;
                                             return (
                                                 <button
                                                     key={slot}
                                                     onClick={() => isAvailable && onSelectSlot(slot)}
-                                                    disabled={isOccupied}
+                                                    disabled={!isAvailable}
                                                     className={`
                                                         border rounded-full py-2 px-1 text-sm font-medium transition focus:outline-none whitespace-nowrap
-                                                        ${isOccupied
-                                                            ? 'bg-red-50 border-red-200 text-red-500 cursor-not-allowed opacity-60'
-                                                            : 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100 hover:border-green-300'
+                                                        ${isBreak
+                                                            ? 'bg-orange-50 border-orange-200 text-orange-500 cursor-not-allowed opacity-70'
+                                                            : isOccupied
+                                                                ? 'bg-red-50 border-red-200 text-red-500 cursor-not-allowed opacity-60'
+                                                                : 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100 hover:border-green-300'
                                                         }
                                                         ${selectedDate && isAvailable ? 'hover:scale-105 active:scale-95' : ''}
                                                     `}
-                                                    aria-label={isOccupied ? `Horario ocupado ${slot}` : `Seleccionar horario ${slot}`}
+                                                    aria-label={isBreak ? `Descanso ${slot}` : isOccupied ? `Horario ocupado ${slot}` : `Seleccionar horario ${slot}`}
                                                 >
                                                     {slot}
                                                 </button>
@@ -127,21 +134,24 @@ export default function SelectDateTimeStep({
                                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-3" role="group" aria-label="Horarios de tarde">
                                         {afternoonSlots.map((slot) => {
                                             const isAvailable = availableSlots.includes(slot);
-                                            const isOccupied = !isAvailable && allPotentialSlots.length > 0;
+                                            const isBreak = breakSlots.includes(slot);
+                                            const isOccupied = !isAvailable && !isBreak && allPotentialSlots.length > 0;
                                             return (
                                                 <button
                                                     key={slot}
                                                     onClick={() => isAvailable && onSelectSlot(slot)}
-                                                    disabled={isOccupied}
+                                                    disabled={!isAvailable}
                                                     className={`
                                                         border rounded-full py-2 px-1 text-sm font-medium transition focus:outline-none whitespace-nowrap
-                                                        ${isOccupied
-                                                            ? 'bg-red-50 border-red-200 text-red-500 cursor-not-allowed opacity-60'
-                                                            : 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100 hover:border-green-300'
+                                                        ${isBreak
+                                                            ? 'bg-orange-50 border-orange-200 text-orange-500 cursor-not-allowed opacity-70'
+                                                            : isOccupied
+                                                                ? 'bg-red-50 border-red-200 text-red-500 cursor-not-allowed opacity-60'
+                                                                : 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100 hover:border-green-300'
                                                         }
                                                         ${selectedDate && isAvailable ? 'hover:scale-105 active:scale-95' : ''}
                                                     `}
-                                                    aria-label={isOccupied ? `Horario ocupado ${slot}` : `Seleccionar horario ${slot}`}
+                                                    aria-label={isBreak ? `Descanso ${slot}` : isOccupied ? `Horario ocupado ${slot}` : `Seleccionar horario ${slot}`}
                                                 >
                                                     {slot}
                                                 </button>

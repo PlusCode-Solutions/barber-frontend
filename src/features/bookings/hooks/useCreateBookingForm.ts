@@ -58,7 +58,8 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
     // 2. Calculate Availability using extracted logic
     const { 
         availableSlots, 
-        allPotentialSlots, 
+        allPotentialSlots,
+        breakSlots,
         loadingSlots, 
         error: availabilityError 
     } = useAvailabilityCalculator({
@@ -195,6 +196,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         notes,
         availableSlots,      // From hook
         allPotentialSlots,   // From hook
+        breakSlots,          // From hook
         loadingSlots,        // From hook
         submitting,
         error,
