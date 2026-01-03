@@ -65,7 +65,7 @@ export default function BookingsPage() {
             await cancelBooking(bookingToCancel);
             setToast({
                 message: "Cita cancelada exitosamente",
-                type: "success",
+                type: "error",
                 isVisible: true,
             });
             setBookingToCancel(null);

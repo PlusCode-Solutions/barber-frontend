@@ -178,6 +178,7 @@ export function useAvailabilityCalculator({
         allPotentialSlots,
         breakSlots,
         loadingSlots,
-        error
+        error,
+        refresh: calculateSlots
     };
 }
