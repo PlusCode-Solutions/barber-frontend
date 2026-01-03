@@ -1,0 +1,19 @@
+name: Keep API Alive
+
+on:
+  # Se ejecuta automáticamente cada 14 minutos
+  schedule:
+    - cron: '*/10 * * * *'
+  # Te permite ejecutarlo manualmente si quieres probarlo ya mismo
+  workflow_dispatch:
+
+jobs:
+  ping_api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Despertar API
+        run: |
+          echo "Enviando ping a la API para mantenerla despierta..."
+          # El comando -I pide solo la cabecera, gasta menos datos
+          curl -I https://barber-backend-lpdc.onrender.com
+          echo "¡Ping enviado con éxito!"
