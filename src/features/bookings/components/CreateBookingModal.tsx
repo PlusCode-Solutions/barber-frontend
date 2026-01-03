@@ -10,9 +10,10 @@ interface CreateBookingModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess?: () => void;
+    viewOnly?: boolean;
 }
 
-export default function CreateBookingModal({ isOpen, onClose, onSuccess }: CreateBookingModalProps) {
+export default function CreateBookingModal({ isOpen, onClose, onSuccess, viewOnly = false }: CreateBookingModalProps) {
     const { tenant } = useTenant();
     const primaryColor = tenant?.primaryColor || tenant?.secondaryColor || '#2563eb';
 
@@ -60,7 +61,9 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess }: Creat
                     style={{ backgroundColor: primaryColor }}
                 >
                     <div>
-                        <h2 id="modal-title" className="text-2xl font-bold text-white">Nueva Cita</h2>
+                        <h2 id="modal-title" className="text-2xl font-bold text-white">
+                            {viewOnly ? "Consultar Horarios" : "Nueva Cita"}
+                        </h2>
                         <p className="text-blue-100 text-sm" aria-live="polite">Paso {step} de 4</p>
                     </div>
                     <button
@@ -129,6 +132,7 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess }: Creat
                             onDateChange={handleDateChange}
                             onSelectSlot={handleSlotSelect}
                             onBack={() => goToStep(2)}
+                            viewOnly={viewOnly}
                         />
                     )}
 
