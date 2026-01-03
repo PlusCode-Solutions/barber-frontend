@@ -17,6 +17,7 @@ interface SelectDateTimeStepProps {
     onDateChange: (date: string) => void;
     onSelectSlot: (slot: string) => void;
     onBack?: () => void;
+    viewOnly?: boolean;
 }
 
 export default function SelectDateTimeStep({
@@ -30,7 +31,8 @@ export default function SelectDateTimeStep({
     tenantSchedules = [],
     onDateChange,
     onSelectSlot,
-    onBack
+    onBack,
+    viewOnly = false
 }: SelectDateTimeStepProps) {
     const { tenant } = useTenant();
     const primaryColor = tenant?.primaryColor || tenant?.secondaryColor || '#2563eb';
@@ -44,12 +46,26 @@ export default function SelectDateTimeStep({
     const morningSlots = displaySlots.filter(slot => parseInt(slot.split(':')[0]) < 12);
     const afternoonSlots = displaySlots.filter(slot => parseInt(slot.split(':')[0]) >= 12);
 
+    const handleSlotClick = (slot: string) => {
+        if (viewOnly) {
+            // Optional: Show toast explaining why they can't book
+            return;
+        }
+        onSelectSlot(slot);
+    };
+
     return (
         <div role="region" aria-label="Selección de fecha y hora">
             <div className="flex items-center gap-2 mb-6">
                 <CalendarIcon size={24} aria-hidden="true" style={{ color: primaryColor }} />
                 <h3 className="text-xl font-bold text-gray-900">Fecha y Hora</h3>
             </div>
+
+            {viewOnly && (
+                <div className="mb-6 bg-blue-50 border border-blue-200 rounded-xl p-4 text-blue-800 text-sm">
+                    <strong>Modo Consulta:</strong> Puedes ver los horarios disponibles, pero no puedes agendar nuevas citas porque has alcanzado tu límite.
+                </div>
+            )}
 
             <div className="grid md:grid-cols-2 gap-8">
                 {/* Column 1: Calendar */}
@@ -109,17 +125,19 @@ export default function SelectDateTimeStep({
                                             return (
                                                 <button
                                                     key={slot}
-                                                    onClick={() => isAvailable && onSelectSlot(slot)}
-                                                    disabled={!isAvailable}
+                                                    onClick={() => isAvailable && handleSlotClick(slot)}
+                                                    disabled={!isAvailable || viewOnly}
                                                     className={`
                                                         border rounded-full py-2 px-1 text-sm font-medium transition focus:outline-none whitespace-nowrap
                                                         ${isBreak
                                                             ? 'bg-orange-50 border-orange-200 text-orange-500 cursor-not-allowed opacity-70'
                                                             : isOccupied
                                                                 ? 'bg-red-50 border-red-200 text-red-500 cursor-not-allowed opacity-60'
-                                                                : 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100 hover:border-green-300'
+                                                                : viewOnly
+                                                                    ? 'bg-green-50 border-green-200 text-green-700 cursor-default opacity-80'
+                                                                    : 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100 hover:border-green-300'
                                                         }
-                                                        ${selectedDate && isAvailable ? 'hover:scale-105 active:scale-95' : ''}
+                                                        ${selectedDate && isAvailable && !viewOnly ? 'hover:scale-105 active:scale-95' : ''}
                                                     `}
                                                     aria-label={isBreak ? `Descanso ${slot}` : isOccupied ? `Horario ocupado ${slot}` : `Seleccionar horario ${slot}`}
                                                 >
@@ -142,17 +160,19 @@ export default function SelectDateTimeStep({
                                             return (
                                                 <button
                                                     key={slot}
-                                                    onClick={() => isAvailable && onSelectSlot(slot)}
-                                                    disabled={!isAvailable}
+                                                    onClick={() => isAvailable && handleSlotClick(slot)}
+                                                    disabled={!isAvailable || viewOnly}
                                                     className={`
                                                         border rounded-full py-2 px-1 text-sm font-medium transition focus:outline-none whitespace-nowrap
                                                         ${isBreak
                                                             ? 'bg-orange-50 border-orange-200 text-orange-500 cursor-not-allowed opacity-70'
                                                             : isOccupied
                                                                 ? 'bg-red-50 border-red-200 text-red-500 cursor-not-allowed opacity-60'
-                                                                : 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100 hover:border-green-300'
+                                                                : viewOnly
+                                                                    ? 'bg-green-50 border-green-200 text-green-700 cursor-default opacity-80'
+                                                                    : 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100 hover:border-green-300'
                                                         }
-                                                        ${selectedDate && isAvailable ? 'hover:scale-105 active:scale-95' : ''}
+                                                        ${selectedDate && isAvailable && !viewOnly ? 'hover:scale-105 active:scale-95' : ''}
                                                     `}
                                                     aria-label={isBreak ? `Descanso ${slot}` : isOccupied ? `Horario ocupado ${slot}` : `Seleccionar horario ${slot}`}
                                                 >

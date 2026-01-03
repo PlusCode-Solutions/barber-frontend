@@ -14,6 +14,7 @@ export default function DashboardHome() {
     const { bookings, refetch } = useUserBookings();
 
     // Logic: Limit to 2 active future bookings
+    // TODO: Consider moving this limit to a configuration or database setting
     const activeBookingsCount = bookings.filter(b =>
         (b.status === 'CONFIRMED' || b.status === 'PENDING') &&
         !isPastBooking(b.date, b.startTime)
@@ -83,18 +84,16 @@ export default function DashboardHome() {
 
                 {/* CTA Button - Nueva Cita */}
                 <button
-                    onClick={() => !limitReached && setIsModalOpen(true)}
-                    disabled={limitReached}
-                    title={limitReached ? "Has alcanzado el límite de 2 citas activas." : "Crear nueva cita"}
-                    className={`mt-6 w-full text-white font-bold py-4 px-6 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-3 group
-                        ${limitReached ? 'opacity-50 cursor-not-allowed grayscale' : 'hover:shadow-xl'}`}
+                    onClick={() => setIsModalOpen(true)}
+                    title={limitReached ? "Modo solo lectura: Límite de citas alcanzado" : "Crear nueva cita"}
+                    className={`mt-6 w-full text-white font-bold py-4 px-6 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-3 group hover:shadow-xl`}
                     style={{ backgroundColor: tenant?.primaryColor || '#2563eb' }}
                 >
                     <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center group-hover:scale-110 transition">
-                        <Plus size={20} />
+                        {limitReached ? <CheckCircle size={20} /> : <Plus size={20} />}
                     </div>
                     <span className="text-lg">
-                        {limitReached ? "Límite de citas alcanzado (2/2)" : "Nueva Cita"}
+                        {limitReached ? "Ver disponibilidad" : "Nueva Cita"}
                     </span>
                 </button>
 
@@ -121,6 +120,7 @@ export default function DashboardHome() {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onSuccess={handleSuccess}
+                viewOnly={limitReached}
             />
 
         </div>

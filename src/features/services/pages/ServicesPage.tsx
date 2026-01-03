@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Scissors, Clock, DollarSign, Pencil, Trash2, Plus, Search } from "lucide-react";
+import { Scissors, Clock, Pencil, Trash2, Plus, Search } from "lucide-react";
 import { PERMISSIONS } from "../../../config/permissions";
 import { usePermissions } from "../../../hooks/usePermissions";
 import { useManageServices } from "../hooks/useManageServices";
@@ -188,7 +188,7 @@ export default function ServicesPage() {
                                         {/* Precio */}
                                         <div className="flex items-center gap-2">
                                             <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
-                                                <DollarSign className="w-4 h-4 text-green-600" />
+                                                <span className="text-lg font-bold text-green-600">₡</span>
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-xs text-gray-500 uppercase font-semibold">Precio</p>
