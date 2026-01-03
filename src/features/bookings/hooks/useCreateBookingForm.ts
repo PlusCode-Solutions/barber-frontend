@@ -61,7 +61,8 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         allPotentialSlots,
         breakSlots,
         loadingSlots, 
-        error: availabilityError 
+        error: availabilityError,
+        refresh: refreshAvailability
     } = useAvailabilityCalculator({
         selectedBarber,
         selectedService,
@@ -164,13 +165,26 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
             handleClose();
             onSuccess?.();
         } catch (err: any) {
-            const errorMessage = err.response?.data?.message ||
+            let errorMessage = err.response?.data?.message ||
                 "No se pudo crear la cita. Por favor intenta de nuevo.";
+            
+            // Handle Concurrent Booking Conflict (409)
+            if (err.response?.status === 409) {
+                errorMessage = "Lo sentimos, este horario acaba de ser reservado por otra persona. Por favor selecciona otro.";
+                
+                // Refresh slots to show the latest availability
+                refreshAvailability();
+                
+                // Go back to time selection step so user can pick a new slot
+                setStep(3);
+                setSelectedSlot(""); 
+            }
+            
             setFormError(errorMessage);
         } finally {
             setSubmitting(false);
         }
-    }, [selectedService, selectedBarber, selectedDate, selectedSlot, notes, availableSlots, handleClose, onSuccess, tenant?.slug]);
+    }, [selectedService, selectedBarber, selectedDate, selectedSlot, notes, availableSlots, handleClose, onSuccess, tenant?.slug, refreshAvailability]);
 
     const goToStep = useCallback((newStep: Step) => {
         setStep(newStep);
