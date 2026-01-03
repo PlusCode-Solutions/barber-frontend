@@ -47,7 +47,7 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude }: Use
             setClosures(Array.from(closureMap.values()));
             setSchedules(schedulesData);
             setTenantSchedules(tenantSchedulesData);
-        }).catch(console.error);
+        }).catch(() => {});
     }, [barber, tenant?.slug]);
 
     // 2. Calcular Slots y Verificar Disponibilidad
@@ -67,7 +67,7 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude }: Use
             // A. Check Closures
             const closure = closures.find(c => normalizeDateString(c.date) === date);
             if (closure) {
-                setError(`Cerrado: ${closure.reason}`);
+                setError(`Cerrado: ${closure.reason || 'Mantenimiento o Festivo'}`);
                 return;
             }
 
@@ -141,8 +141,7 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude }: Use
 
                 setAvailableSlots(finalSlots);
 
-            } catch (err) {
-                console.error("Error confirming availability", err);
+            } catch {
                 setError("No se pudo verificar disponibilidad.");
             } finally {
                 setLoading(false);

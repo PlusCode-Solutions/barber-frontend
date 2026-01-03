@@ -12,8 +12,6 @@ export const BookingsService = {
 
     // Get tenant bookings
     // Endpoint: GET /bookings
-    // Get tenant bookings
-    // Endpoint: GET /bookings
     getTenantBookings: async (
         startDate?: string,
         endDate?: string,
@@ -42,20 +40,13 @@ export const BookingsService = {
         date: string
     ): Promise<AvailabilityResponse> => {
         const res = await axios.get(`/bookings/availability`, {
-            params: { barberId, date },
+            params: { barberId, date }
         });
         return res.data;
     },
 
     // Update booking
     // Endpoint: PATCH /bookings/:id
-    /**
-     * Actualiza una cita existente.
-     * Realiza una petición PATCH para modificar fecha y hora (u otros campos permitidos).
-     * 
-     * @param id - Identificador único de la cita
-     * @param dto - Objeto con los datos a actualizar (UpdateBookingDto)
-     */
     updateBooking: async (id: string, dto: UpdateBookingDto): Promise<Booking> => {
         const { data } = await axios.patch<Booking>(`/bookings/${id}`, dto);
         return data;

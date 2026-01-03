@@ -26,6 +26,7 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess }: Creat
 
         availableSlots,
         allPotentialSlots,
+        breakSlots,
         loadingSlots,
         submitting,
         error,
@@ -40,6 +41,7 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess }: Creat
         clearError,
         closures,
         schedules,
+        tenantSchedules
     } = useCreateBookingForm(onSuccess, onClose);
 
     if (!isOpen) return null;
@@ -87,7 +89,9 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess }: Creat
                     <div className="mx-6 mt-4 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3" role="alert">
                         <AlertCircle className="text-red-600 mt-0.5 flex-shrink-0" size={20} />
                         <div className="flex-1">
-                            <p className="text-red-800 font-semibold text-sm">{error}</p>
+                            <p className="text-red-800 font-semibold text-sm">
+                                {typeof error === 'string' ? error : (error as any)?.message || 'Error desconocido'}
+                            </p>
                         </div>
                         <button
                             onClick={clearError}
@@ -117,9 +121,11 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess }: Creat
                             selectedDate={selectedDate}
                             availableSlots={availableSlots}
                             allPotentialSlots={allPotentialSlots}
+                            breakSlots={breakSlots}
                             loadingSlots={loadingSlots}
                             closures={closures}
                             schedules={schedules}
+                            tenantSchedules={tenantSchedules}
                             onDateChange={handleDateChange}
                             onSelectSlot={handleSlotSelect}
                             onBack={() => goToStep(2)}

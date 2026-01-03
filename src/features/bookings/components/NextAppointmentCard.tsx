@@ -45,8 +45,10 @@ export default function NextAppointmentCard() {
                     });
 
                 setNextBooking(activeBookings[0] || null);
-            } catch (error) {
-                console.error("Error fetching next appointment:", error);
+            } catch (error: any) {
+                if (error.response?.status === 404) {
+                    setNextBooking(null);
+                }
             } finally {
                 setLoading(false);
             }

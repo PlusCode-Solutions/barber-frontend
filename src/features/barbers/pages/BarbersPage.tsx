@@ -10,6 +10,7 @@ import DeleteBarberModal from "../components/DeleteBarberModal";
 import Toast from "../../../components/ui/Toast";
 import SEO from "../../../components/shared/SEO";
 import { useTenant } from "../../../context/TenantContext";
+import { handleApiError } from "../../../lib/errorHandler";
 import type { Barber } from "../types";
 
 export default function BarbersPage() {
@@ -118,7 +119,7 @@ export default function BarbersPage() {
                         setShowToast(true);
                     } catch (e) {
                         setToastType("error");
-                        setToastMessage("No se pudo crear el barbero");
+                        setToastMessage(handleApiError(e).message);
                         setShowToast(true);
                     }
                 }}
@@ -140,8 +141,7 @@ export default function BarbersPage() {
                         setShowToast(true);
                     } catch (e) {
                         setToastType("error");
-                        const msg = e instanceof Error ? e.message : "No se pudo actualizar el barbero";
-                        setToastMessage(msg);
+                        setToastMessage(handleApiError(e).message);
                         setShowToast(true);
                     }
                 }}
@@ -162,7 +162,7 @@ export default function BarbersPage() {
                         setShowToast(true);
                     } catch (e) {
                         setToastType("error");
-                        setToastMessage("No se pudo eliminar el barbero");
+                        setToastMessage(handleApiError(e).message);
                         setShowToast(true);
                     }
                 }}

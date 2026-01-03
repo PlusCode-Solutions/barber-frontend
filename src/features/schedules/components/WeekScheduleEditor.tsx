@@ -1,4 +1,4 @@
-import { Save, Clock, AlertCircle } from "lucide-react";
+import { Save, Clock, AlertCircle, X } from "lucide-react";
 import { type Schedule } from "../types";
 import { Button } from "../../../components/ui/Button";
 import { Input } from "../../../components/ui/Input";
@@ -114,6 +114,20 @@ export default function WeekScheduleEditor({ currentSchedules, onUpdate, onShowT
                                                         placeholder="--:--"
                                                     />
                                                 </div>
+                                                {/* Clear Break Button */}
+                                                {(data.lunchStartTime || data.lunchEndTime) && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            handleChange(day.id, 'lunchStartTime', '');
+                                                            handleChange(day.id, 'lunchEndTime', '');
+                                                        }}
+                                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors self-end mb-1"
+                                                        title="Quitar descanso"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
