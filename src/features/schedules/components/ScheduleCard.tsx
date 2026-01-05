@@ -1,11 +1,11 @@
 import { Clock, CalendarOff } from "lucide-react";
 import type { Schedule } from "../types";
+import { useTenant } from "../../../context/TenantContext";
 
 interface ScheduleCardProps {
     schedule: Schedule;
+    variant?: 'default' | 'embedded'; // 'embedded' removes outer borders/shadows for grouped layout
 }
-
-import { useTenant } from "../../../context/TenantContext";
 
 const DAYS = [
     "Domingo",
@@ -17,7 +17,7 @@ const DAYS = [
     "Sábado"
 ];
 
-export default function ScheduleCard({ schedule }: ScheduleCardProps) {
+export default function ScheduleCard({ schedule, variant = 'default' }: ScheduleCardProps) {
     const { tenant } = useTenant();
     const dayName = DAYS[schedule.dayOfWeek];
 
@@ -45,12 +45,19 @@ export default function ScheduleCard({ schedule }: ScheduleCardProps) {
         }
     };
 
-    return (
-        <div className={`group relative overflow-hidden rounded-2xl border transition-all duration-300 ${schedule.isClosed
+    // Determine basic classes based on variant
+    const containerClasses = variant === 'default'
+        ? `group relative overflow-hidden rounded-2xl border transition-all duration-300 ${schedule.isClosed
             ? "bg-gray-50 border-gray-200 opacity-80"
             : "bg-white border-gray-100 shadow-sm hover:shadow-md"
-            }`}
-            style={!schedule.isClosed ? { borderColor: `${tenant?.primaryColor || '#bfdbfe'}40` } : {}}
+        }`
+        : `relative group transition-colors hover:bg-gray-50/50 ${schedule.isClosed ? "bg-gray-50/50 opacity-80" : "bg-transparent"
+        }`;
+
+    return (
+        <div
+            className={containerClasses}
+            style={variant === 'default' && !schedule.isClosed ? { borderColor: `${tenant?.primaryColor || '#bfdbfe'}40` } : {}}
         >
             {/* Indicador lateral de estado */}
             <div
@@ -58,10 +65,10 @@ export default function ScheduleCard({ schedule }: ScheduleCardProps) {
                 style={!schedule.isClosed ? { backgroundColor: tenant?.primaryColor || '#3b82f6' } : {}}
             ></div>
 
-            <div className="p-5 pl-7 flex items-center justify-between">
-                <div className="flex items-center gap-4">
+            <div className="p-3 md:p-5 pl-4 md:pl-7 flex flex-col md:flex-row md:items-center justify-between gap-2">
+                <div className="flex items-center gap-3">
                     <div
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center ${schedule.isClosed
+                        className={`w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center ${schedule.isClosed
                             ? "bg-gray-100 text-gray-400"
                             : ""
                             }`}
@@ -70,35 +77,35 @@ export default function ScheduleCard({ schedule }: ScheduleCardProps) {
                             color: tenant?.primaryColor || '#2563eb'
                         } : {}}
                     >
-                        {schedule.isClosed ? <CalendarOff size={20} /> : <Clock size={20} />}
+                        {schedule.isClosed ? <CalendarOff size={18} /> : <Clock size={18} />}
                     </div>
 
                     <div>
-                        <h3 className={`font-bold text-lg ${schedule.isClosed ? "text-gray-500" : "text-gray-900"
+                        <h3 className={`font-bold text-sm md:text-lg ${schedule.isClosed ? "text-gray-500" : "text-gray-900"
                             }`}>
                             {dayName}
                         </h3>
-                        <p className={`text-sm font-medium ${schedule.isClosed ? "text-gray-400" : "text-green-600"
+                        <p className={`text-xs md:text-sm font-medium ${schedule.isClosed ? "text-gray-400" : "text-green-600"
                             }`}>
                             {schedule.isClosed ? "Cerrado" : "Abierto"}
                         </p>
                     </div>
                 </div>
 
-                <div className="text-right">
+                <div className="text-left md:text-right pl-11 md:pl-0">
                     {!schedule.isClosed ? (
                         <>
-                            <p className="text-gray-900 font-bold text-lg">
+                            <p className="text-gray-900 font-bold text-sm md:text-lg">
                                 {formatTime(startTime)} - {formatTime(endTime)}
                             </p>
                             {lunchStartTime && lunchEndTime && (
-                                <p className="text-xs text-gray-500 mt-0.5">
+                                <p className="text-[10px] md:text-xs text-gray-500 mt-0.5">
                                     Receso: {formatTime(lunchStartTime)} - {formatTime(lunchEndTime)}
                                 </p>
                             )}
                         </>
                     ) : (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] md:text-xs font-medium bg-gray-100 text-gray-800">
                             Descanso
                         </span>
                     )}

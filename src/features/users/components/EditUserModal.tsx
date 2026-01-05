@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import type { User, UpdateUserDto } from "../types";
 import type { UserRole } from "../../../config/roles";
@@ -20,6 +20,15 @@ export default function EditUserModal({ user, isOpen, onClose, onSuccess }: Edit
 
     const [name, setName] = useState(user.name || "");
     const [role, setRole] = useState<UserRole>(user.role);
+
+    // Sync state when user prop changes
+    useEffect(() => {
+        if (user) {
+            setName(user.name || "");
+            setRole(user.role);
+            setLocalError(null);
+        }
+    }, [user, isOpen]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
