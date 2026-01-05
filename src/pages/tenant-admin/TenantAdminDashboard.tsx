@@ -1,7 +1,6 @@
 import { Calendar, Users, Activity } from 'lucide-react';
 import { useDashboardStats } from '../../features/dashboard/hooks/useDashboardStats';
 import { StatCard } from '../../features/dashboard/components/StatCard';
-import { formatCurrency } from '../../utils/formatUtils';
 import { useTenant } from '../../context/TenantContext';
 
 export default function TenantAdminDashboard() {
