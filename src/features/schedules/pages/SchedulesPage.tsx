@@ -168,32 +168,59 @@ export default function SchedulesPage() {
                     // Vista Pública (Siempre muestra horarios del primer barbero/tienda por defecto o el seleccionado si quisiéramos)
                     // Para vista pública habitual, solemos mostrar "Horarios de la Tienda" (General). 
                     // Si la tienda usa el perfil del primer barbero como "General", está bien.
-                    <div>
-                        {sortedSchedules.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-3xl border border-gray-200 shadow-sm max-w-2xl mx-auto">
-                                <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-5">
-                                    <Calendar className="w-10 h-10 text-gray-400" />
-                                </div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-2">Sin horarios definidos</h3>
-                                <p className="text-gray-500 text-sm max-w-xs mb-6">Aún no se han configurado los horarios de atención.</p>
-                                {isAdmin && (
-                                    <Button onClick={() => setIsEditing(true)}>
-                                        Configurar ahora
-                                    </Button>
-                                )}
+                    // Vista Pública
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                        {/* Sidebar: Próximos Días Libres (1 col) */}
+                        <div className="lg:col-span-1">
+                            {/* Make sticky so it stays visible while scrolling schedule if list is long */}
+                            <div className="sticky top-24">
+                                <PublicClosuresView barberId={selectedBarberId} />
                             </div>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                                {sortedSchedules.map((schedule, index) => (
-                                    <ScheduleCard
-                                        key={`${schedule.id || 'no-id'}-${schedule.dayOfWeek}-${index}`}
-                                        schedule={schedule}
-                                    />
-                                ))}
-                            </div>
-                        )}
+                        </div>
 
-                        <PublicClosuresView barberId={selectedBarberId} />
+                        {/* Main: Horario Semanal (3 cols) */}
+                        <div className="lg:col-span-3">
+                            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                                <Clock className="w-5 h-5 mr-2 text-blue-600" />
+                                Horario Semanal
+                            </h3>
+
+                            {sortedSchedules.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-20 text-center bg-white rounded-3xl border border-gray-200 shadow-sm">
+                                    <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-5">
+                                        <Calendar className="w-10 h-10 text-gray-400" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-gray-900 mb-2">Sin horarios definidos</h3>
+                                    <p className="text-gray-500 text-sm max-w-xs mb-6 mx-auto">Aún no se han configurado los horarios de atención.</p>
+                                    {isAdmin && (
+                                        <Button onClick={() => setIsEditing(true)}>
+                                            Configurar ahora
+                                        </Button>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    {/* Chunk schedules into pairs for the requested "2 days per row box" layout */}
+                                    {Array.from({ length: Math.ceil(sortedSchedules.length / 2) }).map((_, i) => {
+                                        const pair = sortedSchedules.slice(i * 2, i * 2 + 2);
+                                        return (
+                                            <div key={i} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-row divide-x divide-gray-100">
+                                                {pair.map((schedule) => (
+                                                    <div key={schedule.id} className="flex-1 min-w-0">
+                                                        <ScheduleCard
+                                                            schedule={schedule}
+                                                            variant="embedded"
+                                                        />
+                                                    </div>
+                                                ))}
+                                                {/* Filler padding if last row has only 1 item to maintain grid look (optional, but keeping it simpler properly aligns) */}
+                                                {pair.length === 1 && <div className="flex-1 hidden md:block bg-gray-50/20"></div>}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>

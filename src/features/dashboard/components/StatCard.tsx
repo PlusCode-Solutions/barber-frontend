@@ -8,9 +8,15 @@ interface StatCardProps {
     className?: string; // Allow custom styling
 }
 
-export function StatCard({ icon, label, value, subtitle, className = "" }: StatCardProps) {
+export function StatCard({ icon, label, value, subtitle, className = "", style = {} }: StatCardProps & { style?: React.CSSProperties }) {
     return (
-        <div className={`bg-white rounded-xl shadow-sm p-6 border border-gray-100 ${className}`}>
+        <div
+            className={`bg-white rounded-xl shadow-sm p-6 border ${className}`}
+            style={{
+                borderColor: style.borderColor || '#e5e7eb',
+                ...style
+            }}
+        >
             <div className="flex items-center gap-4 mb-4">
                 <div className="p-3 bg-gray-50 rounded-lg">
                     {icon}
