@@ -189,6 +189,7 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
         loading,
         error,
         closures,
-        schedules
+        schedules,
+        tenantSchedules 
     };
 }

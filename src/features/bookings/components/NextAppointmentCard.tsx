@@ -3,7 +3,7 @@ import { Calendar, Clock, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
 import { BookingsService } from '../api/bookings.service';
 import type { Booking } from '../types';
-import { formatFullDate, safeDate } from '../../../utils/dateUtils';
+import { formatFullDate, safeDate, isPastBooking } from '../../../utils/dateUtils';
 
 export default function NextAppointmentCard() {
     const { user } = useAuth();
@@ -19,17 +19,11 @@ export default function NextAppointmentCard() {
 
                 // Filter for "ACTIVE" bookings (Pending/Confirmed and Future)
                 // And sort ASCENDING (Closest date first)
-                const now = new Date();
                 const activeBookings = bookings
                     .filter(b => {
                         if (b.status === 'CANCELLED' || b.status === 'COMPLETED') return false;
-                        const bDate = safeDate(b.date);
-                        if (!bDate) return false;
 
-                        // Check if it's future (including today if time hasn't passed)
-                        // We can use isPastBooking logic manually or just date check to be safe
-                        // Simple check: date >= today (ignoring time precision for list filter)
-                        return bDate >= new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                        return !isPastBooking(b.date, b.startTime);
                     })
                     .sort((a, b) => {
                         const dateA = safeDate(a.date)?.getTime() || 0;
