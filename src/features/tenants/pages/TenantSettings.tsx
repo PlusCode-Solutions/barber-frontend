@@ -115,7 +115,8 @@ export default function TenantSettings() {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full h-11 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
+                                style={{ backgroundColor: tenant?.primaryColor || '#2563eb' }}
                             >
                                 <Save size={20} />
                                 {isLoading ? "Guardando..." : "Guardar Cambios"}
