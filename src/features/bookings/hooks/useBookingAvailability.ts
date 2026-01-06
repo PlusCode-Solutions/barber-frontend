@@ -9,22 +9,27 @@ import { generateTimeSlots, timeToMinutes } from "../utils/timeUtils";
 import { getDay } from "date-fns";
 import type { AvailabilitySlot } from "../types";
 
+import { filterSlotsByDuration } from "../utils/availabilityRules";
+
 interface UseBookingAvailabilityProps {
     barber: { id: string } | null | undefined;
     date: string;
     bookingIdToExclude?: string;
+    durationMinutes?: number; // Add duration
 }
+
 
 /**
  * Centralized hook to calculate availability.
  * Combines business rules (Tenant/Barber Schedules, Closures) with real availability (Bookings).
  */
-export function useBookingAvailability({ barber, date, bookingIdToExclude }: UseBookingAvailabilityProps) {
+export function useBookingAvailability({ barber, date, bookingIdToExclude, durationMinutes }: UseBookingAvailabilityProps) {
     const { tenant } = useTenant();
     const { user } = useAuth();
 
     const [availableSlots, setAvailableSlots] = useState<string[]>([]);
     const [allPotentialSlots, setAllPotentialSlots] = useState<string[]>([]);
+    const [breakSlots, setBreakSlots] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -94,12 +99,26 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude }: Use
 
                 if (start >= end) {
                     setAllPotentialSlots([]);
+                    setBreakSlots([]);
                 } else {
-                    const slots = generateTimeSlots(start, end, 30, schedule.lunchStartTime, schedule.lunchEndTime);
+                    // Fallback to tenant lunch times if not defined in barber schedule
+                    const lunchStart = schedule.lunchStartTime || tenantSchedule?.lunchStartTime;
+                    const lunchEnd = schedule.lunchEndTime || tenantSchedule?.lunchEndTime;
+
+                    const slots = generateTimeSlots(start, end, 30, lunchStart, lunchEnd);
                     setAllPotentialSlots(slots);
+
+                    // Calculate Break Slots
+                    if (lunchStart && lunchEnd) {
+                        const breaks = generateTimeSlots(lunchStart, lunchEnd, 30);
+                        setBreakSlots(breaks);
+                    } else {
+                        setBreakSlots([]);
+                    }
                 }
             } else {
                 setAllPotentialSlots([]);
+                setBreakSlots([]);
             }
 
             // C. Fetch Real Availability
@@ -138,8 +157,16 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude }: Use
                     const slotEnd = slotStart + 30; // Assuming 30 min duration for availability check
                     return !occupiedRanges.some(range => (slotStart < range.end) && (slotEnd > range.start));
                 });
+                
+                // Apply shared validation rules (Duration & Lunch Overlap)
+                const validatedSlots = filterSlotsByDuration(
+                    finalSlots,
+                    durationMinutes || 30, // Default to 30 if not provided
+                    schedule,
+                    tenantSchedule
+                );
 
-                setAvailableSlots(finalSlots);
+                setAvailableSlots(validatedSlots);
 
             } catch {
                 setError("No se pudo verificar disponibilidad.");
@@ -158,6 +185,7 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude }: Use
     return {
         availableSlots,
         allPotentialSlots,
+        breakSlots,
         loading,
         error,
         closures,

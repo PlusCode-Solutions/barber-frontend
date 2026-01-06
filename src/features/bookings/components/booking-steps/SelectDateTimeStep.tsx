@@ -2,7 +2,7 @@ import { Calendar as CalendarIcon, ChevronLeft, Clock } from "lucide-react";
 import Calendar from "../../../../components/ui/Calendar";
 import type { Closure, Schedule } from "../../../schedules/types";
 import { format } from "date-fns";
-import { safeDate, formatFriendlyDay } from "../../../../utils/dateUtils";
+import { safeDate, formatFriendlyDay, getCostaRicaNow, isSameDay } from "../../../../utils/dateUtils";
 import { useTenant } from "../../../../context/TenantContext";
 
 interface SelectDateTimeStepProps {
@@ -41,7 +41,35 @@ export default function SelectDateTimeStep({
     // Combine regular slots with break slots for full day view
     // This ensures break hours appear in the list (styled as orange)
     const combinedSlots = [...new Set([...allPotentialSlots, ...breakSlots])].sort();
-    const displaySlots = combinedSlots.length > 0 ? combinedSlots : availableSlots;
+
+    // - Morning (Now < 12): Booking allowed only for Afternoon (>= 12)
+    // - Afternoon (Now >= 12): Booking allowed only for Tomorrow (All Today slots hidden)
+    const rawDisplaySlots = combinedSlots.length > 0 ? combinedSlots : availableSlots;
+
+    const displaySlots = rawDisplaySlots.filter(slot => {
+        if (!selectedDate) return true;
+
+        // Check if selected date is "Today"
+        const nowCR = getCostaRicaNow(); // Current CR time
+        // Note: isSameDay(string, Date)
+        const isToday = isSameDay(selectedDate, nowCR);
+
+        if (!isToday) return true; // Future dates are fully open
+
+        const currentHour = nowCR.getHours();
+        const slotHour = parseInt(slot.split(':')[0]);
+        const isSlotMorning = slotHour < 12;
+
+        // Rule 1: Morning slots are never bookable "Today"
+        // (If it's Morning, must book Afternoon. If it's Afternoon, must book Tomorrow).
+        if (isSlotMorning) return false;
+
+        // Rule 2: Afternoon slots are only bookable if it's currently Morning (< 12)
+        // If it's already Afternoon (currentHour >= 12), then Afternoon slots are same-shift -> Blocked.
+        if (currentHour >= 12) return false;
+
+        return true;
+    });
 
     const morningSlots = displaySlots.filter(slot => parseInt(slot.split(':')[0]) < 12);
     const afternoonSlots = displaySlots.filter(slot => parseInt(slot.split(':')[0]) >= 12);
@@ -109,8 +137,27 @@ export default function SelectDateTimeStep({
                     ) : displaySlots.length === 0 ? (
                         <div className="h-64 border-2 border-gray-100 bg-gray-50 rounded-xl flex flex-col items-center justify-center text-gray-500 p-6 text-center">
                             <Clock size={48} className="mb-2 opacity-20" />
-                            <p className="font-medium text-gray-900">No hay horarios disponibles</p>
-                            <p className="text-sm mt-1">Intenta seleccionar otra fecha o barbero.</p>
+                            {(() => {
+                                const nowCR = getCostaRicaNow();
+                                const isToday = selectedDate && isSameDay(selectedDate, nowCR);
+                                if (isToday && nowCR.getHours() >= 12) {
+                                    return (
+                                        <>
+                                            <p className="font-medium text-gray-900">Agenda Cerrada por Hoy</p>
+                                            <p className="text-sm mt-1 text-orange-600 max-w-xs">
+                                                Solo se puede agendar con una jornada de anticipación.
+                                                Por favor selecciona <strong>Mañana</strong>.
+                                            </p>
+                                        </>
+                                    );
+                                }
+                                return (
+                                    <>
+                                        <p className="font-medium text-gray-900">No hay horarios disponibles</p>
+                                        <p className="text-sm mt-1">Intenta seleccionar otra fecha o barbero.</p>
+                                    </>
+                                );
+                            })()}
                         </div>
                     ) : (
                         <div className="max-h-[400px] overflow-y-auto pr-2 custom-scrollbar space-y-6">

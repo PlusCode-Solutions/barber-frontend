@@ -46,6 +46,7 @@ export function useRescheduleBookingForm(booking: Booking, onSuccess?: () => voi
     const { 
         availableSlots, 
         allPotentialSlots, 
+        breakSlots, // Extract breakSlots
         loading: loadingSlots, 
         error: availabilityError, 
         closures, 
@@ -53,7 +54,8 @@ export function useRescheduleBookingForm(booking: Booking, onSuccess?: () => voi
     } = useBookingAvailability({
         barber: selectedBarber,
         date: selectedDate,
-        bookingIdToExclude: booking.id
+        bookingIdToExclude: booking.id,
+        durationMinutes: duration // Pass the calculated duration
     });
 
     const error = formError || availabilityError;
@@ -109,6 +111,7 @@ export function useRescheduleBookingForm(booking: Booking, onSuccess?: () => voi
         selectedSlot,
         availableSlots,
         allPotentialSlots,
+        breakSlots, 
         loadingSlots,
         submitting,
         error,

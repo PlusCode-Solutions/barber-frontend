@@ -33,6 +33,7 @@ function RescheduleBookingModalContent({ booking, onClose, onSuccess, primaryCol
         selectedSlot,
         availableSlots,
         allPotentialSlots,
+        breakSlots, // Extract here
         loadingSlots,
         submitting,
         error,
@@ -91,6 +92,7 @@ function RescheduleBookingModalContent({ booking, onClose, onSuccess, primaryCol
                         selectedDate={selectedDate}
                         availableSlots={availableSlots}
                         allPotentialSlots={allPotentialSlots}
+                        breakSlots={breakSlots} // Pass it here
                         loadingSlots={loadingSlots}
                         closures={closures}
                         schedules={schedules}

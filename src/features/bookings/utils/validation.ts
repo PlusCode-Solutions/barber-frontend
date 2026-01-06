@@ -1,3 +1,6 @@
+import { getCostaRicaNow } from '../../../utils/dateUtils';
+import { format } from 'date-fns';
+
 export interface FormValidationError {
     field: string;
     message: string;
@@ -23,11 +26,12 @@ export function validateBookingForm(data: {
     if (!data.selectedDate) {
         errors.push({ field: 'date', message: 'Debes seleccionar una fecha' });
     } else {
-        // Validate date is not in the past
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const selectedDate = new Date(data.selectedDate);
-        if (selectedDate < today) {
+        const nowCR = getCostaRicaNow();
+        
+        const todayStr = format(nowCR, 'yyyy-MM-dd');
+        const selectedStr = data.selectedDate; 
+        
+        if (selectedStr < todayStr) {
             errors.push({ field: 'date', message: 'La fecha no puede ser en el pasado' });
         }
     }

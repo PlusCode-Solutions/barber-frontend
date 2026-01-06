@@ -8,6 +8,7 @@ import type { Closure, Schedule } from "../../schedules/types";
 import type { Service } from "../../services/types";
 import type { AvailabilitySlot } from "../types";
 import { useTenant } from "../../../context/TenantContext";
+import { filterSlotsByDuration } from "../utils/availabilityRules";
 
 interface UseAvailabilityCalculatorProps {
     selectedBarber: Barber | null;
@@ -122,29 +123,12 @@ export function useAvailabilityCalculator({
 
             const serviceDuration = selectedService?.durationMinutes || 30;
             
-            // Additional frontend validation for service duration and schedule limits
-            const finalAvailableSlots = apiAvailableTimes.filter(slotTime => {
-                const slotStart = timeToMinutes(slotTime);
-                const slotEnd = slotStart + serviceDuration;
-
-                // Check if service fits before closing time
-                const activeSchedule = schedules.find(s => Number(s.dayOfWeek) === Number(dayOfWeek));
-                if (activeSchedule && activeSchedule.endTime) {
-                    const closingTime = timeToMinutes(activeSchedule.endTime);
-                    if (slotEnd > closingTime) return false;
-                }
-                 
-                // Check if service overlaps with lunch break
-                const lunchStart = activeSchedule?.lunchStartTime || tenantSchedule?.lunchStartTime;
-                const lunchEnd = activeSchedule?.lunchEndTime || tenantSchedule?.lunchEndTime;
-                if (lunchStart && lunchEnd) {
-                    const lunchStartMin = timeToMinutes(lunchStart);
-                    const lunchEndMin = timeToMinutes(lunchEnd);
-                    if ((slotStart < lunchEndMin) && (slotEnd > lunchStartMin)) return false;
-                }
-
-                return true;
-            });
+            const finalAvailableSlots = filterSlotsByDuration(
+                apiAvailableTimes,
+                serviceDuration,
+                schedule,
+                tenantSchedule
+            );
             
             // Check if we have available slots, if not set informative message
             if (apiAvailableTimes.length > 0 && finalAvailableSlots.length === 0) {
