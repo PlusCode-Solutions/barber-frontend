@@ -3,7 +3,7 @@ import { Calendar, ChevronDown, Sparkles } from "lucide-react";
 import { formatFriendlyDay, safeDate } from "../../../utils/dateUtils";
 
 interface Props {
-    selectedDate: string; 
+    selectedDate: string;
     onDateChange: (date: string) => void;
     countForDay: number;
     totalCount: number;
@@ -43,21 +43,23 @@ export default function TenantBookingsDateFilter({
                     </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="bg-indigo-50 px-4 py-3 rounded-xl border border-indigo-100 shadow-sm min-w-[150px]">
-                        <p className="text-xs font-semibold text-indigo-700 uppercase">Citas del día</p>
-                        <p className="text-2xl font-black text-indigo-900">{countForDay}</p>
-                        <p className="text-[11px] text-indigo-600">Mostrando solo la fecha elegida</p>
-                    </div>
-                    <div className="bg-gray-100 px-4 py-3 rounded-xl border border-gray-200 shadow-sm min-w-[150px]">
-                        <p className="text-xs font-semibold text-gray-700 uppercase">Citas totales</p>
-                        <p className="text-2xl font-black text-gray-900">{totalCount}</p>
-                        <p className="text-[11px] text-gray-500">Histórico disponible</p>
+                <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+                    <div className="grid grid-cols-2 gap-3 w-full lg:w-auto">
+                        <div className="bg-indigo-50 px-4 py-3 rounded-xl border border-indigo-100 shadow-sm">
+                            <p className="text-xs font-semibold text-indigo-700 uppercase">Citas del día</p>
+                            <p className="text-2xl font-black text-indigo-900">{countForDay}</p>
+                            <p className="text-[11px] text-indigo-600">Mostrando solo la fecha elegida</p>
+                        </div>
+                        <div className="bg-gray-100 px-4 py-3 rounded-xl border border-gray-200 shadow-sm">
+                            <p className="text-xs font-semibold text-gray-700 uppercase">Citas totales</p>
+                            <p className="text-2xl font-black text-gray-900">{totalCount}</p>
+                            <p className="text-[11px] text-gray-500">Histórico disponible</p>
+                        </div>
                     </div>
                     <button
                         type="button"
                         onClick={() => setShowCalendar((prev) => !prev)}
-                        className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-500 px-4 py-3 text-white font-semibold shadow-lg transition hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-500 px-4 py-3 text-white font-semibold shadow-lg transition hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 w-full lg:w-auto"
                     >
                         <Calendar className="h-5 w-5" />
                         <span>Ver citas</span>

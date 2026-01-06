@@ -11,10 +11,18 @@ export const useChocoVoice = (tenantSlug: string = 'tony') => {
     
     const recognitionRef = useRef<any>(null);
 
+    // Initial browser support check
+    useEffect(() => {
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            setErrorMessage("Solo integrado en navegador Chrome. Próximamente demás navegadores.");
+        }
+    }, []);
+
     const speak = (text: string) => {
         window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'es-US'; // O es-CR si lo soporta tu OS
+        utterance.lang = 'es-US'; 
         
         utterance.onstart = () => {
                 setIsSpeaking(true);
@@ -30,7 +38,11 @@ export const useChocoVoice = (tenantSlug: string = 'tony') => {
 
     const stopListening = useCallback(() => {
         if (recognitionRef.current) {
-            recognitionRef.current.stop();
+            try {
+                recognitionRef.current.stop();
+            } catch (e) {
+                // Ignore stop errors
+            }
             setIsListening(false);
         }
     }, []);
@@ -39,107 +51,107 @@ export const useChocoVoice = (tenantSlug: string = 'tony') => {
         window.speechSynthesis.cancel();
         setIsSpeaking(false);
         setStatus('IDLE');
-        // Opcional: Parar el reconocimiento también o dejarlo listo para la próxima
-        if(recognitionRef.current) recognitionRef.current.abort();
-    }, []);
-
-    useEffect(() => {
-        // Inicializar SpeechRecognition
-        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-        
-        if (SpeechRecognition) {
-
-            const recognition = new SpeechRecognition();
-            recognition.continuous = false; // Cambiamos a false para evitar problemas de red en bucle
-            recognition.lang = 'es-ES'; // Cambiamos a es-ES para mayor compatibilidad
-            recognition.interimResults = true; 
-            
-            recognition.onstart = () => {
-
-                setIsListening(true);
-                setStatus('LISTENING');
-                setErrorMessage('');
-            };
-
-            recognition.onerror = (event: any) => {
-
-                setStatus('IDLE');
-                setIsListening(false);
-                
-                if (event.error === 'network') {
-                    setErrorMessage('Problema de conexión. Verifica tu internet.');
-                } else if (event.error === 'not-allowed') {
-                    setErrorMessage('Permiso de micrófono denegado.');
-                } else if (event.error === 'no-speech') {
-                    setErrorMessage('No se escuchó nada. Intenta de nuevo.');
-                } else {
-                    setErrorMessage(`Error: ${event.error}`);
-                }
-            };
-
-            recognition.onend = () => {
-
-                setIsListening(false);
-                setStatus('IDLE');
-            };
-
-            recognition.onresult = async (event: any) => {
-                let finalTranscript = '';
-                let interimTranscript = '';
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    const t = event.results[i][0].transcript.toLowerCase();
-                    if (event.results[i].isFinal) finalTranscript += t;
-                    else interimTranscript += t;
-                }
-                const fullText = finalTranscript || interimTranscript;
-                setLastTranscript(fullText);
-                
-                // 🛑 COMANDO DE INTERRUPCIÓN
-                if (fullText.includes('choco pare') || fullText.includes('basta') || fullText.includes('silencio')) {
-                    cancelSpeech();
-                    return;
-                }
-                // ⚡ COMANDO DE CONSULTA (Solo si es final)
-                if (finalTranscript.includes('choco') && !finalTranscript.includes('pare')) {
-                    // Detener escucha activa para procesar
-                    if (recognitionRef.current) recognitionRef.current.stop();
-                    setStatus('PROCESSING');
-                    
-                    try {
-                        const { data } = await client.post('/voice/query', {
-                            text: finalTranscript,
-                            tenantSlug
-                        });
-                        setResponse(data.phrase);
-                        speak(data.phrase);
-                    } catch (error) {
-
-                        setStatus('IDLE');
-                        setResponse("Error de conexión");
-                        speak("Lo siento, hubo un error conectando con el servidor.");
-                    }
-                }
-            };
-            recognitionRef.current = recognition;
-        } else {
-
-        }
-
-        return () => {
-            if (recognitionRef.current) {
+        if(recognitionRef.current) {
+            try {
                 recognitionRef.current.abort();
-            }
-        };
-    }, [tenantSlug, cancelSpeech]); // Removed status from dependencies
+            } catch (e) { }
+        }
+    }, []);
 
     const startListening = useCallback(() => {
-        if (recognitionRef.current) {
-            try {
-                recognitionRef.current.start();
-                setStatus('LISTENING');
-            } catch(e) { }
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+        if (!SpeechRecognition) {
+            setErrorMessage("Solo integrado en navegador Chrome. Próximamente demás navegadores.");
+            return;
         }
-    }, []);
+
+        // Re-initialize for each session to ensure freshness, especially on Safari
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.lang = navigator.language || 'es-ES'; // Use system language
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = () => {
+            setIsListening(true);
+            setStatus('LISTENING');
+            setErrorMessage('');
+        };
+
+        recognition.onerror = (event: any) => {
+            console.error("Speech Error:", event.error);
+            setIsListening(false);
+            setStatus('IDLE');
+            
+            if (event.error === 'network') {
+                // On Linux, 'network' often means "Missing API Keys" in Chromium/Brave
+                setErrorMessage("Solo integrado en navegador Chrome. Próximamente demás navegadores.");
+            } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+                setErrorMessage('Acceso al micrófono denegado. Verifica los permisos.');
+            } else if (event.error === 'no-speech') {
+                setErrorMessage(''); 
+            } else if (event.error === 'aborted') {
+                setErrorMessage('');
+            } else {
+                setErrorMessage(`Error: ${event.error}`);
+            }
+        };
+
+        recognition.onend = () => {
+            setIsListening(false);
+            if (status !== 'PROCESSING' && status !== 'SPEAKING') {
+                 setStatus('IDLE');
+            }
+        };
+
+        recognition.onresult = async (event: any) => {
+            let finalTranscript = '';
+            let interimTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                const t = event.results[i][0].transcript.toLowerCase();
+                if (event.results[i].isFinal) finalTranscript += t;
+                else interimTranscript += t;
+            }
+            const fullText = finalTranscript || interimTranscript;
+            setLastTranscript(fullText);
+            
+            if (fullText.includes('choco pare') || fullText.includes('basta') || fullText.includes('silencio')) {
+                cancelSpeech();
+                return;
+            }
+
+            if (finalTranscript.includes('choco')) {
+                // Stop immediately to process
+                try {
+                     recognition.stop(); 
+                } catch(e) {}
+                
+                setStatus('PROCESSING');
+                
+                try {
+                    const { data } = await client.post('/voice/query', {
+                        text: finalTranscript,
+                        tenantSlug
+                    });
+                    setResponse(data.phrase);
+                    speak(data.phrase);
+                } catch (error) {
+                    setStatus('IDLE');
+                    setResponse("Error de conexión");
+                    speak("Lo siento, hubo un error conectando con el servidor.");
+                }
+            }
+        };
+
+        recognitionRef.current = recognition;
+        try {
+            recognition.start();
+        } catch (e) {
+            console.error("Failed to start recognition:", e);
+        }
+
+    }, [tenantSlug, cancelSpeech, status]); 
 
     return {
         isListening,

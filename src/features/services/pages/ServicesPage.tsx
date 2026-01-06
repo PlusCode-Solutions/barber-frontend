@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Scissors, Clock, Pencil, Trash2, Plus, Search } from "lucide-react";
+import { Scissors, Clock, Pencil, Trash2, Plus } from "lucide-react";
 import { PERMISSIONS } from "../../../config/permissions";
 import { usePermissions } from "../../../hooks/usePermissions";
 import { useManageServices } from "../hooks/useManageServices";
@@ -24,7 +24,6 @@ export default function ServicesPage() {
         deleteService
     } = useManageServices();
 
-    const [searchTerm, setSearchTerm] = useState("");
     const [showCreate, setShowCreate] = useState(false);
     const [editing, setEditing] = useState<Service | null>(null);
     const [deleting, setDeleting] = useState<Service | null>(null);
@@ -53,11 +52,6 @@ export default function ServicesPage() {
         );
     }
 
-    const filteredServices = services.filter(service =>
-        service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        service.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pb-8">
             <SEO title="Servicios" description={`Explora nuestros servicios y precios en ${tenant?.name || 'la barbería'}.`} />
@@ -75,26 +69,14 @@ export default function ServicesPage() {
                         <div className="flex items-center gap-2">
                             <div className="bg-white/25 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/30">
                                 <span className="font-bold text-sm">
-                                    {filteredServices.length}{" "}
-                                    {filteredServices.length === 1 ? "servicio" : "servicios"}
+                                    {services.length}{" "}
+                                    {services.length === 1 ? "servicio" : "servicios"}
                                 </span>
                             </div>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                        {/* Search Input */}
-                        <div className="hidden md:flex items-center bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-3 py-2 placeholder-white/70 focus-within:bg-white/20 transition-all">
-                            <Search className="w-4 h-4 mr-2 opacity-70" />
-                            <input
-                                type="text"
-                                placeholder="Buscar servicio..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="bg-transparent border-none outline-none text-sm w-48 placeholder-gray-200 text-white"
-                            />
-                        </div>
-
                         <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
                             <Scissors className="w-8 h-8 text-white" strokeWidth={2.5} />
                         </div>
@@ -113,23 +95,9 @@ export default function ServicesPage() {
                 </div>
             </div>
 
-            {/* Mobile Search (visible only on small screens) */}
-            <div className="md:hidden px-6 pt-4">
-                <div className="flex items-center bg-white border border-gray-200 rounded-xl px-3 py-3 text-gray-600 shadow-sm">
-                    <Search className="w-4 h-4 mr-2 text-gray-400" />
-                    <input
-                        type="text"
-                        placeholder="Buscar servicio..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="bg-transparent border-none outline-none text-sm w-full"
-                    />
-                </div>
-            </div>
-
             {/* SERVICES GRID */}
             <div className="px-6 pt-6">
-                {filteredServices.length === 0 ? (
+                {services.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl border-2 border-dashed border-blue-200 shadow-sm">
                         <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mb-5 shadow-lg">
                             <Scissors className="w-12 h-12 text-blue-500" />
@@ -139,7 +107,7 @@ export default function ServicesPage() {
                     </div>
                 ) : (
                     <div className="space-y-4">
-                        {filteredServices.map((service) => (
+                        {services.map((service) => (
                             <div
                                 key={service.id}
                                 className="group bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-md border border-gray-200 hover:shadow-2xl hover:border-blue-300 transition-all duration-300 overflow-hidden"
