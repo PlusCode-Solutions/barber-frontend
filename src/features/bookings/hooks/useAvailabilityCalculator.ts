@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { BookingsService } from "../api/bookings.service";
-import { generateTimeSlots, timeToMinutes } from "../utils/timeUtils";
+import { generateTimeSlots } from "../utils/timeUtils";
 import { normalizeDateString } from "../../../utils/dateUtils";
 import { getDay, parse } from "date-fns";
 import type { Barber } from "../../barbers/types";
