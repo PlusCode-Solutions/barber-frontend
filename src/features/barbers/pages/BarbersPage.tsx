@@ -43,39 +43,44 @@ export default function BarbersPage() {
             <SEO title="Barberos" description="Conoce a nuestro equipo de barberos." />
             {/* HEADER */}
             <div
-                className="mx-4 mt-4 px-6 py-6 shadow-xl sticky top-20 z-10 text-white rounded-3xl"
+                className="mx-4 mt-4 px-6 py-8 shadow-2xl sticky top-20 z-10 text-white rounded-3xl overflow-hidden relative"
                 style={{ backgroundColor: tenant?.primaryColor || tenant?.secondaryColor || '#2563eb' }}
             >
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-3xl font-black mb-2 tracking-tight">
-                            {isAdmin ? "Barberos del tenant" : "Nuestros Barberos"}
-                        </h1>
+                {/* Background Pattern */}
+                <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-3xl font-black tracking-tight leading-none">
+                                {isAdmin ? "Barberos del tenant" : "Nuestros Barberos"}
+                            </h1>
+                        </div>
                         <div className="flex items-center gap-2">
-                            <div className="bg-white/25 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/30">
+                            <div className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-lg border border-white/20 inline-flex items-center gap-2">
+                                <Users className="w-4 h-4 text-white/90" />
                                 <span className="font-bold text-sm">
-                                    {barbers.length}{" "}
-                                    {barbers.length === 1 ? "barbero" : "barberos"}
+                                    {barbers.length} {barbers.length === 1 ? "profesional" : "profesionales"}
                                 </span>
                             </div>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
-                            <Users className="w-8 h-8 text-white" strokeWidth={2.5} />
-                        </div>
-                        {isAdmin && (
-                            <button
-                                type="button"
-                                onClick={() => setShowCreate(true)}
-                                className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-3 text-sm font-semibold shadow-lg transition hover:shadow-xl"
-                                style={{ color: tenant?.primaryColor || '#9333ea' }}
+
+                    {isAdmin && (
+                        <button
+                            type="button"
+                            onClick={() => setShowCreate(true)}
+                            className="group flex items-center justify-center gap-3 rounded-2xl bg-white text-gray-900 px-6 py-4 shadow-lg transition-all hover:scale-[1.02] active:scale-95 font-bold md:w-auto w-full"
+                        >
+                            <div
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-white transition-colors"
+                                style={{ backgroundColor: tenant?.primaryColor || '#9333ea' }}
                             >
-                                <Plus className="h-4 w-4" />
-                                Nuevo barbero
-                            </button>
-                        )}
-                    </div>
+                                <Plus className="w-5 h-5" strokeWidth={3} />
+                            </div>
+                            <span className="text-base">Nuevo Barbero</span>
+                        </button>
+                    )}
                 </div>
             </div>
 

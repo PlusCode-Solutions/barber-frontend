@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Users, Mail, Phone, Award, UserCheck, Pencil, Trash2 } from "lucide-react";
 import type { Barber } from "../types";
 
@@ -9,6 +10,8 @@ interface BarberCardProps {
 }
 
 export default function BarberCard({ barber, isAdmin = false, onEdit, onDelete }: BarberCardProps) {
+    const [imgError, setImgError] = useState(false);
+
     return (
         <div className="group bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-md border border-gray-200 hover:shadow-2xl hover:border-purple-300 transition-all duration-300 overflow-hidden">
             {/* Barra superior decorativa */}
@@ -24,10 +27,11 @@ export default function BarberCard({ barber, isAdmin = false, onEdit, onDelete }
                 <div className="flex items-start gap-4 mb-4">
                     {/* Foto del barbero */}
                     <div className="relative">
-                        {barber.avatar ? (
+                        {barber.avatar && !imgError ? (
                             <img
                                 src={barber.avatar}
                                 alt={barber.name}
+                                onError={() => setImgError(true)}
                                 className="w-20 h-20 rounded-2xl object-cover shadow-lg border-2"
                                 style={{ borderColor: 'rgba(var(--primary-rgb, 168, 85, 247), 0.2)' }}
                             />

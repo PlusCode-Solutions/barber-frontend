@@ -1,53 +1,48 @@
 import { Calendar, Users, Activity } from 'lucide-react';
 import { useDashboardStats } from '../../features/dashboard/hooks/useDashboardStats';
 import { StatCard } from '../../features/dashboard/components/StatCard';
-import { useTenant } from '../../context/TenantContext';
+
 
 export default function TenantAdminDashboard() {
     const { stats, loading } = useDashboardStats();
-    const { tenant } = useTenant();
 
-    const cardStyle = {
-        borderColor: tenant?.primaryColor || '#e5e7eb',
-        borderWidth: '2px' // Making the uniform border slightly visible
-    };
 
     return (
-        <div className="pb-12 max-w-5xl mx-auto">
-            <h1 className="text-3xl font-bold text-gray-900 mb-8">
+        <div className="pb-12 max-w-6xl mx-auto px-4 sm:px-6">
+            <h1 className="text-3xl font-black text-gray-900 mb-8 tracking-tight">
                 Panel de Control
             </h1>
 
-            {/* 2x2 Grid Layout - More spacious */}
-            <div className="grid grid-cols-2 gap-y-10 gap-x-6">
+            {/* Responsive Grid Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* 1. Citas Hoy */}
                 <StatCard
-                    icon={<Calendar className="text-blue-600" size={32} />}
+                    icon={<Calendar className="text-white" size={24} />}
                     label="Citas Hoy"
                     value={loading ? "..." : (stats?.appointmentsToday?.toString() ?? "0")}
                     subtitle="Programadas para hoy"
-                    className="h-full min-h-[180px] py-6"
-                    style={cardStyle}
+                    className="border-indigo-100 hover:border-indigo-200"
+                    iconBgClassName="bg-indigo-500 shadow-indigo-200 shadow-lg"
                 />
 
                 {/* 2. Citas Mes Pasado */}
                 <StatCard
-                    icon={<Activity className="text-purple-600" size={32} />}
+                    icon={<Activity className="text-white" size={24} />}
                     label="Citas Mes Pasado"
                     value={loading ? "..." : (stats?.appointmentsLastMonth?.toString() ?? "0")}
                     subtitle="Total citas ciclo anterior"
-                    className="h-full min-h-[180px] py-6"
-                    style={cardStyle}
+                    className="border-purple-100 hover:border-purple-200"
+                    iconBgClassName="bg-purple-500 shadow-purple-200 shadow-lg"
                 />
 
                 {/* 3. Barberos Activos */}
                 <StatCard
-                    icon={<Users className="text-indigo-600" size={32} />}
+                    icon={<Users className="text-white" size={24} />}
                     label="Barberos Activos"
                     value={loading ? "..." : (stats?.activeBarbers?.toString() ?? "0")}
                     subtitle="En turno actualmente"
-                    className="h-full min-h-[180px] py-6"
-                    style={cardStyle}
+                    className="border-pink-100 hover:border-pink-200"
+                    iconBgClassName="bg-pink-500 shadow-pink-200 shadow-lg"
                 />
             </div>
         </div>

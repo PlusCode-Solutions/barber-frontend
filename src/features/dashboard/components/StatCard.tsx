@@ -8,25 +8,35 @@ interface StatCardProps {
     className?: string; // Allow custom styling
 }
 
-export function StatCard({ icon, label, value, subtitle, className = "", style = {} }: StatCardProps & { style?: React.CSSProperties }) {
+export function StatCard({
+    icon,
+    label,
+    value,
+    subtitle,
+    className = "",
+    style = {},
+    iconBgClassName = "bg-gray-50 text-gray-600"
+}: StatCardProps & { style?: React.CSSProperties, iconBgClassName?: string }) {
     return (
         <div
-            className={`bg-white rounded-xl shadow-sm p-6 border ${className}`}
+            className={`bg-white rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 p-6 border border-transparent ${className}`}
             style={{
-                borderColor: style.borderColor || '#e5e7eb',
                 ...style
             }}
         >
-            <div className="flex items-center gap-4 mb-4">
-                <div className="p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1 transition-colors group-hover:text-gray-700">{label}</p>
+                    <h3 className="text-3xl font-black text-gray-900 tracking-tight">{value}</h3>
+                </div>
+                <div className={`p-4 rounded-xl flex items-center justify-center transition-transform hover:scale-110 duration-200 ${iconBgClassName}`}>
                     {icon}
                 </div>
-                <div className="flex-1">
-                    <h3 className="text-gray-500 text-sm font-medium">{label}</h3>
-                    <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
-                </div>
             </div>
-            <p className="text-sm text-gray-400 font-medium">{subtitle}</p>
+            <div className="mt-2 flex items-center gap-1.5">
+                <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                <p className="text-xs text-gray-400 font-medium">{subtitle}</p>
+            </div>
         </div>
     );
 }

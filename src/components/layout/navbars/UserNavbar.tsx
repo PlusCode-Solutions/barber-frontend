@@ -43,7 +43,7 @@ export default function UserNavbar() {
                     <div className="flex items-center justify-between h-20">
                         {/* Logo */}
                         <div className="flex-shrink-0 flex items-center gap-3">
-                            <Link to="/" className="flex items-center gap-2 group">
+                            <Link to={`/${finalSlug}/dashboard`} className="flex items-center gap-2 group">
                                 {tenant?.logoUrl ? (
                                     <img src={tenant.logoUrl} alt={tenant.name || "Logo"} className="h-10 w-auto object-contain rounded-lg bg-white/10" />
                                 ) : (
