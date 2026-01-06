@@ -5,12 +5,14 @@ import { calculateEndTime } from "../utils/timeUtils";
 import { normalizeDateString } from "../../../utils/dateUtils";
 import { differenceInMinutes, parse as parseDate } from "date-fns";
 import { useBookingAvailability } from "./useBookingAvailability";
+import { useQueryClient } from "@tanstack/react-query";
 
 /**
  * Hook para reprogramar citas.
  * Refactorizado para usar `useBookingAvailability` y reducir duplicidad.
  */
 export function useRescheduleBookingForm(booking: Booking, onSuccess?: () => void, onClose?: () => void) {
+    const queryClient = useQueryClient();
     
     // 1. Inicialización de datos
     const selectedService = booking.service;
@@ -50,7 +52,8 @@ export function useRescheduleBookingForm(booking: Booking, onSuccess?: () => voi
         loading: loadingSlots, 
         error: availabilityError, 
         closures, 
-        schedules 
+        schedules,
+        tenantSchedules
     } = useBookingAvailability({
         barber: selectedBarber,
         date: selectedDate,
@@ -93,6 +96,7 @@ export function useRescheduleBookingForm(booking: Booking, onSuccess?: () => voi
         setSubmitting(true);
         try {
             await BookingsService.updateBooking(booking.id, dto);
+            await queryClient.invalidateQueries({ queryKey: ['bookings'] }); // Force refresh of all bookings
             onSuccess?.();
             handleClose();
         } catch (err: any) {
@@ -117,6 +121,7 @@ export function useRescheduleBookingForm(booking: Booking, onSuccess?: () => voi
         error,
         closures,
         schedules,
+        tenantSchedules, // Return it
         handleClose,
         handleDateChange,
         handleSlotSelect,

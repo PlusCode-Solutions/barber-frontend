@@ -14,7 +14,6 @@ import { useBarbers } from "../../barbers/hooks/useBarbers"; // Import useBarber
 import { formatCurrency } from "../../../utils/formatUtils";
 import { Filter, RefreshCw } from "lucide-react"; // Icons
 import Toast from "../../../components/ui/Toast";
-import { useBookingAvailability } from "../hooks/useBookingAvailability";
 import { calculateEndTime } from "../utils/timeUtils";
 import { SchedulesService } from "../../schedules/api/schedules.service";
 import { generateTimeSlots, timeToMinutes } from "../utils/timeUtils";
@@ -40,11 +39,6 @@ export default function TenantBookingsPage() {
         setCurrentPage(1);
     }, [selectedDate, selectedBarberId]);
 
-    const { availableSlots } = useBookingAvailability({
-        barber: selectedBarberId ? { id: selectedBarberId } : undefined,
-        date: selectedDate
-    });
-
     const [schedules, setSchedules] = useState<any[]>([]);
     const [tenantSchedules, setTenantSchedules] = useState<any[]>([]);
     const [closures, setClosures] = useState<any[]>([]);
@@ -66,20 +60,21 @@ export default function TenantBookingsPage() {
                 setSchedules(allScheds);
                 setClosures(allClosures);
                 setTenantSchedules(tScheds);
-                setHasLoadedMetadata(true);
             } catch (e) {
                 console.error("Error loading schedules metadata", e);
+            } finally {
+                setHasLoadedMetadata(true);
             }
         };
         loadMetadata();
-    }, [hasLoadedMetadata]);
+    }, []);
 
     /**
      * Computes available time slots for all barbers based on schedules and existing bookings.
      * Memoized to optimize performance and prevent re-renders.
      */
-    const allBarbersFreeSlots = useMemo(() => {
-        if (selectedBarberId || barbers.length === 0 || !hasLoadedMetadata) {
+    const computedFreeSlots = useMemo(() => {
+        if (barbers.length === 0 || !hasLoadedMetadata) {
             return [];
         }
 
@@ -94,7 +89,12 @@ export default function TenantBookingsPage() {
 
         const allSlots: { time: string, barberId: string, barberName: string }[] = [];
 
-        barbers.forEach(barber => {
+        // If a barber is selected, only iterate over that one. Otherwise, check all.
+        const barbersToCheck = selectedBarberId
+            ? barbers.filter(b => b.id === selectedBarberId)
+            : barbers;
+
+        barbersToCheck.forEach(barber => {
             const isBarberClosed = closures.some(c => c.barberId === barber.id && normalizeDateString(c.date) === dateStr);
             if (isBarberClosed) return;
 
@@ -147,6 +147,7 @@ export default function TenantBookingsPage() {
 
         return allSlots;
     }, [selectedBarberId, selectedDate, barbers, bookings, schedules, tenantSchedules, closures, hasLoadedMetadata]);
+
     /**
      * Merges bookings and available slots into a single chronological list.
      */
@@ -161,17 +162,8 @@ export default function TenantBookingsPage() {
             type: 'BOOKING' as const
         }));
 
-        let slotsToDisplay: { time: string, barberId: string, barberName: string }[] = [];
-
-        if (selectedBarberId && availableSlots.length > 0) {
-            slotsToDisplay = availableSlots.map(time => ({
-                time,
-                barberId: selectedBarberId,
-                barberName: barbers.find(b => b.id === selectedBarberId)?.name || ""
-            }));
-        } else if (!selectedBarberId && allBarbersFreeSlots.length > 0) {
-            slotsToDisplay = allBarbersFreeSlots;
-        }
+        // Now we always use the locally computed slots, which handles both single and all barber cases
+        const slotsToDisplay = computedFreeSlots;
 
         const freeSlotsCalls = slotsToDisplay.map(slot => ({
             id: `free-${slot.time}-${slot.barberId}`,
@@ -190,7 +182,7 @@ export default function TenantBookingsPage() {
         const combined = [...realBookings, ...freeSlotsCalls];
         return combined.sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-    }, [bookings, selectedDate, selectedBarberId, availableSlots, allBarbersFreeSlots, barbers]);
+    }, [bookings, selectedDate, selectedBarberId, computedFreeSlots]);
 
     if (loading) return <BookingsSkeleton />;
 

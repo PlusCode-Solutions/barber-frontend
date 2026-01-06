@@ -9,10 +9,12 @@ import { SchedulesService } from "../../schedules/api/schedules.service";
 import { useTenant } from "../../../context/TenantContext";
 import type { Closure, Schedule } from "../../schedules/types";
 import { useAvailabilityCalculator } from "./useAvailabilityCalculator";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Step = 1 | 2 | 3 | 4;
 
 export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => void) {
+    const queryClient = useQueryClient();
     const { tenant } = useTenant();
     
     // Form State
@@ -162,6 +164,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         try {
             if (!tenant?.slug) throw new Error("Tenant no disponible");
             await BookingsService.create(dto);
+            await queryClient.invalidateQueries({ queryKey: ['bookings'] }); // Refresh lists
             handleClose();
             onSuccess?.();
         } catch (err: any) {
