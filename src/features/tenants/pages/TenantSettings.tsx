@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
-import { Save, Upload, Building2, Palette, Image as ImageIcon } from "lucide-react";
+import { Save, Upload, Building2, Palette, Image as ImageIcon, Lock } from "lucide-react";
 import { useTenant } from "../../../context/TenantContext";
+import { useAuth } from "../../../context/AuthContext";
 import { TenantsService } from "../api/tenants.service";
 import { Card } from "../../../components/ui/Card";
 import { Input } from "../../../components/ui/Input";
@@ -17,14 +18,17 @@ interface TenantForm {
 
 export default function TenantSettings() {
     const { tenant, setTenant } = useTenant();
+    const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [uploadingLogo, setUploadingLogo] = useState(false);
+
+    const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
     const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<TenantForm>();
 
     // Watch color values for the color picker
-    const primaryColorValue = watch("primaryColor");
-    const secondaryColorValue = watch("secondaryColor");
+    const primaryColorValue = watch("primaryColor") || "#000000";
+    const secondaryColorValue = watch("secondaryColor") || "#000000";
 
     // Helper to ensure 6-digit hex
     const normalizeHex = (hex: string) => {
@@ -39,7 +43,6 @@ export default function TenantSettings() {
         if (tenant) {
             setValue("name", tenant.name);
             setValue("slug", tenant.slug);
-            // Ensure we start with valid full hex codes if possible, though input handles normalization now
             setValue("primaryColor", tenant.primaryColor || "#000000");
             setValue("secondaryColor", tenant.secondaryColor || "#000000");
         }
@@ -48,8 +51,19 @@ export default function TenantSettings() {
     const onSubmit = async (data: TenantForm) => {
         if (!tenant) return;
         setIsLoading(true);
+
         try {
-            const updated = await TenantsService.update(tenant.id, data);
+            // El Super Admin ahora solo puede editar nombre y logo (el slug y colores quedan restringidos)
+            // El Tenant Admin puede editar nombre, logo y colores
+            const payload = isSuperAdmin
+                ? { name: data.name }
+                : {
+                    name: data.name,
+                    primaryColor: data.primaryColor,
+                    secondaryColor: data.secondaryColor
+                };
+
+            const updated = await TenantsService.update(tenant.id, payload);
             setTenant({ ...tenant, ...updated });
             toast.success("Información actualizada exitosamente");
         } catch (error) {
@@ -62,6 +76,9 @@ export default function TenantSettings() {
 
     const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!tenant || !e.target.files?.[0]) return;
+
+        // Tanto Super Admin como Tenant Admin pueden cambiar el logo
+        if (!isSuperAdmin && user?.role !== 'TENANT_ADMIN') return;
 
         setUploadingLogo(true);
         try {
@@ -82,7 +99,12 @@ export default function TenantSettings() {
     return (
         <div className="space-y-6 animate-fade-in p-6">
             <header>
-                <h1 className="text-3xl font-bold text-gray-900">Configuración de la Barbería</h1>
+                <div className="flex items-center gap-3">
+                    <h1 className="text-3xl font-bold text-gray-900">Configuración de la Barbería</h1>
+                    <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-medium rounded-full flex items-center gap-1">
+                        <Lock size={12} /> {isSuperAdmin ? 'Gestión de Plataforma' : 'Gestión de Barbería'}
+                    </span>
+                </div>
                 <p className="text-gray-500 mt-2">Gestiona la identidad visual y datos de tu negocio</p>
             </header>
 
@@ -104,12 +126,16 @@ export default function TenantSettings() {
                             placeholder="Ej: Barbería Top"
                         />
 
-                        <Input
-                            label="Slug (URL)"
-                            {...register("slug", { required: "El slug es obligatorio" })}
-                            error={errors.slug?.message}
-                            helperText="Identificador único para tu URL"
-                        />
+                        <div className="relative">
+                            <Input
+                                label="Slug (URL)"
+                                {...register("slug")}
+                                disabled
+                                error={errors.slug?.message}
+                                helperText="Identificador único para tu URL (No editable)"
+                            />
+                            <Lock size={14} className="absolute right-3 top-9 text-gray-400" />
+                        </div>
 
                         <div className="pt-4">
                             <button
@@ -126,13 +152,15 @@ export default function TenantSettings() {
                 </Card>
 
                 <div className="space-y-8">
-                    {/* Logo */}
-                    <Card className="p-6">
+                    {/* Logo - Enabled for everyone */}
+                    <Card className="p-6 relative">
                         <div className="flex items-center gap-3 mb-6">
                             <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
                                 <ImageIcon size={20} />
                             </div>
-                            <h2 className="text-lg font-bold text-gray-900">Logotipo</h2>
+                            <h2 className="text-lg font-bold text-gray-900">
+                                Logotipo
+                            </h2>
                         </div>
 
                         <div className="flex flex-col items-center gap-6">
@@ -156,19 +184,31 @@ export default function TenantSettings() {
                                 </label>
                             </div>
                             <div className="text-center">
-                                <p className="text-sm font-medium text-gray-900">Sube tu logo</p>
+                                <p className="text-sm font-medium text-gray-900">
+                                    Sube tu logo
+                                </p>
                                 <p className="text-xs text-gray-500 mt-1">Recomendado: PNG o JPG, 500x500px</p>
                             </div>
                         </div>
                     </Card>
 
-                    {/* Apariencia */}
-                    <Card className="p-6">
+                    {/* Apariencia - Read only for Super Admin, editable for Tenant Admin */}
+                    <Card className="p-6 relative">
+                        {isSuperAdmin && (
+                            <div className="absolute inset-0 z-10 bg-white/50 backdrop-blur-[1px] cursor-not-allowed rounded-2xl flex items-center justify-center">
+                                <span className="bg-white px-3 py-1.5 rounded-lg shadow-sm border text-xs font-medium text-gray-600 flex items-center gap-2">
+                                    <Lock size={14} /> Solo editable por el dueño de la barbería
+                                </span>
+                            </div>
+                        )}
                         <div className="flex items-center gap-3 mb-6">
                             <div className="w-10 h-10 rounded-lg bg-pink-50 flex items-center justify-center text-pink-600">
                                 <Palette size={20} />
                             </div>
-                            <h2 className="text-lg font-bold text-gray-900">Apariencia</h2>
+                            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                Apariencia
+                                {isSuperAdmin && <Lock size={16} className="text-gray-400" />}
+                            </h2>
                         </div>
 
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -180,13 +220,15 @@ export default function TenantSettings() {
                                     <div className="flex gap-2">
                                         <input
                                             type="color"
+                                            disabled={isSuperAdmin}
                                             value={normalizeHex(primaryColorValue)}
                                             onChange={(e) => setValue("primaryColor", e.target.value)}
-                                            className="h-10 w-14 p-1 rounded border border-gray-300"
+                                            className="h-10 w-14 p-1 rounded border border-gray-300 disabled:opacity-50"
                                         />
                                         <Input
                                             {...register("primaryColor")}
                                             placeholder="#000000"
+                                            disabled={isSuperAdmin}
                                             containerClassName="flex-1"
                                         />
                                     </div>
@@ -198,27 +240,31 @@ export default function TenantSettings() {
                                     <div className="flex gap-2">
                                         <input
                                             type="color"
+                                            disabled={isSuperAdmin}
                                             value={normalizeHex(secondaryColorValue)}
                                             onChange={(e) => setValue("secondaryColor", e.target.value)}
-                                            className="h-10 w-14 p-1 rounded border border-gray-300"
+                                            className="h-10 w-14 p-1 rounded border border-gray-300 disabled:opacity-50"
                                         />
                                         <Input
                                             {...register("secondaryColor")}
                                             placeholder="#000000"
+                                            disabled={isSuperAdmin}
                                             containerClassName="flex-1"
                                         />
                                     </div>
                                 </div>
                             </div>
-                            <div className="pt-2">
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="w-full h-11 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl font-medium transition-all"
-                                >
-                                    Actualizar Colores
-                                </button>
-                            </div>
+                            {!isSuperAdmin && (
+                                <div className="pt-2">
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading}
+                                        className="w-full h-11 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl font-medium transition-all"
+                                    >
+                                        Actualizar Colores
+                                    </button>
+                                </div>
+                            )}
                         </form>
                     </Card>
                 </div>

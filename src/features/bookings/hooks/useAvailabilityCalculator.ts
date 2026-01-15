@@ -123,11 +123,25 @@ export function useAvailabilityCalculator({
 
             const serviceDuration = selectedService?.durationMinutes || 30;
             
+            // Calculate effective constraints
+            let closingTime = "23:59";
+            if (schedule && !schedule.isClosed && schedule.endTime) {
+                 closingTime = schedule.endTime;
+            } else if (tenantSchedule && !tenantSchedule.isClosed && tenantSchedule.endTime) {
+                 closingTime = tenantSchedule.endTime;
+            }
+
+            // Reuse lunchStart/lunchEnd variables if they were calculated above, 
+            // but for safety/clarity inside this block (as scope is large):
+            const lStart = activeSchedule?.lunchStartTime || tenantSchedule?.lunchStartTime;
+            const lEnd = activeSchedule?.lunchEndTime || tenantSchedule?.lunchEndTime;
+
             const finalAvailableSlots = filterSlotsByDuration(
                 apiAvailableTimes,
                 serviceDuration,
-                schedule,
-                tenantSchedule
+                closingTime,
+                lStart,
+                lEnd
             );
             
             // Check if we have available slots, if not set informative message

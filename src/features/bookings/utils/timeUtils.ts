@@ -69,7 +69,11 @@ export function generateTimeSlots(
 /**
  * Converts "HH:mm" string to minutes from midnight.
  */
-export function timeToMinutes(time: string): number {
+export function timeToMinutes(time: string | any): number {
+    if (!time || typeof time !== 'string') {
+        // console.warn('Invalid time format passed to timeToMinutes:', time);
+        return 0; 
+    }
     const [hours, minutes] = time.split(':').map(Number);
     return hours * 60 + minutes;
 }

@@ -1,5 +1,4 @@
 import { timeToMinutes } from "./timeUtils";
-import type { Schedule } from "../../schedules/types";
 
 /**
  * Filters available slots based on duration constraints:
@@ -9,22 +8,14 @@ import type { Schedule } from "../../schedules/types";
 export function filterSlotsByDuration(
     slots: string[],
     durationMinutes: number,
-    schedule: Schedule | undefined,
-    tenantSchedule: Schedule | undefined
+    closingTimeStr: string | null | undefined,
+    lunchStartStr: string | null | undefined,
+    lunchEndStr: string | null | undefined
 ): string[] {
     if (!slots.length) return [];
 
-    let closingTime: number | null = null;
-    
-    if (schedule && !schedule.isClosed && schedule.endTime) {
-        closingTime = timeToMinutes(schedule.endTime);
-    } else if (tenantSchedule && !tenantSchedule.isClosed && tenantSchedule.endTime) {
-        closingTime = timeToMinutes(tenantSchedule.endTime);
-    }
+    const closingTime = closingTimeStr ? timeToMinutes(closingTimeStr) : null;
 
-    const lunchStartStr = schedule?.lunchStartTime || tenantSchedule?.lunchStartTime;
-    const lunchEndStr = schedule?.lunchEndTime || tenantSchedule?.lunchEndTime;
-    
     let lunchStart: number | null = null;
     let lunchEnd: number | null = null;
     
