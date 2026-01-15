@@ -1,46 +1,55 @@
-import { useState, useEffect, useCallback } from 'react';
-import { TenantsService, type Tenant } from '../api/tenants.service';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { TenantsService } from '../api/tenants.service';
 import { useErrorHandler } from '../../../../hooks/useErrorHandler';
 
+
+const TENANTS_QUERY_KEY = ['admin', 'tenants'];
+
 export function useTenants() {
-    const [tenants, setTenants] = useState<Tenant[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const { handleError } = useErrorHandler();
+    const queryClient = useQueryClient();
 
-    const fetchTenants = useCallback(async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const data = await TenantsService.getAll();
-            setTenants(data);
-        } catch (err) {
-            const message = handleError(err, 'useTenants');
-            setError(message);
-        } finally {
-            setLoading(false);
-        }
-    }, [handleError]);
+    // Fetch tenants with caching
+    const {
+        data: tenants = [],
+        isLoading: loading,
+        error: queryError,
+        refetch
+    } = useQuery({
+        queryKey: TENANTS_QUERY_KEY,
+        queryFn: async () => {
+            try {
+                return await TenantsService.getAll();
+            } catch (err) {
+                const message = handleError(err, 'useTenants');
+                throw new Error(message);
+            }
+        },
+        staleTime: 5 * 60 * 1000, // 5 minutes - data stays fresh
+        gcTime: 10 * 60 * 1000, // 10 minutes - cache retention (formerly cacheTime)
+        refetchOnWindowFocus: true, // Refetch when user returns to tab
+        refetchOnReconnect: true, // Refetch when internet reconnects
+    });
 
-    useEffect(() => {
-        fetchTenants();
-    }, [fetchTenants]);
-
-    const deleteTenant = useCallback(async (id: string) => {
-        try {
+    // Delete tenant mutation
+    const deleteMutation = useMutation({
+        mutationFn: async (id: string) => {
             await TenantsService.delete(id);
-        } catch (err) {
-            const message = handleError(err, 'useTenants');
-            setError(message);
-            throw err; 
+        },
+        onSuccess: () => {
+            // Invalidate and refetch tenants after successful delete
+            queryClient.invalidateQueries({ queryKey: TENANTS_QUERY_KEY });
+        },
+        onError: (err) => {
+            handleError(err, 'useTenants');
         }
-    }, [handleError]);
+    });
 
     return {
         tenants,
         loading,
-        error,
-        refresh: fetchTenants,
-        deleteTenant
+        error: queryError?.message || null,
+        refresh: refetch,
+        deleteTenant: deleteMutation.mutateAsync
     };
 }
