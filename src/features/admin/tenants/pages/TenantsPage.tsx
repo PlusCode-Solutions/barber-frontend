@@ -131,7 +131,7 @@ export default function TenantsPage() {
                         <h3 className="mt-4 text-lg font-semibold text-gray-900">Error al cargar</h3>
                         <p className="mt-2 text-sm text-gray-600">{error}</p>
                         <div className="mt-6">
-                            <Button variant="secondary" onClick={refresh}>Intentar de nuevo</Button>
+                            <Button variant="secondary" onClick={() => refresh()}>Intentar de nuevo</Button>
                         </div>
                     </div>
                 ) : tenants.length === 0 ? (
