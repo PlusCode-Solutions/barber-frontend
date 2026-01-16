@@ -4,6 +4,7 @@ import type { Closure, Schedule } from "../../../schedules/types";
 import { format } from "date-fns";
 import { safeDate, formatFriendlyDay, getCostaRicaNow, isSameDay } from "../../../../utils/dateUtils";
 import { useTenant } from "../../../../context/TenantContext";
+import SlotsSkeleton from "./SlotsSkeleton";
 
 interface SelectDateTimeStepProps {
     selectedDate: string;
@@ -127,12 +128,8 @@ export default function SelectDateTimeStep({
                             <p>Selecciona una fecha en el calendario para ver los horarios</p>
                         </div>
                     ) : loadingSlots ? (
-                        <div className="h-64 border-2 border-gray-100 rounded-xl flex flex-col items-center justify-center text-gray-500">
-                            <div
-                                className="animate-spin rounded-full h-8 w-8 border-b-2 mb-3"
-                                style={{ borderColor: primaryColor }}
-                            ></div>
-                            <p>Buscando disponibilidad...</p>
+                        <div className="h-64 border-2 border-gray-100 rounded-xl p-4">
+                            <SlotsSkeleton />
                         </div>
                     ) : displaySlots.length === 0 ? (
                         <div className="h-64 border-2 border-gray-100 bg-gray-50 rounded-xl flex flex-col items-center justify-center text-gray-500 p-6 text-center">

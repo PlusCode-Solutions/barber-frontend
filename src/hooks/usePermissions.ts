@@ -19,6 +19,7 @@ export function usePermissions() {
      * Check if user has a specific permission
      */
     const can = (permission: Permission): boolean => {
+        if (userPermissions.includes('*' as any)) return true;
         return userPermissions.includes(permission);
     };
 

@@ -4,6 +4,8 @@ import SuperAdminLayout from "../components/layout/SuperAdminLayout";
 import SuperAdminDashboard from "../pages/super-admin/SuperAdminDashboard";
 import { PERMISSIONS } from "../config/permissions";
 
+import TenantsPage from "../features/admin/tenants/pages/TenantsPage";
+
 /**
  * Super Admin routes - platform administration
  */
@@ -14,8 +16,7 @@ export const superAdminRoutes = (
     >
         <Route element={<SuperAdminLayout />}>
             <Route path="dashboard" element={<SuperAdminDashboard />} />
-            {/* Future super admin routes can be added here */}
-            {/* <Route path="tenants" element={<TenantsPage />} /> */}
+            <Route path="tenants" element={<TenantsPage />} />
             {/* <Route path="users" element={<UsersPage />} /> */}
             {/* <Route path="billing" element={<BillingPage />} /> */}
             {/* <Route path="settings" element={<PlatformSettingsPage />} /> */}

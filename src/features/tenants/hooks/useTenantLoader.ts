@@ -10,8 +10,7 @@ export function useTenantLoader(slug: string) {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!slug) {
-            setError("Slug inválido");
+        if (!slug || slug === 'admin') {
             setLoading(false);
             return;
         }

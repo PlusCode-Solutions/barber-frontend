@@ -150,7 +150,9 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
                     }
                 });
 
-                const mappedRawSlots = rawSlots.filter(s => s.available).map(s => s.time.substring(0, 5));
+                const mappedRawSlots = rawSlots
+                    .filter(s => s.available && typeof s.time === 'string')
+                    .map(s => s.time.substring(0, 5));
                 
                 const finalSlots = mappedRawSlots.filter(time => {
                     const slotStart = timeToMinutes(time);
@@ -158,12 +160,20 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
                     return !occupiedRanges.some(range => (slotStart < range.end) && (slotEnd > range.start));
                 });
                 
-                // Apply shared validation rules (Duration & Lunch Overlap)
+                // Helper to get effective closing/lunch
+                const lunchStart = schedule?.lunchStartTime || tenantSchedule?.lunchStartTime;
+                const lunchEnd = schedule?.lunchEndTime || tenantSchedule?.lunchEndTime;
+                
+                const closingTime = (schedule?.endTime && tenantSchedule?.endTime) 
+                    ? (schedule.endTime < tenantSchedule.endTime ? schedule.endTime : tenantSchedule.endTime)
+                    : (schedule?.endTime || tenantSchedule?.endTime);
+
                 const validatedSlots = filterSlotsByDuration(
                     finalSlots,
-                    durationMinutes || 30, // Default to 30 if not provided
-                    schedule,
-                    tenantSchedule
+                    durationMinutes || 30,
+                    closingTime || "23:59",
+                    lunchStart,
+                    lunchEnd
                 );
 
                 setAvailableSlots(validatedSlots);

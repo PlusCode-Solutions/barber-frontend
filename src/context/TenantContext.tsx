@@ -36,7 +36,12 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
 
   // 2. Auto-refresh from API to keep data in sync (silent update)
   useEffect(() => {
-    if (tenant?.slug) {
+    // Skip refresh if we are on admin routes
+    if (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/super-admin')) {
+      return;
+    }
+
+    if (tenant?.slug && tenant.slug !== 'admin') {
       import("../features/tenants/api/tenants.service").then(({ TenantsService }) => {
         TenantsService.getBySlug(tenant.slug)
           .then(latest => {
