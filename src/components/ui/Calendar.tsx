@@ -23,6 +23,7 @@ interface CalendarProps {
     closures?: Closure[];
     schedules?: Schedule[];
     tenantSchedules?: Schedule[];
+    barberId?: string; // Selected barber ID for filtering closures
     className?: string;
     minDate?: Date;
     maxDate?: Date;
@@ -34,6 +35,7 @@ export default function Calendar({
     closures = [],
     schedules = [],
     tenantSchedules = [],
+    barberId,
     className = "",
     minDate,
     maxDate
@@ -62,7 +64,11 @@ export default function Calendar({
         if (dayLabel < minDateLabel) return 'disabled';
         if (maxDate && dayLabel > formatDateForInput(maxDate)) return 'disabled';
 
-        const closure = closures.find(c => normalizeDateString(c.date) === dayLabel);
+        const closure = closures.find(c => {
+            const isDateMatch = normalizeDateString(c.date) === dayLabel;
+            const isScopeMatch = !c.barberId || (barberId && c.barberId === barberId);
+            return isDateMatch && isScopeMatch;
+        });
         if (closure) return 'closed';
 
         const dayOfWeek = getDay(day);

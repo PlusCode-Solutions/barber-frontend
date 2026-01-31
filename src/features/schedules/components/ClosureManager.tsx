@@ -1,6 +1,9 @@
-import { CalendarOff, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { CalendarOff, Trash2, Store, User } from "lucide-react";
 import { useClosureManager } from "../hooks/useClosureManager";
 import { safeDate } from "../../../utils/dateUtils";
+import { useBarbers } from "../../barbers/hooks/useBarbers";
+import DeleteClosureModal from "./DeleteClosureModal";
 
 interface Props {
     onShowToast?: (message: string, type: "success" | "error") => void;
@@ -8,7 +11,30 @@ interface Props {
 }
 
 export default function ClosureManager({ onShowToast, barberId }: Props) {
-    const { closures, loadingList, form, actions } = useClosureManager({ onShowToast, barberId });
+    const { closures, loadingList, form, actions, deleteModal } = useClosureManager({ onShowToast, barberId });
+    const { barbers } = useBarbers();
+
+    // State for scope selection
+    // If barberId prop is present, default to BARBER, otherwise SHOP
+    const [scope, setScope] = useState<'SHOP' | 'BARBER'>(barberId ? 'BARBER' : 'SHOP');
+    const [targetBarberId, setTargetBarberId] = useState(barberId || "");
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // Determine the ID to send
+        // Shop -> null
+        // Barber -> selected ID
+        const finalId = scope === 'SHOP' ? null : targetBarberId;
+
+        // Validation: If Barber scope, must have ID
+        if (scope === 'BARBER' && !finalId) {
+            onShowToast?.("Debe seleccionar un barbero.", "error");
+            return;
+        }
+
+        actions.handleCreate(e, finalId);
+    };
 
     return (
         <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden h-full flex flex-col">
@@ -24,7 +50,56 @@ export default function ClosureManager({ onShowToast, barberId }: Props) {
                 </div>
 
                 {/* Formulario de Creación */}
-                <form onSubmit={actions.handleCreate} className="space-y-3 mt-4">
+                <form onSubmit={handleSubmit} className="space-y-3 mt-4">
+
+                    {/* Scope Selector */}
+                    <div className="bg-white p-1 rounded-lg border border-gray-200 flex mb-2">
+                        <button
+                            type="button"
+                            onClick={() => setScope('SHOP')}
+                            className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-semibold rounded-md transition-all ${scope === 'SHOP'
+                                ? 'bg-gray-100 text-gray-900 shadow-sm'
+                                : 'text-gray-500 hover:bg-gray-50'
+                                }`}
+                        >
+                            <Store size={14} />
+                            Toda la Tienda
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setScope('BARBER');
+                                if (!targetBarberId && barbers.length > 0) {
+                                    setTargetBarberId(barbers[0].id);
+                                }
+                            }}
+                            className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-semibold rounded-md transition-all ${scope === 'BARBER'
+                                ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
+                                : 'text-gray-500 hover:bg-gray-50'
+                                }`}
+                        >
+                            <User size={14} />
+                            Barbero
+                        </button>
+                    </div>
+
+                    {/* Barber Dropdown (Only if scope is BARBER) */}
+                    {scope === 'BARBER' && (
+                        <div className="animate-fade-in-down">
+                            <select
+                                value={targetBarberId}
+                                onChange={(e) => setTargetBarberId(e.target.value)}
+                                className="block w-full rounded-lg border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2"
+                                required
+                            >
+                                <option value="" disabled>Seleccionar Barbero...</option>
+                                {barbers.map(b => (
+                                    <option key={b.id} value={b.id}>{b.name}</option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-1 gap-2">
                         <div>
                             <label className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1 block">
@@ -44,7 +119,7 @@ export default function ClosureManager({ onShowToast, barberId }: Props) {
                         <div className="flex gap-2">
                             <input
                                 type="text"
-                                placeholder="Motivo (ej. Navidad, Capacitación)"
+                                placeholder="Motivo (ej. Navidad)"
                                 className="block w-full rounded-lg border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2"
                                 value={form.newReason}
                                 onChange={(e) => form.setNewReason(e.target.value)}
@@ -85,7 +160,7 @@ export default function ClosureManager({ onShowToast, barberId }: Props) {
 
                             return (
                                 <li key={closure.id} className="flex items-center justify-between p-3 border border-gray-100 md:border-transparent md:hover:bg-gray-50 rounded-lg group transition-colors bg-white md:bg-transparent shadow-sm md:shadow-none hover:shadow-md">
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-3 flex-1 min-w-0">
                                         {/* Date Badge */}
                                         <div className={`w-10 h-10 ${isValid ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-400'} rounded-lg flex flex-col items-center justify-center text-xs font-bold leading-none shadow-sm flex-shrink-0`}>
                                             <span>{dayNumber}</span>
@@ -94,8 +169,22 @@ export default function ClosureManager({ onShowToast, barberId }: Props) {
                                             </span>
                                         </div>
 
-                                        <div className="min-w-0">
-                                            <p className="font-medium text-gray-900 truncate">{closure.reason}</p>
+                                        <div className="min-w-0 flex-1">
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <p className="font-medium text-gray-900 truncate">{closure.reason}</p>
+                                                {/* Scope Badge */}
+                                                {closure.barberId ? (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-semibold rounded-full border border-blue-200 flex-shrink-0">
+                                                        <User size={10} />
+                                                        {barbers.find(b => b.id === closure.barberId)?.name || 'Barbero'}
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-700 text-[10px] font-semibold rounded-full border border-gray-200 flex-shrink-0">
+                                                        <Store size={10} />
+                                                        Toda la Tienda
+                                                    </span>
+                                                )}
+                                            </div>
                                             <p className="text-xs text-gray-500 truncate capitalize">
                                                 {fullDate}
                                             </p>
@@ -104,7 +193,7 @@ export default function ClosureManager({ onShowToast, barberId }: Props) {
 
                                     <button
                                         onClick={() => actions.handleDelete(closure.id)}
-                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
+                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 flex-shrink-0"
                                         title="Eliminar registro"
                                     >
                                         <Trash2 className="w-4 h-4" />
@@ -115,6 +204,15 @@ export default function ClosureManager({ onShowToast, barberId }: Props) {
                     </ul>
                 )}
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <DeleteClosureModal
+                isOpen={deleteModal.isOpen}
+                closure={deleteModal.closureToDelete || null}
+                barberName={deleteModal.closureToDelete?.barberId ? barbers.find(b => b.id === deleteModal.closureToDelete?.barberId)?.name : undefined}
+                onConfirm={deleteModal.onConfirm}
+                onCancel={deleteModal.onCancel}
+            />
         </div>
     );
 }

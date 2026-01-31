@@ -25,16 +25,23 @@ export function useClosureManager({ onShowToast, barberId }: UseClosureManagerPr
     const [newReason, setNewReason] = useState("");
     const [isCreating, setIsCreating] = useState(false);
 
+    // Estado del modal de eliminación
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [closureToDelete, setClosureToDelete] = useState<string | null>(null);
+
     // Crear un nuevo día libre
-    const handleCreate = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleCreate = async (e?: React.FormEvent, overrideBarberId?: string | null) => {
+        if (e) e.preventDefault();
         if (!newDate || !newReason) return;
 
         setIsCreating(true);
+
+        const finalBarberId = overrideBarberId !== undefined ? overrideBarberId : barberId;
+
         const dto: CreateClosureDto = {
             date: newDate,
             reason: newReason,
-            barberId
+            barberId: finalBarberId
         };
 
         const res = await createClosure(dto);
@@ -49,17 +56,33 @@ export function useClosureManager({ onShowToast, barberId }: UseClosureManagerPr
         setIsCreating(false);
     };
 
-    // Eliminar día libre
-    const handleDelete = async (id: string) => {
-        if (!confirm("¿Está seguro de que desea eliminar este registro?")) return;
-        
-        const result = await deleteClosure(id);
+    // Abrir modal de eliminación
+    const handleDelete = (id: string) => {
+        setClosureToDelete(id);
+        setDeleteModalOpen(true);
+    };
+
+    // Confirmar eliminación
+    const confirmDelete = async () => {
+        if (!closureToDelete) return;
+
+        const result = await deleteClosure(closureToDelete);
         if (result === true) {
             refetch();
-            onShowToast?.("Registro eliminado correctamente.", "success");
+            onShowToast?.("Día libre eliminado correctamente.", "success");
         } else {
             onShowToast?.(`Error al eliminar: ${result}`, "error");
         }
+
+        // Cerrar modal
+        setDeleteModalOpen(false);
+        setClosureToDelete(null);
+    };
+
+    // Cancelar eliminación
+    const cancelDelete = () => {
+        setDeleteModalOpen(false);
+        setClosureToDelete(null);
     };
 
     return {
@@ -75,6 +98,12 @@ export function useClosureManager({ onShowToast, barberId }: UseClosureManagerPr
         actions: {
             handleCreate,
             handleDelete
+        },
+        deleteModal: {
+            isOpen: deleteModalOpen,
+            closureToDelete: closureToDelete ? closures.find(c => c.id === closureToDelete) : null,
+            onConfirm: confirmDelete,
+            onCancel: cancelDelete
         }
     };
 }

@@ -70,7 +70,13 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
 
         const fetchAvailability = async () => {
             // A. Check Closures
-            const closure = closures.find(c => normalizeDateString(c.date) === date);
+            const closure = closures.find(c => {
+                const isDateMatch = normalizeDateString(c.date) === date;
+                const isScopeMatch = !c.barberId || (barber && c.barberId === barber.id);
+                
+                return isDateMatch && isScopeMatch;
+            });
+
             if (closure) {
                 setError(`Cerrado: ${closure.reason || 'Mantenimiento o Festivo'}`);
                 return;

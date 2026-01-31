@@ -98,6 +98,7 @@ function RescheduleBookingModalContent({ booking, onClose, onSuccess, primaryCol
                         closures={closures}
                         schedules={schedules}
                         tenantSchedules={tenantSchedules} // Pass it here
+                        barberId={selectedBarber?.id}
                         onDateChange={handleDateChange}
                         onSelectSlot={handleSlotSelect}
                     />
