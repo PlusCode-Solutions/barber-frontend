@@ -152,6 +152,13 @@ export function useAvailabilityCalculator({
             
             setAvailableSlots(finalAvailableSlots);
 
+            // Fallback: If local slot calculation failed but API returned slots, use API slots as potential slots
+            // This ensures we show "Occupied" (Red) slots instead of hiding them
+            if (rawSlots.length > 0) {
+                 const apiAllTimes = rawSlots.map(s => s.time.substring(0, 5));
+                 setAllPotentialSlots(prev => prev.length > 0 ? prev : apiAllTimes);
+            }
+
         } catch (err: any) {
             let errorMessage = "No se pudo verificar la disponibilidad.";
             if (err.response?.data?.message) {

@@ -1,10 +1,9 @@
 import { Outlet } from 'react-router-dom';
 import TenantAdminNavbar from './navbars/TenantAdminNavbar';
-import { useAuth } from '../../context/AuthContext';
-import { ChocoAssistant } from '../ChocoAssistant';
+
 
 export default function TenantAdminLayout() {
-    const { user } = useAuth();
+
 
     return (
         <div className="min-h-screen bg-gray-50 relative">
@@ -14,9 +13,6 @@ export default function TenantAdminLayout() {
                     <Outlet />
                 </div>
             </main>
-
-            {/* Choco Assistant Integration */}
-            {user && <ChocoAssistant userRole={user.role || ''} />}
         </div>
     );
 }

@@ -54,8 +54,44 @@ export default function TenantAdminNavbar() {
                         </div>
                     </Link>
 
+                    {/* Desktop Menu */}
+                    <nav className="hidden md:flex items-center gap-6 absolute left-1/2 transform -translate-x-1/2">
+                        {menuItems.slice(0, 6).map((item) => (
+                            <Link
+                                key={item.path}
+                                to={`/${tenantSlug}/${item.path}`}
+                                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${location.pathname.includes(item.path)
+                                    ? "bg-white/20 text-white"
+                                    : "text-white/80 hover:bg-white/10 hover:text-white"
+                                    }`}
+                            >
+                                <item.icon size={18} />
+                                {item.label}
+                            </Link>
+                        ))}
+                    </nav>
+
+                    {/* Desktop Actions */}
+                    <div className="hidden md:flex items-center gap-3">
+                        <Link
+                            to={`/${tenantSlug}/admin/settings`}
+                            className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                            title="Configuración"
+                        >
+                            <Settings size={20} />
+                        </Link>
+                        <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-2 bg-red-500/80 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm hover:shadow-md"
+                        >
+                            <LogOut size={16} />
+                            <span>Salir</span>
+                        </button>
+                    </div>
+
+                    {/* Mobile Menu Button */}
                     <button
-                        className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 transition-all active:scale-95"
+                        className="md:hidden w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 transition-all active:scale-95"
                         onClick={() => setMenuOpen(!menuOpen)}
                     >
                         {menuOpen ? <X size={24} /> : <Menu size={24} />}

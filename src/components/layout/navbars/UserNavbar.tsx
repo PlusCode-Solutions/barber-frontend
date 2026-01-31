@@ -2,11 +2,13 @@ import { useState } from "react";
 import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, Home, CalendarCheck, Users, Scissors, Clock, LogOut } from "lucide-react";
 import { useTenant } from "../../../context/TenantContext";
+import { useAuth } from "../../../context/AuthContext";
 
 export default function UserNavbar() {
     const [menuOpen, setMenuOpen] = useState(false);
     const { tenantSlug } = useParams();
     const { tenant } = useTenant();
+    const { user } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -39,7 +41,7 @@ export default function UserNavbar() {
                 className="fixed w-full z-50 transition-all duration-300 shadow-lg text-white"
                 style={{ backgroundColor: tenant?.primaryColor || tenant?.secondaryColor || '#2563eb' }}
             >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="w-full px-4 sm:px-6 lg:px-12">
                     <div className="flex items-center justify-between h-20">
                         {/* Logo */}
                         <div className="flex-shrink-0 flex items-center gap-3">
@@ -57,21 +59,40 @@ export default function UserNavbar() {
                             </Link>
                         </div>
 
-                        {/* Desktop Menu */}
-                        <div className="hidden md:flex items-center space-x-8">
-                            {menuItems.map((item) => (
-                                <Link
-                                    key={item.path}
-                                    to={`/${finalSlug}/${item.path}`}
-                                    className="text-white/90 hover:text-white font-medium transition-colors text-sm flex items-center gap-2 hover:bg-white/10 px-3 py-2 rounded-lg"
-                                >
-                                    <item.icon size={18} />
-                                    {item.label}
-                                </Link>
-                            ))}
+                        {/* Desktop Menu - Centered */}
+                        <div className="hidden md:flex items-center space-x-1 absolute left-1/2 transform -translate-x-1/2">
+                            {menuItems.map((item) => {
+                                const fullPath = `/${finalSlug}/${item.path}`;
+                                // Para "Inicio" (dashboard) requerimos coincidencia exacta para que no se active con los hijos
+                                const isActive = item.path === 'dashboard'
+                                    ? location.pathname === fullPath
+                                    : location.pathname.startsWith(fullPath);
+
+                                return (
+                                    <Link
+                                        key={item.path}
+                                        to={fullPath}
+                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${isActive
+                                            ? "bg-white text-blue-600 shadow-md"
+                                            : "text-white/80 hover:bg-white/10 hover:text-white"
+                                            }`}
+                                        style={isActive ? { color: tenant?.primaryColor || '#2563eb' } : undefined}
+                                    >
+                                        <item.icon size={16} />
+                                        {item.label}
+                                    </Link>
+                                );
+                            })}
+                        </div>
+
+                        {/* Desktop Actions - Right */}
+                        <div className="hidden md:flex items-center gap-4">
+                            <span className="text-white/80 text-sm font-medium hidden lg:block">
+                                Hola, {user?.name?.split(' ')[0] || 'Cliente'}
+                            </span>
                             <button
                                 onClick={handleLogout}
-                                className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-medium transition-all backdrop-blur-sm flex items-center gap-2"
+                                className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl font-medium transition-all backdrop-blur-sm flex items-center gap-2 border border-white/10 hover:border-white/30"
                             >
                                 <LogOut size={18} />
                                 Salir

@@ -95,7 +95,7 @@ export default function BarbersPage() {
                         <p className="text-gray-500 text-sm max-w-xs">Los barberos aparecerán aquí cuando estén disponibles.</p>
                     </div>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {barbers.map((barber) => (
                             <BarberCard
                                 key={barber.id}
