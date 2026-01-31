@@ -5,7 +5,7 @@ import { useTenant } from '../context/TenantContext';
  * DynamicManifest Component
  * 
  * Generates a dynamic PWA manifest based on the current tenant.
- * This allows each barbershop to have its own app name and logo
+ * This allows each barbershop to have its own app name (using slug) and logo
  * when users install the app on their devices.
  */
 export default function DynamicManifest() {
@@ -14,26 +14,29 @@ export default function DynamicManifest() {
     useEffect(() => {
         if (!tenant) return;
 
-        // Generate dynamic manifest
+        // Get current URL origin
+        const currentUrl = window.location.origin;
+
+        // Generate dynamic manifest using tenant slug
         const manifest = {
-            name: `${tenant.name} - Sistema de Citas`,
-            short_name: tenant.name,
+            name: `${tenant.slug} - Sistema de Citas`,
+            short_name: tenant.slug,
             description: `Agenda tu cita en ${tenant.name} de forma rápida y sencilla`,
-            start_url: "/",
+            start_url: currentUrl + "/",
             display: "standalone",
             background_color: "#ffffff",
             theme_color: tenant.primaryColor || "#2563eb",
             orientation: "portrait",
-            scope: "/",
+            scope: currentUrl + "/",
             icons: [
                 {
-                    src: tenant.logoUrl || "/logo.png",
+                    src: tenant.logoUrl || "/fondo.jpg",
                     sizes: "192x192",
                     type: "image/png",
                     purpose: "any maskable"
                 },
                 {
-                    src: tenant.logoUrl || "/logo.png",
+                    src: tenant.logoUrl || "/fondo.jpg",
                     sizes: "512x512",
                     type: "image/png",
                     purpose: "any maskable"
@@ -78,20 +81,20 @@ export default function DynamicManifest() {
 /**
  * Update meta tags for PWA and social media
  */
-function updateMetaTags(tenant: { name: string; logoUrl?: string | null; primaryColor?: string | null }) {
-    // Update title
-    document.title = `${tenant.name} - Sistema de Citas`;
+function updateMetaTags(tenant: { name: string; slug: string; logoUrl?: string | null; primaryColor?: string | null }) {
+    // Update title using slug
+    document.title = `${tenant.slug} - Sistema de Citas`;
 
     // Update or create meta tags
     const metaTags = [
-        { name: 'application-name', content: tenant.name },
-        { name: 'apple-mobile-web-app-title', content: tenant.name },
+        { name: 'application-name', content: tenant.slug },
+        { name: 'apple-mobile-web-app-title', content: tenant.slug },
         { name: 'theme-color', content: tenant.primaryColor || '#2563eb' },
-        { property: 'og:title', content: `${tenant.name} - Sistema de Citas` },
-        { property: 'og:site_name', content: tenant.name },
-        { property: 'og:image', content: tenant.logoUrl || '/logo.png' },
-        { property: 'twitter:title', content: `${tenant.name} - Sistema de Citas` },
-        { property: 'twitter:image', content: tenant.logoUrl || '/logo.png' },
+        { property: 'og:title', content: `${tenant.slug} - Sistema de Citas` },
+        { property: 'og:site_name', content: tenant.slug },
+        { property: 'og:image', content: tenant.logoUrl || '/fondo.jpg' },
+        { property: 'twitter:title', content: `${tenant.slug} - Sistema de Citas` },
+        { property: 'twitter:image', content: tenant.logoUrl || '/fondo.jpg' },
     ];
 
     metaTags.forEach(({ name, property, content }) => {
@@ -115,5 +118,5 @@ function updateMetaTags(tenant: { name: string; logoUrl?: string | null; primary
         appleIcon.rel = 'apple-touch-icon';
         document.head.appendChild(appleIcon);
     }
-    appleIcon.href = tenant.logoUrl || '/logo.png';
+    appleIcon.href = tenant.logoUrl || '/fondo.jpg';
 }
