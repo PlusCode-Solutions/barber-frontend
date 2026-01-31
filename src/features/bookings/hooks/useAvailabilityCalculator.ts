@@ -46,7 +46,13 @@ export function useAvailabilityCalculator({
             if (!selectedBarber || !selectedDate) return;
 
             // 1. Check Closures
-            const closure = closures.find(c => normalizeDateString(c.date) === selectedDate);
+            const closure = closures.find(c => {
+                const isDateMatch = normalizeDateString(c.date) === selectedDate;
+                // Global closure (no barberId) OR Specific closure for selected barber
+                const isScopeMatch = !c.barberId || (selectedBarber && c.barberId === selectedBarber.id);
+                return isDateMatch && isScopeMatch;
+            });
+
             if (closure) {
                 throw new Error(`La barbería está cerrada este día por: ${closure.reason || 'Mantenimiento o Festivo'}`);
             }

@@ -129,6 +129,7 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess, viewOnl
                             closures={closures}
                             schedules={schedules}
                             tenantSchedules={tenantSchedules}
+                            barberId={selectedBarber?.id}
                             onDateChange={handleDateChange}
                             onSelectSlot={handleSlotSelect}
                             onBack={() => goToStep(2)}

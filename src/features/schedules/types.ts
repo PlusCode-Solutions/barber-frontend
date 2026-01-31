@@ -31,5 +31,5 @@ export interface CreateScheduleDto {
 export interface CreateClosureDto {
     date: string;
     reason: string;
-    barberId?: string;
+    barberId?: string | null;
 }
