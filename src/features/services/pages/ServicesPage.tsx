@@ -106,7 +106,7 @@ export default function ServicesPage() {
                         <p className="text-gray-500 text-sm max-w-xs">Los servicios aparecerán aquí cuando estén disponibles.</p>
                     </div>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {services.map((service) => (
                             <div
                                 key={service.id}
@@ -167,39 +167,33 @@ export default function ServicesPage() {
                                 </div>
 
                                 {/* Footer */}
-                                <div className="px-6 pb-4 pt-2">
-                                    <div className="flex items-center justify-between text-xs text-gray-400">
-                                        <span className="flex items-center gap-1">
-                                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                                            Disponible
-                                        </span>
-                                        <span className="flex items-center gap-2">
-                                            {isAdmin ? (
-                                                <>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setEditing(service)}
-                                                        className="inline-flex items-center gap-1 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50"
-                                                    >
-                                                        <Pencil className="h-4 w-4" />
-                                                        Editar
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setDeleting(service)}
-                                                        className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 shadow-sm transition hover:bg-red-100"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                        Eliminar
-                                                    </button>
-                                                </>
-                                            ) : (
-                                                <span className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    Reservar →
-                                                </span>
-                                            )}
-                                        </span>
-                                    </div>
+                                <div className="px-6 pb-6 pt-2">
+                                    {isAdmin ? (
+                                        <div className="grid grid-cols-2 gap-3 w-full">
+                                            <button
+                                                type="button"
+                                                onClick={() => setEditing(service)}
+                                                className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-2.5 text-sm font-bold text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:border-gray-300"
+                                            >
+                                                <Pencil className="h-4 w-4" />
+                                                Editar
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setDeleting(service)}
+                                                className="flex items-center justify-center gap-2 rounded-xl border border-red-100 bg-red-50 py-2.5 text-sm font-bold text-red-600 shadow-sm transition-all hover:bg-red-100 hover:border-red-200"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                                Eliminar
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="flex justify-end">
+                                            <span className="text-gray-400 text-xs group-hover:text-blue-600 transition-colors">
+                                                Reservar →
+                                            </span>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}

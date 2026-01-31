@@ -1,55 +1,77 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Clock, User as UserIcon } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { Calendar, Clock, User as UserIcon, Trash2 } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
-import { BookingsService } from '../api/bookings.service';
 import type { Booking } from '../types';
+import { useUserBookings } from '../hooks/useUserBookings';
+import CancelBookingModal from './CancelBookingModal';
+import Toast from '../../../components/ui/Toast';
 import { formatFullDate, safeDate, isPastBooking } from '../../../utils/dateUtils';
 
 export default function NextAppointmentCard() {
     const { user } = useAuth();
+    const { bookings, loading, cancelBooking } = useUserBookings();
     const [nextBooking, setNextBooking] = useState<Booking | null>(null);
-    const [loading, setLoading] = useState(true);
 
+    // Cancellation state
+    const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
+    const [isCancelling, setIsCancelling] = useState(false);
+    const [toast, setToast] = useState<{ message: string; type: "success" | "error"; isVisible: boolean }>({
+        message: "",
+        type: "success", // Will be overridden to error for red styling
+        isVisible: false,
+    });
+
+    // Use QueryClient to invalidate queries
+    const queryClient = useQueryClient();
+
+    // Use the custom hook data
     useEffect(() => {
-        if (!user?.id) return;
+        if (!user?.id || loading) return;
 
-        const fetchBookings = async () => {
-            try {
-                const bookings = await BookingsService.getUserBookings(user.id);
+        const activeBookings = bookings
+            .filter(b => {
+                if (b.status === 'CANCELLED' || b.status === 'COMPLETED') return false;
+                return !isPastBooking(b.date, b.startTime);
+            })
+            .sort((a, b) => {
+                const dateA = safeDate(a.date)?.getTime() || 0;
+                const dateB = safeDate(b.date)?.getTime() || 0;
+                if (dateA !== dateB) return dateA - dateB;
+                const timeA = parseInt(a.startTime.replace(':', ''));
+                const timeB = parseInt(b.startTime.replace(':', ''));
+                return timeA - timeB;
+            });
 
-                // Filter for "ACTIVE" bookings (Pending/Confirmed and Future)
-                // And sort ASCENDING (Closest date first)
-                const activeBookings = bookings
-                    .filter(b => {
-                        if (b.status === 'CANCELLED' || b.status === 'COMPLETED') return false;
+        setNextBooking(activeBookings[0] || null);
+    }, [user?.id, bookings, loading]);
 
-                        return !isPastBooking(b.date, b.startTime);
-                    })
-                    .sort((a, b) => {
-                        const dateA = safeDate(a.date)?.getTime() || 0;
-                        const dateB = safeDate(b.date)?.getTime() || 0;
-                        // Determine order:
-                        // 1. Primary: Date Ascending
-                        if (dateA !== dateB) return dateA - dateB;
+    const handleConfirmCancel = async () => {
+        if (!bookingToCancel) return;
 
-                        // 2. Secondary: Time Ascending
-                        const timeA = parseInt(a.startTime.replace(':', ''));
-                        const timeB = parseInt(b.startTime.replace(':', ''));
-                        return timeA - timeB;
-                    });
-
-                setNextBooking(activeBookings[0] || null);
-            } catch (error: any) {
-                if (error.response?.status === 404) {
-                    setNextBooking(null);
-                }
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchBookings();
-    }, [user?.id]);
+        setIsCancelling(true);
+        try {
+            await cancelBooking(bookingToCancel);
+            setToast({
+                message: "Cita cancelada exitosamente",
+                type: "error",
+                isVisible: true,
+            });
+            setBookingToCancel(null);
+            queryClient.invalidateQueries({ queryKey: ['bookings'] }); // Update ALL lists including dashboard
+        } catch (error: any) {
+            const isForbidden = error?.response?.status === 403;
+            setToast({
+                message: isForbidden
+                    ? "No tienes permiso para eliminar citas"
+                    : "Error al cancelar la cita.",
+                type: "error",
+                isVisible: true,
+            });
+        } finally {
+            setIsCancelling(false);
+        }
+    };
 
     const getStatusParams = (status: string) => {
         switch (status) {
@@ -158,7 +180,32 @@ export default function NextAppointmentCard() {
                         </div>
                     </div>
                 </div>
+
+                {/* Cancel Actions */}
+                <div className="mt-4">
+                    <button
+                        onClick={() => setBookingToCancel(nextBooking.id)}
+                        className="w-full flex items-center justify-center gap-2 bg-red-600 text-white hover:bg-red-700 py-2.5 rounded-xl transition-all shadow-md hover:shadow-lg font-bold text-sm"
+                    >
+                        <Trash2 size={16} />
+                        Cancelar Cita
+                    </button>
+                </div>
             </div>
+
+            <CancelBookingModal
+                isOpen={!!bookingToCancel}
+                isCancelling={isCancelling}
+                onClose={() => setBookingToCancel(null)}
+                onConfirm={handleConfirmCancel}
+            />
+
+            <Toast
+                message={toast.message}
+                type={toast.type}
+                isVisible={toast.isVisible}
+                onClose={() => setToast({ ...toast, isVisible: false })}
+            />
         </div>
     );
 }

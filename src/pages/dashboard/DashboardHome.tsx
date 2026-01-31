@@ -14,13 +14,12 @@ export default function DashboardHome() {
     const { bookings, refetch } = useUserBookings();
 
     // Logic: Limit to 2 active future bookings
-    // TODO: Consider moving this limit to a configuration or database setting
-    const activeBookingsCount = bookings.filter(b =>
+    const activeBookings = bookings.filter(b =>
         (b.status === 'CONFIRMED' || b.status === 'PENDING') &&
         !isPastBooking(b.date, b.startTime)
-    ).length;
-
-    const limitReached = activeBookingsCount >= 2;
+    );
+    const limitReached = activeBookings.length >= 2;
+    const hasNextBooking = activeBookings.length > 0;
 
     const handleSuccess = async () => {
         // Explicitly fetch from server to update the limit immediately
@@ -31,7 +30,7 @@ export default function DashboardHome() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 px-5 py-6">
+        <div className="min-h-screen bg-gray-50 px-5 py-6 transition-all duration-500">
             <SEO
                 title="Inicio"
                 description={`Bienvenido a ${tenant?.name || 'tu barbería'}. Gestiona tus citas y servicios fácilmente.`}
@@ -45,74 +44,85 @@ export default function DashboardHome() {
                 </div>
             )}
 
-            {/* Next Appointment Card */}
-            <NextAppointmentCard />
-
             {/* Dashboard Content */}
-            <div className="bg-white rounded-3xl shadow-md p-6 border border-gray-100">
+            <div className={`transition-all duration-500 ease-in-out ${hasNextBooking
+                ? "grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-7xl mx-auto"
+                : "flex justify-center max-w-3xl mx-auto"
+                }`}>
 
-                {/* Encabezado con logo y nombre */}
-                <div className="flex items-center gap-4 mb-5">
-                    {tenant?.logoUrl && (
-                        <img
-                            src={tenant.logoUrl}
-                            alt="Logo"
-                            className="w-14 h-14 rounded-2xl object-cover shadow-sm border border-gray-200"
-                        />
-                    )}
+                {/* Column 1: Next Appointment - Only show if exists */}
+                {hasNextBooking && (
+                    <div className="space-y-6 animate-fade-in-up">
+                        <NextAppointmentCard />
+                    </div>
+                )}
 
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900 leading-tight">
-                            Bienvenidos a {tenant?.name ?? "tu barbería"}
-                        </h1>
-                        <p className="text-gray-500 text-sm">
-                            Es un gusto tenerte con nosotros ✂️
+                {/* Column 2: Dashboard Actions & Info (Welcome Card) */}
+                <div className={`bg-white rounded-3xl shadow-md p-6 border border-gray-100 h-fit transition-all duration-500 ${!hasNextBooking ? "w-full" : ""}`}>
+
+                    {/* Encabezado con logo y nombre */}
+                    <div className="flex items-center gap-4 mb-5">
+                        {tenant?.logoUrl && (
+                            <img
+                                src={tenant.logoUrl}
+                                alt="Logo"
+                                className="w-14 h-14 rounded-2xl object-cover shadow-sm border border-gray-200"
+                            />
+                        )}
+
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900 leading-tight">
+                                Bienvenidos a {tenant?.name ?? "tu barbería"}
+                            </h1>
+                            <p className="text-gray-500 text-sm">
+                                Es un gusto tenerte con nosotros ✂️
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Mensaje principal */}
+                    <p className="text-gray-700 text-base leading-relaxed">
+                        Gestiona tus citas, barberos, servicios y más desde este panel.
+                        <span
+                            className="font-semibold block mt-1"
+                            style={{ color: tenant?.primaryColor || tenant?.secondaryColor || '#2563eb' }}
+                        >
+                            Agenda tu cita cuando quieras — ¡tu tiempo es nuestra prioridad!
+                        </span>
+                    </p>
+
+                    {/* CTA Button - Nueva Cita */}
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        title={limitReached ? "Modo solo lectura: Límite de citas alcanzado" : "Crear nueva cita"}
+                        className={`mt-6 w-full text-white font-bold py-4 px-6 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-3 group hover:shadow-xl`}
+                        style={{ backgroundColor: tenant?.primaryColor || '#2563eb' }}
+                    >
+                        <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center group-hover:scale-110 transition">
+                            {limitReached ? <CheckCircle size={20} /> : <Plus size={20} />}
+                        </div>
+                        <span className="text-lg">
+                            {limitReached ? "Ver disponibilidad" : "Nueva Cita"}
+                        </span>
+                    </button>
+
+                    {/* CTA bonito */}
+                    <div
+                        className="mt-6 border rounded-2xl p-4"
+                        style={{
+                            borderColor: `${tenant?.primaryColor || '#2563eb'}40`,
+                            backgroundColor: `${tenant?.primaryColor || '#2563eb'}10`
+                        }}
+                    >
+                        <p
+                            className="text-sm font-medium"
+                            style={{ color: tenant?.primaryColor || '#2563eb' }}
+                        >
+                            ✨ Consejo: Revisa tus citas recientes para mantener todo bajo control.
                         </p>
                     </div>
+
                 </div>
-
-                {/* Mensaje principal */}
-                <p className="text-gray-700 text-base leading-relaxed">
-                    Gestiona tus citas, barberos, servicios y más desde este panel.
-                    <span
-                        className="font-semibold block mt-1"
-                        style={{ color: tenant?.primaryColor || tenant?.secondaryColor || '#2563eb' }}
-                    >
-                        Agenda tu cita cuando quieras — ¡tu tiempo es nuestra prioridad!
-                    </span>
-                </p>
-
-                {/* CTA Button - Nueva Cita */}
-                <button
-                    onClick={() => setIsModalOpen(true)}
-                    title={limitReached ? "Modo solo lectura: Límite de citas alcanzado" : "Crear nueva cita"}
-                    className={`mt-6 w-full text-white font-bold py-4 px-6 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-3 group hover:shadow-xl`}
-                    style={{ backgroundColor: tenant?.primaryColor || '#2563eb' }}
-                >
-                    <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center group-hover:scale-110 transition">
-                        {limitReached ? <CheckCircle size={20} /> : <Plus size={20} />}
-                    </div>
-                    <span className="text-lg">
-                        {limitReached ? "Ver disponibilidad" : "Nueva Cita"}
-                    </span>
-                </button>
-
-                {/* CTA bonito */}
-                <div
-                    className="mt-6 border rounded-2xl p-4"
-                    style={{
-                        borderColor: `${tenant?.primaryColor || '#2563eb'}40`,
-                        backgroundColor: `${tenant?.primaryColor || '#2563eb'}10`
-                    }}
-                >
-                    <p
-                        className="text-sm font-medium"
-                        style={{ color: tenant?.primaryColor || '#2563eb' }}
-                    >
-                        ✨ Consejo: Revisa tus citas recientes para mantener todo bajo control.
-                    </p>
-                </div>
-
             </div>
 
             {/* Modal */}
