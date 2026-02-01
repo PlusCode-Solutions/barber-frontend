@@ -14,20 +14,17 @@ export default function DynamicManifest() {
     useEffect(() => {
         if (!tenant) return;
 
-        // Get current URL origin
-        const currentUrl = window.location.origin;
-
         // Generate dynamic manifest using tenant slug
         const manifest = {
             name: `${tenant.slug} - Sistema de Citas`,
             short_name: tenant.slug,
             description: `Agenda tu cita en ${tenant.name} de forma rápida y sencilla`,
-            start_url: currentUrl + "/",
+            start_url: "/",
             display: "standalone",
             background_color: "#ffffff",
             theme_color: tenant.primaryColor || "#2563eb",
             orientation: "portrait",
-            scope: currentUrl + "/",
+            scope: "/",
             icons: [
                 {
                     src: tenant.logoUrl || "/fondo.jpg",
