@@ -9,7 +9,6 @@ import App from "./App";
 import { TenantProvider } from "./context/TenantContext";
 import { AuthProvider } from "./context/AuthContext";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import DynamicManifest from "./components/DynamicManifest";
 
 import "./index.css";
 
@@ -29,7 +28,6 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         <ErrorBoundary>
           <AuthProvider>
             <TenantProvider>
-              <DynamicManifest />
               <BrowserRouter>
                 <App />
               </BrowserRouter>
