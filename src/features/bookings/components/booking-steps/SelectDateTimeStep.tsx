@@ -41,35 +41,33 @@ export default function SelectDateTimeStep({
     const primaryColor = tenant?.primaryColor || tenant?.secondaryColor || '#2563eb';
     const dateObj = selectedDate ? safeDate(selectedDate) : null;
 
-    // Combine regular slots with break slots for full day view
-    // This ensures break hours appear in the list (styled as orange)
     const combinedSlots = [...new Set([...allPotentialSlots, ...breakSlots])].sort();
-
-    // - Morning (Now < 12): Booking allowed only for Afternoon (>= 12)
-    // - Afternoon (Now >= 12): Booking allowed only for Tomorrow (All Today slots hidden)
     const rawDisplaySlots = combinedSlots.length > 0 ? combinedSlots : availableSlots;
 
     const displaySlots = rawDisplaySlots.filter(slot => {
         if (!selectedDate) return true;
 
-        // Check if selected date is "Today"
-        const nowCR = getCostaRicaNow(); // Current CR time
-        // Note: isSameDay(string, Date)
+        const nowCR = getCostaRicaNow();
         const isToday = isSameDay(selectedDate, nowCR);
 
-        if (!isToday) return true; // Future dates are fully open
+        if (!isToday) return true;
 
         const currentHour = nowCR.getHours();
         const slotHour = parseInt(slot.split(':')[0]);
+
+        const isCurrentMorning = currentHour < 12;
         const isSlotMorning = slotHour < 12;
 
-        // Rule 1: Morning slots are never bookable "Today"
-        // (If it's Morning, must book Afternoon. If it's Afternoon, must book Tomorrow).
-        if (isSlotMorning) return false;
+        // 🧪 DEBUG: Log filtering decision
+        const willBlock = (isCurrentMorning && isSlotMorning) || (!isCurrentMorning);
+        console.log(`Slot ${slot}: ${willBlock ? '❌ BLOQUEADO' : '✅ PERMITIDO'} (Ahora: ${currentHour}h, Slot: ${slotHour}h)`);
 
-        // Rule 2: Afternoon slots are only bookable if it's currently Morning (< 12)
-        // If it's already Afternoon (currentHour >= 12), then Afternoon slots are same-shift -> Blocked.
-        if (currentHour >= 12) return false;
+        // Block same-shift bookings
+        // Morning: block morning slots, allow afternoon slots
+        if (isCurrentMorning && isSlotMorning) return false;
+
+        // Afternoon/Evening: block ALL slots for today
+        if (!isCurrentMorning) return false;
 
         return true;
     });
@@ -140,13 +138,15 @@ export default function SelectDateTimeStep({
                             {(() => {
                                 const nowCR = getCostaRicaNow();
                                 const isToday = selectedDate && isSameDay(selectedDate, nowCR);
-                                if (isToday && nowCR.getHours() >= 12) {
+                                const isAfternoon = nowCR.getHours() >= 12;
+
+                                if (isToday && isAfternoon) {
                                     return (
                                         <>
                                             <p className="font-medium text-gray-900">Agenda Cerrada por Hoy</p>
                                             <p className="text-sm mt-1 text-orange-600 max-w-xs">
                                                 Solo se puede agendar con una jornada de anticipación.
-                                                Por favor selecciona <strong>Mañana</strong>.
+                                                Por favor selecciona <strong>Mañana</strong> o un día posterior.
                                             </p>
                                         </>
                                     );
