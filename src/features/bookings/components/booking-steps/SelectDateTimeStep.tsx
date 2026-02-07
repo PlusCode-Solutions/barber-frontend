@@ -42,35 +42,7 @@ export default function SelectDateTimeStep({
     const dateObj = selectedDate ? safeDate(selectedDate) : null;
 
     const combinedSlots = [...new Set([...allPotentialSlots, ...breakSlots])].sort();
-    const rawDisplaySlots = combinedSlots.length > 0 ? combinedSlots : availableSlots;
-
-    const displaySlots = rawDisplaySlots.filter(slot => {
-        if (!selectedDate) return true;
-
-        const nowCR = getCostaRicaNow();
-        const isToday = isSameDay(selectedDate, nowCR);
-
-        if (!isToday) return true;
-
-        const currentHour = nowCR.getHours();
-        const slotHour = parseInt(slot.split(':')[0]);
-
-        const isCurrentMorning = currentHour < 12;
-        const isSlotMorning = slotHour < 12;
-
-        // 🧪 DEBUG: Log filtering decision
-        const willBlock = (isCurrentMorning && isSlotMorning) || (!isCurrentMorning);
-        console.log(`Slot ${slot}: ${willBlock ? '❌ BLOQUEADO' : '✅ PERMITIDO'} (Ahora: ${currentHour}h, Slot: ${slotHour}h)`);
-
-        // Block same-shift bookings
-        // Morning: block morning slots, allow afternoon slots
-        if (isCurrentMorning && isSlotMorning) return false;
-
-        // Afternoon/Evening: block ALL slots for today
-        if (!isCurrentMorning) return false;
-
-        return true;
-    });
+    const displaySlots = combinedSlots.length > 0 ? combinedSlots : availableSlots;
 
     const morningSlots = displaySlots.filter(slot => parseInt(slot.split(':')[0]) < 12);
     const afternoonSlots = displaySlots.filter(slot => parseInt(slot.split(':')[0]) >= 12);
@@ -132,7 +104,11 @@ export default function SelectDateTimeStep({
                         <div className="h-64 border-2 border-gray-100 rounded-xl p-4">
                             <SlotsSkeleton />
                         </div>
-                    ) : displaySlots.length === 0 ? (
+                    ) : (displaySlots.length === 0 || (() => {
+                        const nowCR = getCostaRicaNow();
+                        const isToday = selectedDate && isSameDay(selectedDate, nowCR);
+                        return isToday && nowCR.getHours() >= 12;
+                    })()) ? (
                         <div className="h-64 border-2 border-gray-100 bg-gray-50 rounded-xl flex flex-col items-center justify-center text-gray-500 p-6 text-center">
                             <Clock size={48} className="mb-2 opacity-20" />
                             {(() => {
