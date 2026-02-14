@@ -67,7 +67,8 @@ export default function Calendar({
         const closure = closures.find(c => {
             const isDateMatch = normalizeDateString(c.date) === dayLabel;
             const isScopeMatch = !c.barberId || (barberId && c.barberId === barberId);
-            return isDateMatch && isScopeMatch;
+            const isFullDay = c.isFullDay === true || c.isFullDay === undefined;
+            return isDateMatch && isScopeMatch && isFullDay;
         });
         if (closure) return 'closed';
 

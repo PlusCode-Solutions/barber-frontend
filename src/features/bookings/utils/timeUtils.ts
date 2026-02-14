@@ -34,33 +34,27 @@ export function generateTimeSlots(
     lunchEnd?: string | null
 ): string[] {
     const slots: string[] = [];
-    const today = new Date();
     
-    // Helper to ensure HH:mm format (strip seconds if present)
-    const normalize = (t: string) => t.length > 5 ? t.substring(0, 5) : t;
+    const startMin = timeToMinutes(startTime);
+    const endMin = timeToMinutes(endTime);
+    const lStartMin = lunchStart ? timeToMinutes(lunchStart) : null;
+    const lEndMin = lunchEnd ? timeToMinutes(lunchEnd) : null;
 
-    // Parse times
-    let current = parse(normalize(startTime), 'HH:mm', today);
-    const end = parse(normalize(endTime), 'HH:mm', today);
-    const lStart = lunchStart ? parse(normalize(lunchStart), 'HH:mm', today) : null;
-    const lEnd = lunchEnd ? parse(normalize(lunchEnd), 'HH:mm', today) : null;
+    let current = startMin;
 
-    // Generate slots
-    while (current < end) {
-        // If lunch break is defined, skip slots that fall inside it
-        // A slot is "inside" if it starts >= lunchStart AND start < lunchEnd
+    while (current < endMin) {
         let isLunch = false;
-        if (lStart && lEnd) {
-            if (current >= lStart && current < lEnd) {
+        if (lStartMin !== null && lEndMin !== null) {
+            if (current >= lStartMin && current < lEndMin) {
                 isLunch = true;
             }
         }
 
         if (!isLunch) {
-            slots.push(format(current, 'HH:mm'));
+            slots.push(minutesToTime(current));
         }
 
-        current = addMinutes(current, intervalMinutes);
+        current += intervalMinutes;
     }
 
     return slots;
@@ -71,10 +65,24 @@ export function generateTimeSlots(
  */
 export function timeToMinutes(time: string | any): number {
     if (!time || typeof time !== 'string') {
-        // console.warn('Invalid time format passed to timeToMinutes:', time);
         return 0; 
     }
-    const [hours, minutes] = time.split(':').map(Number);
+    
+    const cleanTime = time.trim().toUpperCase();
+    const isPM = cleanTime.includes('PM');
+    const isAM = cleanTime.includes('AM');
+    
+    // Remove AM/PM for splitting
+    const numericPart = cleanTime.replace('AM', '').replace('PM', '').trim();
+    let [hours, minutes] = numericPart.split(':').map(Number);
+    
+    if (isNaN(hours)) return 0;
+    if (isNaN(minutes)) minutes = 0;
+
+    // Convert to 24h if AM/PM present
+    if (isPM && hours < 12) hours += 12;
+    if (isAM && hours === 12) hours = 0;
+    
     return hours * 60 + minutes;
 }
 

@@ -5,7 +5,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { useTenant } from "../../../context/TenantContext";
 import type { Closure, Schedule } from "../../schedules/types";
 import { normalizeDateString, safeDate } from "../../../utils/dateUtils";
-import { generateTimeSlots, timeToMinutes } from "../utils/timeUtils";
+import { generateTimeSlots, timeToMinutes, minutesToTime } from "../utils/timeUtils";
 import { getDay } from "date-fns";
 import type { AvailabilitySlot } from "../types";
 
@@ -73,8 +73,10 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
             const closure = closures.find(c => {
                 const isDateMatch = normalizeDateString(c.date) === date;
                 const isScopeMatch = !c.barberId || (barber && c.barberId === barber.id);
+                // Only block the entire day if it is EXPLICITLY a full day closure
+                const isFullDay = c.isFullDay === true || c.isFullDay === undefined;
                 
-                return isDateMatch && isScopeMatch;
+                return isDateMatch && isScopeMatch && isFullDay;
             });
 
             if (closure) {
@@ -97,19 +99,25 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
             }
 
             if (schedule && !schedule.isClosed && schedule.startTime && schedule.endTime) {
-                const maxTime = (t1: string, t2: string) => t1 > t2 ? t1 : t2;
-                const minTime = (t1: string, t2: string) => t1 < t2 ? t1 : t2;
+                const sStart = timeToMinutes(schedule.startTime);
+                const sEnd = timeToMinutes(schedule.endTime);
+                const tStart = timeToMinutes(tenantSchedule.startTime);
+                const tEnd = timeToMinutes(tenantSchedule.endTime);
 
-                const start = maxTime(schedule.startTime, tenantSchedule.startTime);
-                const end = minTime(schedule.endTime, tenantSchedule.endTime);
+                const startMin = Math.max(sStart, tStart);
+                const endMin = Math.min(sEnd, tEnd);
 
-                if (start >= end) {
+                if (startMin >= endMin) {
                     setAllPotentialSlots([]);
                     setBreakSlots([]);
                 } else {
+                    const start = minutesToTime(startMin);
+                    const end = minutesToTime(endMin);
+                    
                     // Fallback to tenant lunch times if not defined in barber schedule
-                    const lunchStart = schedule.lunchStartTime || tenantSchedule?.lunchStartTime;
-                    const lunchEnd = schedule.lunchEndTime || tenantSchedule?.lunchEndTime;
+                    const hasBarberLunch = schedule.lunchStartTime || schedule.lunchEndTime;
+                    const lunchStart = hasBarberLunch ? schedule.lunchStartTime : tenantSchedule?.lunchStartTime;
+                    const lunchEnd = hasBarberLunch ? schedule.lunchEndTime : tenantSchedule?.lunchEndTime;
 
                     const slots = generateTimeSlots(start, end, 30, lunchStart, lunchEnd);
                     setAllPotentialSlots(slots);
@@ -162,16 +170,17 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
                 
                 const finalSlots = mappedRawSlots.filter(time => {
                     const slotStart = timeToMinutes(time);
-                    const slotEnd = slotStart + 30; // Assuming 30 min duration for availability check
+                    const slotEnd = slotStart + (durationMinutes || 30);
                     return !occupiedRanges.some(range => (slotStart < range.end) && (slotEnd > range.start));
                 });
                 
                 // Helper to get effective closing/lunch
-                const lunchStart = schedule?.lunchStartTime || tenantSchedule?.lunchStartTime;
-                const lunchEnd = schedule?.lunchEndTime || tenantSchedule?.lunchEndTime;
+                const hasBarberLunchOrig = schedule?.lunchStartTime || schedule?.lunchEndTime;
+                const lunchStart = hasBarberLunchOrig ? schedule?.lunchStartTime : tenantSchedule?.lunchStartTime;
+                const lunchEnd = hasBarberLunchOrig ? schedule?.lunchEndTime : tenantSchedule?.lunchEndTime;
                 
                 const closingTime = (schedule?.endTime && tenantSchedule?.endTime) 
-                    ? (schedule.endTime < tenantSchedule.endTime ? schedule.endTime : tenantSchedule.endTime)
+                    ? (timeToMinutes(schedule.endTime) < timeToMinutes(tenantSchedule.endTime) ? schedule.endTime : tenantSchedule.endTime)
                     : (schedule?.endTime || tenantSchedule?.endTime);
 
                 const validatedSlots = filterSlotsByDuration(
