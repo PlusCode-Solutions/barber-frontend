@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLogin } from "../hooks/useLogin";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useTenant } from "../../../context/TenantContext";
 import { Input } from "../../../components/ui/Input";
 
@@ -71,6 +71,15 @@ export default function LoginForm({ variant = 'default' }: LoginFormProps) {
           containerClassName={isGlass ? "[&>label]:!text-white/90" : ""}
           className={inputClass}
         />
+
+        <div className="flex justify-end">
+          <Link
+            to={`/${tenant?.slug}/auth/forgot-password`}
+            className={`text-sm font-semibold hover:underline ${isGlass ? 'text-white/80 hover:text-white' : 'text-blue-600'}`}
+          >
+            ¿Olvidaste tu contraseña?
+          </Link>
+        </div>
       </div>
 
       <button
