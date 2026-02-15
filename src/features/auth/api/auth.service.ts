@@ -75,4 +75,16 @@ export const AuthService = {
     logout: async (): Promise<void> => {
         await axios.post("/auth/logout");
     },
+
+    // Forgot password
+    forgotPassword: async (tenantSlug: string, email: string) => {
+        const res = await axios.post(`/${tenantSlug}/auth/forgot-password`, { email, tenantSlug });
+        return res.data;
+    },
+
+    // Reset password
+    resetPassword: async (tenantSlug: string, data: any) => {
+        const res = await axios.post(`/${tenantSlug}/auth/reset-password`, { ...data, tenantSlug });
+        return res.data;
+    },
 };

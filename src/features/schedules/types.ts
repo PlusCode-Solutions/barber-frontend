@@ -16,6 +16,9 @@ export interface Closure {
     reason: string;
     tenantId: string;
     barberId?: string;
+    isFullDay?: boolean;
+    startTime?: string;
+    endTime?: string;
 }
 
 export interface CreateScheduleDto {
@@ -32,4 +35,7 @@ export interface CreateClosureDto {
     date: string;
     reason: string;
     barberId?: string | null;
+    isFullDay?: boolean;
+    startTime?: string;
+    endTime?: string;
 }
