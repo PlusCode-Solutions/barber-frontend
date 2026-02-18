@@ -1,4 +1,5 @@
 import { Clock, Scissors } from "lucide-react";
+import { formatHour } from "../../../utils/dateUtils";
 
 interface BookingItem {
     id: string;
@@ -34,8 +35,8 @@ export default function BookingsList({ bookings, onSelectBooking }: BookingsList
                 <div
                     key={booking.id}
                     className={`flex items-center justify-between p-4 transition-colors cursor-pointer border-l-4 ${booking.status === 'AVAILABLE'
-                            ? 'bg-green-50/50 hover:bg-green-50 border-green-400'
-                            : 'bg-white hover:bg-gray-50 border-transparent'
+                        ? 'bg-green-50/50 hover:bg-green-50 border-green-400'
+                        : 'bg-white hover:bg-gray-50 border-transparent'
                         }`}
                     onClick={() => onSelectBooking?.(booking)}
                 >
@@ -55,13 +56,13 @@ export default function BookingsList({ bookings, onSelectBooking }: BookingsList
                     {/* Right: Time & Action */}
                     <div className="flex flex-col items-end flex-shrink-0">
                         <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg ${booking.status === 'AVAILABLE'
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-blue-50 text-blue-700'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-blue-50 text-blue-700'
                             }`}>
                             <Clock size={14} />
                             <span className="text-sm font-semibold tracking-wide">
-                                {booking.startTime}
-                                {booking.status !== 'AVAILABLE' && ` - ${booking.endTime}`}
+                                {formatHour(booking.startTime, "12h")}
+                                {booking.status !== 'AVAILABLE' && ` - ${formatHour(booking.endTime, "12h")}`}
                             </span>
                         </div>
                         {/* Optional: Small barber name or price below time if needed */}

@@ -2,7 +2,7 @@ import { Calendar as CalendarIcon, ChevronLeft, Clock } from "lucide-react";
 import Calendar from "../../../../components/ui/Calendar";
 import type { Closure, Schedule } from "../../../schedules/types";
 import { format } from "date-fns";
-import { safeDate, formatFriendlyDay, getCostaRicaNow, isSameDay } from "../../../../utils/dateUtils";
+import { safeDate, formatFriendlyDay, getCostaRicaNow, isSameDay, formatHour } from "../../../../utils/dateUtils";
 import { useTenant } from "../../../../context/TenantContext";
 import SlotsSkeleton from "./SlotsSkeleton";
 
@@ -164,7 +164,7 @@ export default function SelectDateTimeStep({
                                                     `}
                                                     aria-label={isBreak ? `Descanso ${slot}` : isOccupied ? `Horario ocupado ${slot}` : `Seleccionar horario ${slot}`}
                                                 >
-                                                    {slot}
+                                                    {formatHour(slot, "12h")}
                                                 </button>
                                             );
                                         })}
@@ -199,7 +199,7 @@ export default function SelectDateTimeStep({
                                                     `}
                                                     aria-label={isBreak ? `Descanso ${slot}` : isOccupied ? `Horario ocupado ${slot}` : `Seleccionar horario ${slot}`}
                                                 >
-                                                    {slot}
+                                                    {formatHour(slot, "12h")}
                                                 </button>
                                             );
                                         })}

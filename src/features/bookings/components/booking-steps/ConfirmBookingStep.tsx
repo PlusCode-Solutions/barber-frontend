@@ -2,6 +2,7 @@ import { Check, Scissors, Users, Calendar, Clock, ChevronLeft } from "lucide-rea
 import type { Service } from "../../../services/types";
 import type { Barber } from "../../../barbers/types";
 import { useTenant } from "../../../../context/TenantContext";
+import { formatHour } from "../../../../utils/dateUtils";
 
 interface ConfirmBookingStepProps {
     service: Service;
@@ -66,7 +67,7 @@ export default function ConfirmBookingStep({
                     <Clock size={20} aria-hidden="true" className="mt-1" style={{ color: primaryColor }} />
                     <div>
                         <p className="text-xs text-gray-600">Hora</p>
-                        <p className="font-bold text-gray-900">{slot}</p>
+                        <p className="font-bold text-gray-900">{formatHour(slot, "12h")}</p>
                     </div>
                 </div>
             </div>

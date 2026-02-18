@@ -110,7 +110,7 @@ export function formatHour(timeStr: string, mode: "12h" | "24h" = "24h"): string
 
     if (mode === "24h") return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
 
-    const suffix = h >= 12 ? "pm" : "am";
+    const suffix = h >= 12 ? "PM" : "AM";
     const hour12 = ((h + 11) % 12 + 1);
     return `${hour12}:${m.toString().padStart(2, "0")} ${suffix}`;
 }
