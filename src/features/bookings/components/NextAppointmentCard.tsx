@@ -6,7 +6,7 @@ import type { Booking } from '../types';
 import { useUserBookings } from '../hooks/useUserBookings';
 import CancelBookingModal from './CancelBookingModal';
 import Toast from '../../../components/ui/Toast';
-import { formatFullDate, safeDate, isPastBooking } from '../../../utils/dateUtils';
+import { formatFullDate, safeDate, isPastBooking, formatHour } from '../../../utils/dateUtils';
 
 export default function NextAppointmentCard() {
     const { user } = useAuth();
@@ -161,7 +161,7 @@ export default function NextAppointmentCard() {
                         <div>
                             <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Hora</p>
                             <p className="font-bold text-gray-900">
-                                {nextBooking.startTime} - {nextBooking.endTime}
+                                {formatHour(nextBooking.startTime, "12h")} - {formatHour(nextBooking.endTime, "12h")}
                             </p>
                         </div>
                     </div>
