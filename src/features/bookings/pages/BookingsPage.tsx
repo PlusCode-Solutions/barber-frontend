@@ -142,7 +142,7 @@ export default function BookingsPage() {
                         { header: "Fecha 📅", accessor: "date" },
                         { header: "Inicio ⏰", accessor: "startTime" },
                         { header: "Fin ⏰", accessor: "endTime" },
-                        { header: "Notas 📝", accessor: "notes" },
+                        //{ header: "Notas 📝", accessor: "notes" },
                     ]}
                     renderActions={(booking) => {
                         // Only show cancel button if status is PENDING or CONFIRMED (assuming user can cancel confirmed)

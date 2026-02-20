@@ -72,7 +72,7 @@ export default function ConfirmBookingStep({
                 </div>
             </div>
 
-            <div className="mb-4">
+            {/* Notas Para citas *   div className="mb-4">
                 <div>
                     <label htmlFor="booking-notes" className="block text-sm font-semibold text-gray-700 mb-1">
                         Notas (Opcional)
@@ -87,7 +87,7 @@ export default function ConfirmBookingStep({
                         aria-label="Notas adicionales para la cita"
                     />
                 </div>
-            </div>
+            </div>/ */}
 
             <button
                 onClick={onSubmit}
