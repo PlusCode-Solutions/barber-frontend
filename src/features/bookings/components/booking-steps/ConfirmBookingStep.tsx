@@ -22,9 +22,9 @@ export default function ConfirmBookingStep({
     barber,
     date,
     slot,
-    notes,
+    //notes,
     submitting,
-    onNotesChange,
+    //onNotesChange,
     onSubmit,
     onBack
 }: ConfirmBookingStepProps) {
