@@ -27,7 +27,7 @@ export default function RegisterPage() {
                 navigate(`/${tenantSlug}/auth/login`);
             }, 1500);
         } catch (err) {
-            console.error(err);
+            // Error al registrar
             alert("Error al registrar.");
         }
 
@@ -44,8 +44,8 @@ export default function RegisterPage() {
 
     return (
         <div
-            className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center relative"
-            style={{ backgroundImage: "url('/fondo.jpg')" }}
+            className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat relative"
+            style={{ backgroundImage: `url('${tenant.backgroundUrl || '/fondo.jpg'}')` }}
         >
             {/* Overlay elegante */}
             <div className="absolute inset-0 bg-black/35 backdrop-blur-sm"></div>

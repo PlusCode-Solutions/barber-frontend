@@ -21,6 +21,7 @@ export default function TenantSettings() {
     const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [uploadingLogo, setUploadingLogo] = useState(false);
+    const [uploadingBackground, setUploadingBackground] = useState(false);
 
     const isSuperAdmin = user?.role === 'SUPER_ADMIN';
 
@@ -67,30 +68,43 @@ export default function TenantSettings() {
             setTenant({ ...tenant, ...updated });
             toast.success("Información actualizada exitosamente");
         } catch (error) {
-            console.error(error);
+            // Error actualizando información
             toast.error("Error al actualizar la información");
         } finally {
             setIsLoading(false);
         }
     };
 
-    const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'background') => {
         if (!tenant || !e.target.files?.[0]) return;
 
-        // Tanto Super Admin como Tenant Admin pueden cambiar el logo
         if (!isSuperAdmin && user?.role !== 'TENANT_ADMIN') return;
 
-        setUploadingLogo(true);
+        const file = e.target.files[0];
+        const isLogo = type === 'logo';
+        const setUploading = isLogo ? setUploadingLogo : setUploadingBackground;
+        const uploadMethod = isLogo ? TenantsService.uploadLogo : TenantsService.uploadBackground;
+        const label = isLogo ? "logo" : "fondo de pantalla";
+
+        // Validación de tamaño (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error(`La imagen es muy pesada. Máximo 5MB.`);
+            return;
+        }
+
+        setUploading(true);
+        const loadingToast = toast.loading(`Subiendo ${label}...`);
+
         try {
-            const file = e.target.files[0];
-            const updated = await TenantsService.uploadLogo(tenant.id, file);
+            const updated = await uploadMethod(tenant.id, file);
             setTenant({ ...tenant, ...updated });
-            toast.success("Logo actualizado exitosamente");
-        } catch (error) {
-            console.error(error);
-            toast.error("Error al subir el logo");
+            toast.success(`¡${label.charAt(0).toUpperCase() + label.slice(1)} actualizado exitosamente!`, { id: loadingToast });
+        } catch (error: any) {
+            // Error subiendo imagen
+            const message = error.response?.data?.message || `No se pudo cargar el ${label}. Intente de nuevo.`;
+            toast.error(message, { id: loadingToast });
         } finally {
-            setUploadingLogo(false);
+            setUploading(false);
         }
     };
 
@@ -165,11 +179,18 @@ export default function TenantSettings() {
 
                         <div className="flex flex-col items-center gap-6">
                             <div className="relative group">
-                                <div className="w-32 h-32 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50">
+                                <div className="w-32 h-32 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50 relative">
                                     {tenant.logoUrl ? (
                                         <img src={tenant.logoUrl} alt="Logo" className="w-full h-full object-cover" />
                                     ) : (
                                         <span className="text-gray-400">Sin logo</span>
+                                    )}
+
+                                    {uploadingLogo && (
+                                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white p-2">
+                                            <div className="animate-spin h-6 w-6 border-2 border-white border-t-transparent rounded-full mb-2"></div>
+                                            <span className="text-[10px] font-bold uppercase tracking-wider">Subiendo...</span>
+                                        </div>
                                     )}
                                 </div>
                                 <label className="absolute bottom-2 right-2 w-8 h-8 bg-white shadow-md rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
@@ -178,7 +199,7 @@ export default function TenantSettings() {
                                         type="file"
                                         accept="image/*"
                                         className="hidden"
-                                        onChange={handleLogoUpload}
+                                        onChange={(e) => handleImageUpload(e, 'logo')}
                                         disabled={uploadingLogo}
                                     />
                                 </label>
@@ -188,6 +209,56 @@ export default function TenantSettings() {
                                     Sube tu logo
                                 </p>
                                 <p className="text-xs text-gray-500 mt-1">Recomendado: PNG o JPG, 500x500px</p>
+                            </div>
+                        </div>
+                    </Card>
+
+                    {/* Background Image */}
+                    <Card className="p-6 relative">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+                                <ImageIcon size={20} />
+                            </div>
+                            <h2 className="text-lg font-bold text-gray-900">
+                                Fondo de Login
+                            </h2>
+                        </div>
+
+                        <div className="flex flex-col items-center gap-6">
+                            <div className="relative group w-full">
+                                <div className="w-full h-40 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50 relative">
+                                    {tenant.backgroundUrl ? (
+                                        <img src={tenant.backgroundUrl} alt="Background" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="text-center p-4">
+                                            <p className="text-sm text-gray-400">Usando fondo predeterminado</p>
+                                            <p className="text-xs text-gray-400 mt-1">(/fondo.jpg)</p>
+                                        </div>
+                                    )}
+
+                                    {uploadingBackground && (
+                                        <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white backdrop-blur-[2px]">
+                                            <div className="animate-spin h-8 w-8 border-3 border-white border-t-transparent rounded-full mb-3"></div>
+                                            <span className="text-xs font-bold uppercase tracking-widest animate-pulse">Cargando imagen...</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <label className="absolute bottom-2 right-2 w-8 h-8 bg-white shadow-md rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
+                                    <Upload size={14} className="text-gray-600" />
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={(e) => handleImageUpload(e, 'background')}
+                                        disabled={uploadingBackground}
+                                    />
+                                </label>
+                            </div>
+                            <div className="text-center">
+                                <p className="text-sm font-medium text-gray-900">
+                                    Sube una imagen de fondo
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1">Recomendado: Paisajes o texturas, JPG/PNG máx 5MB</p>
                             </div>
                         </div>
                     </Card>

@@ -5,6 +5,7 @@ interface Tenant {
   name: string;
   slug: string;
   logoUrl?: string | null;
+  backgroundUrl?: string | null;
   primaryColor?: string | null;
   secondaryColor?: string | null;
 }
@@ -50,7 +51,8 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
               latest.primaryColor !== tenant.primaryColor ||
               latest.secondaryColor !== tenant.secondaryColor ||
               latest.name !== tenant.name ||
-              latest.logoUrl !== tenant.logoUrl
+              latest.logoUrl !== tenant.logoUrl ||
+              latest.backgroundUrl !== tenant.backgroundUrl
             ) {
               console.log("Tenant data updated from server", latest);
               setTenantState(latest);
