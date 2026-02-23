@@ -1,4 +1,4 @@
-import { Clock, Scissors } from "lucide-react";
+import { Clock, Scissors, Trash2 } from "lucide-react";
 import { formatHour } from "../../../utils/dateUtils";
 
 interface BookingItem {
@@ -13,14 +13,16 @@ interface BookingItem {
     startTime: string;
     endTime: string;
     status: string;
+    isOwner?: boolean;
 }
 
 interface BookingsListProps {
     bookings: BookingItem[];
     onSelectBooking?: (booking: BookingItem) => void;
+    onCancelBooking?: (booking: BookingItem) => void;
 }
 
-export default function BookingsList({ bookings, onSelectBooking }: BookingsListProps) {
+export default function BookingsList({ bookings, onSelectBooking, onCancelBooking }: BookingsListProps) {
     if (bookings.length === 0) {
         return (
             <div className="text-center py-12 text-gray-500">
@@ -66,9 +68,23 @@ export default function BookingsList({ bookings, onSelectBooking }: BookingsList
                             </span>
                         </div>
                         {/* Optional: Small barber name or price below time if needed */}
-                        <span className="text-xs text-gray-400 mt-1">
-                            {booking.barberName}
-                        </span>
+                        <div className="flex items-center gap-2 mt-2">
+                            <span className="text-xs text-gray-400">
+                                {booking.barberName}
+                            </span>
+                            {booking.isOwner && onCancelBooking && booking.status !== 'AVAILABLE' && (
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onCancelBooking(booking);
+                                    }}
+                                    className="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors"
+                                    title="Eliminar reservación"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             ))}

@@ -5,7 +5,7 @@ import { useTenant } from '../../../context/TenantContext'; // ID: 3e86bdaf-dc9b
 export function useDashboardStats() {
     const { tenant } = useTenant();
 
-    const { data: stats, isLoading, error } = useQuery<DashboardStats>({
+    const { data: stats, isLoading, error, refetch } = useQuery<DashboardStats>({
         queryKey: ['dashboard-stats', tenant?.id],
         queryFn: () => StatisticsService.getDashboardStats(),
         enabled: !!tenant?.id,
@@ -22,6 +22,7 @@ export function useDashboardStats() {
     return {
         stats: stats || defaultStats,
         loading: isLoading,
-        error
+        error,
+        refetch
     };
 }
