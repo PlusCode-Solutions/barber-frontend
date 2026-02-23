@@ -41,8 +41,8 @@ export default function ForgotPasswordPage() {
 
     return (
         <div
-            className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center relative"
-            style={{ backgroundImage: "url('/fondo.jpg')" }}
+            className="min-h-screen flex items-center justify-center p-4 bg-cover bg-center bg-no-repeat relative"
+            style={{ backgroundImage: `url('${tenant.backgroundUrl || '/fondo.jpg'}')` }}
         >
             <div className="absolute inset-0 bg-black/35 backdrop-blur-sm"></div>
 

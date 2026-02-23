@@ -5,6 +5,7 @@ interface Tenant {
     name: string;
     slug: string;
     logoUrl?: string;
+    backgroundUrl?: string;
     primaryColor?: string;
     secondaryColor?: string;
     createdAt: string;
@@ -21,7 +22,7 @@ export const TenantsService = {
     // Get all tenants
     getAll: async (): Promise<Tenant[]> => {
         const res = await axios.get("/tenants");
-        
+
         if (Array.isArray(res.data)) {
             return res.data;
         }
@@ -40,12 +41,23 @@ export const TenantsService = {
         return res.data;
     },
 
-    // Upload logo
-    uploadLogo: async (id: string, file: File): Promise<Tenant> => {
+    // Generic image upload
+    uploadImage: async (id: string, file: File, type: 'logo' | 'background'): Promise<Tenant> => {
         const formData = new FormData();
         formData.append('file', file);
-        
-        const res = await axios.post(`/tenants/upload-logo/${id}`, formData);
+
+        const endpoint = type === 'logo' ? 'upload-logo' : 'upload-background';
+        const res = await axios.post(`/tenants/${endpoint}/${id}`, formData);
         return res.data;
+    },
+
+    // Upload logo (legacy wrapper)
+    uploadLogo: async (id: string, file: File): Promise<Tenant> => {
+        return TenantsService.uploadImage(id, file, 'logo');
+    },
+
+    // Upload background (legacy wrapper)
+    uploadBackground: async (id: string, file: File): Promise<Tenant> => {
+        return TenantsService.uploadImage(id, file, 'background');
     },
 };

@@ -4,18 +4,19 @@ export interface Tenant {
     id: string;
     name: string;
     slug: string;
-    email: string; 
+    email: string;
     status: 'ACTIVE' | 'INACTIVE' | 'PENDING';
     createdAt: string;
-    active: boolean; 
+    active: boolean;
     logoUrl?: string;
+    backgroundUrl?: string;
 }
 
 export interface CreateTenantDTO {
     name: string;
     slug: string;
     email: string;
-    password?: string; 
+    password?: string;
 }
 
 export interface UpdateTenantDTO {
@@ -24,11 +25,12 @@ export interface UpdateTenantDTO {
     email?: string;
     active?: boolean;
     logoUrl?: string;
+    backgroundUrl?: string;
 }
 
 export const TenantsService = {
     getAll: async (): Promise<Tenant[]> => {
-        const res = await axios.get('/tenants'); 
+        const res = await axios.get('/tenants');
         return res.data;
     },
 
@@ -46,6 +48,17 @@ export const TenantsService = {
         const formData = new FormData();
         formData.append('file', file);
         const res = await axios.post(`/tenants/upload-logo/${tenantId}`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+        return res.data;
+    },
+
+    uploadBackground: async (tenantId: string, file: File): Promise<Tenant> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await axios.post(`/tenants/upload-background/${tenantId}`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
