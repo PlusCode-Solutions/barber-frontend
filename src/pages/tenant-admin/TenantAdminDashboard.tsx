@@ -1,17 +1,42 @@
-import { Calendar, Users, Activity } from 'lucide-react';
+import { useState } from 'react';
+import { Calendar, Users, Activity, Plus, CheckCircle } from 'lucide-react';
 import { useDashboardStats } from '../../features/dashboard/hooks/useDashboardStats';
 import { StatCard } from '../../features/dashboard/components/StatCard';
+import CreateBookingModal from '../../features/bookings/components/CreateBookingModal';
 
 
 export default function TenantAdminDashboard() {
-    const { stats, loading } = useDashboardStats();
+    const { stats, loading, refetch } = useDashboardStats();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
-
+    const handleBookingSuccess = () => {
+        // Refetch stats after a successfull booking creation
+        if (refetch) refetch();
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
+    };
     return (
         <div className="pb-12 max-w-6xl mx-auto px-4 sm:px-6">
-            <h1 className="text-3xl font-black text-gray-900 mb-8 tracking-tight">
-                Panel de Control
-            </h1>
+            {showSuccess && (
+                <div className="fixed top-20 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-2xl shadow-lg flex items-center gap-2 z-50 animate-bounce">
+                    <CheckCircle size={24} />
+                    <span className="font-semibold">¡Cita creada exitosamente!</span>
+                </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                <h1 className="text-3xl font-black text-gray-900 tracking-tight">
+                    Panel de Control
+                </h1>
+                <button
+                    onClick={() => setIsModalOpen(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-xl shadow-sm hover:bg-indigo-700 transition"
+                >
+                    <Plus size={20} />
+                    Nueva Cita
+                </button>
+            </div>
 
             {/* Responsive Grid Layout */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -45,6 +70,12 @@ export default function TenantAdminDashboard() {
                     iconBgClassName="bg-pink-500 shadow-pink-200 shadow-lg"
                 />
             </div>
+
+            <CreateBookingModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSuccess={handleBookingSuccess}
+            />
         </div>
     );
 }

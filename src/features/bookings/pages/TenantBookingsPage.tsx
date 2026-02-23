@@ -1,6 +1,9 @@
 import { useMemo, useState, useEffect } from "react";
 import { useTenantBookings } from "../hooks/useTenantBookings";
 import BookingsList from "../components/BookingsList";
+import CancelBookingModal from "../components/CancelBookingModal";
+import { useAuth } from "../../../context/AuthContext";
+import { BookingsService } from "../api/bookings.service";
 import BookingsSkeleton from "../components/BookingsSkeleton";
 import Pagination from "../../../components/ui/Pagination";
 import {
@@ -24,6 +27,9 @@ export default function TenantBookingsPage() {
     const [selectedBarberId, setSelectedBarberId] = useState<string | undefined>(undefined);
     const { bookings, loading, refetch } = useTenantBookings({ barberId: selectedBarberId }); // Pass filter
     const { barbers } = useBarbers(); // Fetch barbers for dropdown
+    const { user } = useAuth();
+    const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
+    const [isCancelling, setIsCancelling] = useState(false);
     const [selectedDate, setSelectedDate] = useState<string>(formatDateForInput(new Date()));
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -210,6 +216,33 @@ export default function TenantBookingsPage() {
         }
     };
 
+    const handleConfirmCancel = async () => {
+        if (!bookingToCancel) return;
+
+        setIsCancelling(true);
+        try {
+            await BookingsService.cancelBooking(bookingToCancel);
+            setToast({
+                message: "Cita cancelada exitosamente",
+                type: "success",
+                isVisible: true,
+            });
+            setBookingToCancel(null);
+            refetch();
+        } catch (error: any) {
+            const isForbidden = error?.response?.status === 403;
+            setToast({
+                message: isForbidden
+                    ? "No tienes permiso para eliminar citas de otras personas"
+                    : "Error al cancelar la cita. Inténtalo de nuevo.",
+                type: "error",
+                isVisible: true,
+            });
+        } finally {
+            setIsCancelling(false);
+        }
+    };
+
     const formatItem = (b: any) => ({
         ...b,
         date: formatRelativeDate(b.date),
@@ -221,7 +254,8 @@ export default function TenantBookingsPage() {
             price: b.service?.price ? formatCurrency(b.service.price) : "—",
         },
         customerName: b.user?.name || "Cliente Desconocido",
-        barberName: b.barber?.name || "Barbero Asignado"
+        barberName: b.barber?.name || "Barbero Asignado",
+        isOwner: b.userId === user?.id || b.user?.id === user?.id
     });
 
     const totalItems = filteredBookings.length;
@@ -296,6 +330,7 @@ export default function TenantBookingsPage() {
                         ...b,
                         id: b.id || Math.random().toString()
                     }))}
+                    onCancelBooking={(b) => setBookingToCancel(b.id)}
                 />
 
                 {totalItems > ITEMS_PER_PAGE && (
@@ -310,6 +345,13 @@ export default function TenantBookingsPage() {
                     </div>
                 )}
             </div>
+
+            <CancelBookingModal
+                isOpen={!!bookingToCancel}
+                isCancelling={isCancelling}
+                onClose={() => setBookingToCancel(null)}
+                onConfirm={handleConfirmCancel}
+            />
         </div>
     );
 }
