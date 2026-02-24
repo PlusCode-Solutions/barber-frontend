@@ -128,8 +128,8 @@ export default function StatisticsPage() {
                                 <h3 className="text-3xl font-bold text-gray-900 mt-1">
                                     {loading ? "..." : `$${(stats?.totalRevenue || 0).toLocaleString()}`}
                                 </h3>
-                                <div className={`flex items-center gap-1 mt-2 text-xs font-bold ${stats?.growthPercentage >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                    {stats?.growthPercentage >= 0 ? "+" : ""}{stats?.growthPercentage.toFixed(1)}% vs anterior
+                                <div className={`flex items-center gap-1 mt-2 text-xs font-bold ${(stats?.growthPercentage || 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                    {(stats?.growthPercentage || 0) >= 0 ? "+" : ""}{(stats?.growthPercentage || 0).toFixed(1)}% vs anterior
                                 </div>
                             </div>
                         </Card>
@@ -150,7 +150,7 @@ export default function StatisticsPage() {
                                 <h3 className="text-3xl font-bold text-gray-900 mt-1">
                                     {loading ? "..." : `$${(stats?.lostRevenue || 0).toLocaleString()}`}
                                 </h3>
-                                <p className="text-xs text-rose-500 font-medium mt-2">En {stats?.lostAppointments} citas canceladas</p>
+                                <p className="text-xs text-rose-500 font-medium mt-2">En {stats?.lostAppointments || 0} citas canceladas</p>
                             </div>
                         </Card>
 
@@ -188,11 +188,11 @@ export default function StatisticsPage() {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 bg-white">
-                                        {stats?.servicesBreakdown.map((s: any) => (
+                                        {(stats?.servicesBreakdown || []).map((s: any) => (
                                             <tr key={s.name} className="hover:bg-blue-50/30 transition-colors">
                                                 <td className="px-6 py-4 font-bold text-gray-900">{s.name}</td>
-                                                <td className="px-6 py-4 text-gray-600">{s.count}</td>
-                                                <td className="px-6 py-4 text-right font-bold text-blue-600">${s.revenue.toLocaleString()}</td>
+                                                <td className="px-6 py-4 text-gray-600">{s.count || 0}</td>
+                                                <td className="px-6 py-4 text-right font-bold text-blue-600">${(s.revenue || 0).toLocaleString()}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -216,18 +216,18 @@ export default function StatisticsPage() {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100 bg-white">
-                                        {stats?.barbersBreakdown.map((b: any) => (
+                                        {(stats?.barbersBreakdown || []).map((b: any) => (
                                             <tr key={b.name} className="hover:bg-emerald-50/30 transition-colors">
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-xs font-bold uppercase">
-                                                            {b.name.charAt(0)}
+                                                            {(b.name || "U").charAt(0)}
                                                         </div>
-                                                        <span className="font-bold text-gray-900">{b.name}</span>
+                                                        <span className="font-bold text-gray-900">{b.name || "Usuario"}</span>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-gray-600 font-medium">{b.count}</td>
-                                                <td className="px-6 py-4 text-right font-bold text-emerald-600">${b.revenue.toLocaleString()}</td>
+                                                <td className="px-6 py-4 text-gray-600 font-medium">{b.count || 0}</td>
+                                                <td className="px-6 py-4 text-right font-bold text-emerald-600">${(b.revenue || 0).toLocaleString()}</td>
                                             </tr>
                                         ))}
                                     </tbody>
