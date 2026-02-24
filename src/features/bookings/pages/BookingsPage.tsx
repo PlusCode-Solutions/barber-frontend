@@ -138,7 +138,7 @@ export default function BookingsPage() {
                     data={formattedBookings}
                     columns={[
                         { header: "Servicio 🎨", accessor: "service.name" },
-                        { header: "Precio 💵", accessor: "service.price" },
+                        { header: "Precio ₡", accessor: "service.price" },
                         { header: "Fecha 📅", accessor: "date" },
                         { header: "Inicio ⏰", accessor: "startTime" },
                         { header: "Fin ⏰", accessor: "endTime" },

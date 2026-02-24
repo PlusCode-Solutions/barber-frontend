@@ -44,7 +44,7 @@ export default function ConfirmBookingStep({
                     <div>
                         <p className="text-xs text-gray-600">Servicio</p>
                         <p className="font-bold text-gray-900">{service.name}</p>
-                        <p className="text-sm text-green-600" aria-label={`Precio: ${service.price} pesos`}>
+                        <p className="text-sm text-green-600" aria-label={`Precio: ${service.price} colones`}>
                             ₡{service.price}
                         </p>
                     </div>
