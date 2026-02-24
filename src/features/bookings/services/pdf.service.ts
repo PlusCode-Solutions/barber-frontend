@@ -63,10 +63,10 @@ export const PDFService = {
             startY: yPos + 50,
             head: [["Descriptor", "Valor"]],
             body: [
-                ["Ingresos Reales", `₡${(stats?.totalRevenue || 0).toLocaleString()}`],
+                ["Ingresos Reales", `CRC ${(stats?.totalRevenue || 0).toLocaleString()}`],
                 ["Citas Efectivas", stats?.totalAppointments || 0],
                 ["Crecimiento vs Periodo Anterior", `${(stats?.growthPercentage || 0).toFixed(1)}%`],
-                ["Ingresos Perdidos (Cancelaciones)", `₡${(stats?.lostRevenue || 0).toLocaleString()}`],
+                ["Ingresos Perdidos (Cancelaciones)", `CRC ${(stats?.lostRevenue || 0).toLocaleString()}`],
             ],
             theme: 'striped',
             headStyles: { fillColor: [41, 128, 185], textColor: 255 },
@@ -83,7 +83,7 @@ export const PDFService = {
             body: (stats?.servicesBreakdown || []).map((s: any) => [
                 s.name || "N/A",
                 s.count || 0,
-                `₡${(s.revenue || 0).toLocaleString()}`
+                `CRC ${(s.revenue || 0).toLocaleString()}`
             ]),
             theme: 'grid',
             headStyles: { fillColor: [44, 62, 80], textColor: 255 },
@@ -100,7 +100,7 @@ export const PDFService = {
             body: (stats?.barbersBreakdown || []).map((b: any) => [
                 b.name || "N/A",
                 b.count || 0,
-                `₡${(b.revenue || 0).toLocaleString()}`
+                `CRC ${(b.revenue || 0).toLocaleString()}`
             ]),
             theme: 'striped',
             headStyles: { fillColor: [39, 174, 96], textColor: 255 },
