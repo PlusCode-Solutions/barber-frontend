@@ -126,7 +126,7 @@ export default function StatisticsPage() {
                             <div className="relative z-10">
                                 <p className="text-gray-500 text-sm font-medium">Ingresos Reales</p>
                                 <h3 className="text-3xl font-bold text-gray-900 mt-1">
-                                    {loading ? "..." : `$${(stats?.totalRevenue || 0).toLocaleString()}`}
+                                    {loading ? "..." : `₡${(stats?.totalRevenue || 0).toLocaleString()}`}
                                 </h3>
                                 <div className={`flex items-center gap-1 mt-2 text-xs font-bold ${(stats?.growthPercentage || 0) >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                                     {(stats?.growthPercentage || 0) >= 0 ? "+" : ""}{(stats?.growthPercentage || 0).toFixed(1)}% vs anterior
@@ -148,7 +148,7 @@ export default function StatisticsPage() {
                             <div className="relative z-10">
                                 <p className="text-rose-600 text-sm font-bold uppercase tracking-wider">Flujo Perdido</p>
                                 <h3 className="text-3xl font-bold text-gray-900 mt-1">
-                                    {loading ? "..." : `$${(stats?.lostRevenue || 0).toLocaleString()}`}
+                                    {loading ? "..." : `₡${(stats?.lostRevenue || 0).toLocaleString()}`}
                                 </h3>
                                 <p className="text-xs text-rose-500 font-medium mt-2">En {stats?.lostAppointments || 0} citas canceladas</p>
                             </div>
@@ -192,7 +192,7 @@ export default function StatisticsPage() {
                                             <tr key={s.name} className="hover:bg-blue-50/30 transition-colors">
                                                 <td className="px-6 py-4 font-bold text-gray-900">{s.name}</td>
                                                 <td className="px-6 py-4 text-gray-600">{s.count || 0}</td>
-                                                <td className="px-6 py-4 text-right font-bold text-blue-600">${(s.revenue || 0).toLocaleString()}</td>
+                                                <td className="px-6 py-4 text-right font-bold text-blue-600">₡{(s.revenue || 0).toLocaleString()}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -227,7 +227,7 @@ export default function StatisticsPage() {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-gray-600 font-medium">{b.count || 0}</td>
-                                                <td className="px-6 py-4 text-right font-bold text-emerald-600">${(b.revenue || 0).toLocaleString()}</td>
+                                                <td className="px-6 py-4 text-right font-bold text-emerald-600">₡{(b.revenue || 0).toLocaleString()}</td>
                                             </tr>
                                         ))}
                                     </tbody>
