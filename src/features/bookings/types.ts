@@ -3,7 +3,7 @@ export interface Booking {
     date: string;
     startTime: string;
     endTime: string;
-    status: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
+    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'CANCELED';
     notes?: string | null;
     service?: {
         name: string;
@@ -35,7 +35,7 @@ export interface UpdateBookingDto {
     startTime?: string;
     endTime?: string;
     notes?: string;
-    status?: 'PENDING' | 'CONFIRMED' | 'CANCELLED' | 'COMPLETED';
+    status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'CANCELED';
 }
 
 export interface AvailabilitySlot {

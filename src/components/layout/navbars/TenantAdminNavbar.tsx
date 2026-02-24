@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, LayoutDashboard, FileText, Scissors, Users, Calendar, UserCircle, LogOut, Settings } from "lucide-react";
+import { Menu, X, LayoutDashboard, FileText, Scissors, Users, Calendar, UserCircle, LogOut, Settings, TrendingUp } from "lucide-react";
 import { useTenant } from "../../../context/TenantContext";
 
 export default function TenantAdminNavbar() {
@@ -13,6 +13,7 @@ export default function TenantAdminNavbar() {
     const menuItems = [
         { icon: LayoutDashboard, label: "Dashboard", path: "admin/dashboard" },
         { icon: FileText, label: "Citas", path: "admin/bookings" },
+        { icon: TrendingUp, label: "Estadísticas", path: "admin/statistics" },
         { icon: Scissors, label: "Servicios", path: "admin/services" },
         { icon: Users, label: "Barberos", path: "admin/barbers" },
         { icon: Calendar, label: "Horarios", path: "admin/schedules" },

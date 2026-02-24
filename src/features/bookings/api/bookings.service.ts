@@ -2,7 +2,7 @@ import axios from "../../../lib/axios";
 import type { Booking, AvailabilityResponse, UpdateBookingDto } from "../types";
 
 export const BookingsService = {
-    
+
     // Get user bookings
     // Endpoint: GET /bookings/user/:userId
     getUserBookings: async (userId: string): Promise<Booking[]> => {
@@ -56,5 +56,14 @@ export const BookingsService = {
     // Endpoint: DELETE /bookings/:id
     cancelBooking: async (id: string): Promise<void> => {
         await axios.delete(`/bookings/${id}`);
+    },
+
+    // Get statistics
+    // Endpoint: GET /bookings/statistics
+    getStatistics: async (startDate: string, endDate: string): Promise<any> => {
+        const res = await axios.get(`/bookings/statistics`, {
+            params: { startDate, endDate }
+        });
+        return res.data;
     },
 };

@@ -15,7 +15,7 @@ export default function DashboardHome() {
 
     // Logic: Limit to 2 active future bookings
     const activeBookings = bookings.filter(b =>
-        (b.status === 'CONFIRMED' || b.status === 'PENDING') &&
+        (b.status === 'APPROVED' || b.status === 'PENDING') &&
         !isPastBooking(b.date, b.startTime)
     );
     const limitReached = activeBookings.length >= 2;
