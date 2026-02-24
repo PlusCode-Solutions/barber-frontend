@@ -9,19 +9,19 @@ import { isPastBooking, safeDate } from '../../../utils/dateUtils';
  */
 export function useActiveBookings() {
     const { bookings, loading, refetch, error } = useUserBookings();
-    
+
     // Constant for the limit (easier to change later)
     const ACTIVE_BOOKING_LIMIT = 2;
 
     const activeBookings = useMemo(() => {
-        return bookings.filter(b => 
-            (b.status === 'CONFIRMED' || b.status === 'PENDING') && 
+        return bookings.filter(b =>
+            (b.status === 'APPROVED' || b.status === 'PENDING') &&
             !isPastBooking(b.date, b.startTime)
         );
     }, [bookings]);
 
     const activeCount = activeBookings.length;
-    
+
     // Check if limit is reached
     const limitReached = activeCount >= ACTIVE_BOOKING_LIMIT;
 
@@ -32,10 +32,10 @@ export function useActiveBookings() {
         const sorted = [...activeBookings].sort((a, b) => {
             const dateA = safeDate(a.date)?.getTime() || 0;
             const dateB = safeDate(b.date)?.getTime() || 0;
-            
+
             // 1. Primary: Date Ascending
             if (dateA !== dateB) return dateA - dateB;
-            
+
             // 2. Secondary: Time Ascending
             const timeA = parseInt(a.startTime.replace(':', ''));
             const timeB = parseInt(b.startTime.replace(':', ''));
@@ -46,11 +46,11 @@ export function useActiveBookings() {
     }, [activeBookings]);
 
     return {
-        bookings,           
-        activeBookings,   
-        activeCount,       
-        limitReached,       
-        nextAppointment,    
+        bookings,
+        activeBookings,
+        activeCount,
+        limitReached,
+        nextAppointment,
         loading,
         refetch,
         error

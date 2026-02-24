@@ -75,7 +75,7 @@ export default function NextAppointmentCard() {
 
     const getStatusParams = (status: string) => {
         switch (status) {
-            case 'CONFIRMED':
+            case 'APPROVED':
                 return { label: 'Confirmada', className: 'bg-green-100 text-green-800' };
             case 'PENDING':
                 return { label: 'Pendiente', className: 'bg-yellow-100 text-yellow-800' };
