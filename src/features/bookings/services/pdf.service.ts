@@ -63,10 +63,10 @@ export const PDFService = {
             startY: yPos + 50,
             head: [["Descriptor", "Valor"]],
             body: [
-                ["Ingresos Reales", `$${stats.totalRevenue.toLocaleString()}`],
-                ["Citas Efectivas", stats.totalAppointments],
-                ["Crecimiento vs Periodo Anterior", `${stats.growthPercentage.toFixed(1)}%`],
-                ["Ingresos Perdidos (Cancelaciones)", `$${stats.lostRevenue.toLocaleString()}`],
+                ["Ingresos Reales", `$${(stats?.totalRevenue || 0).toLocaleString()}`],
+                ["Citas Efectivas", stats?.totalAppointments || 0],
+                ["Crecimiento vs Periodo Anterior", `${(stats?.growthPercentage || 0).toFixed(1)}%`],
+                ["Ingresos Perdidos (Cancelaciones)", `$${(stats?.lostRevenue || 0).toLocaleString()}`],
             ],
             theme: 'striped',
             headStyles: { fillColor: [41, 128, 185], textColor: 255 },
@@ -80,10 +80,10 @@ export const PDFService = {
         autoTable(doc, {
             startY: lastY + 20,
             head: [["Servicio", "Cant. Citas", "Ingresos Generados"]],
-            body: stats.servicesBreakdown.map((s: any) => [
-                s.name,
-                s.count,
-                `$${s.revenue.toLocaleString()}`
+            body: (stats?.servicesBreakdown || []).map((s: any) => [
+                s.name || "N/A",
+                s.count || 0,
+                `$${(s.revenue || 0).toLocaleString()}`
             ]),
             theme: 'grid',
             headStyles: { fillColor: [44, 62, 80], textColor: 255 },
@@ -97,10 +97,10 @@ export const PDFService = {
         autoTable(doc, {
             startY: lastY + 5,
             head: [["Barbero", "Trabajos Realizados", "Total Producido"]],
-            body: stats.barbersBreakdown.map((b: any) => [
-                b.name,
-                b.count,
-                `$${b.revenue.toLocaleString()}`
+            body: (stats?.barbersBreakdown || []).map((b: any) => [
+                b.name || "N/A",
+                b.count || 0,
+                `$${(b.revenue || 0).toLocaleString()}`
             ]),
             theme: 'striped',
             headStyles: { fillColor: [39, 174, 96], textColor: 255 },
