@@ -31,7 +31,7 @@ export default function NextAppointmentCard() {
 
         const activeBookings = bookings
             .filter(b => {
-                if (b.status === 'CANCELLED' || b.status === 'COMPLETED') return false;
+                if (b.status === 'CANCELED' || b.status === 'COMPLETED') return false;
                 return !isPastBooking(b.date, b.startTime);
             })
             .sort((a, b) => {
@@ -79,7 +79,7 @@ export default function NextAppointmentCard() {
                 return { label: 'Confirmada', className: 'bg-green-100 text-green-800' };
             case 'PENDING':
                 return { label: 'Pendiente', className: 'bg-yellow-100 text-yellow-800' };
-            case 'CANCELLED':
+            case 'CANCELED':
                 return { label: 'Cancelada', className: 'bg-red-100 text-red-800' };
             case 'COMPLETED':
                 return { label: 'Completada', className: 'bg-gray-100 text-gray-800' };
@@ -106,7 +106,7 @@ export default function NextAppointmentCard() {
         <div
             className={`bg-white rounded-3xl shadow-md p-6 border-l-4 mb-6 relative overflow-hidden`}
             style={{
-                borderColor: nextBooking.status === 'CANCELLED' ? '#ef4444' : 'var(--secondary-color, #2563eb)'
+                borderColor: nextBooking.status === 'CANCELED' ? '#ef4444' : 'var(--secondary-color, #2563eb)'
             }}
         >
             {/* Background decoration */}
@@ -119,7 +119,7 @@ export default function NextAppointmentCard() {
                     <div>
                         <h2 className="text-lg font-bold text-gray-900">Tu Próxima Cita</h2>
                         <p className="text-gray-500 text-sm">
-                            {nextBooking.status === 'CANCELLED'
+                            {nextBooking.status === 'CANCELED'
                                 ? 'Esta cita está cancelada'
                                 : 'No olvides llegar a tiempo 🕒'}
                         </p>

@@ -98,12 +98,29 @@ export function BookingsTable<T>({ data, columns, renderActions }: TableProps<T>
                         })}
                     </div>
 
-                    {/* Footer decorativo con acciones */}
+                    {/* Footer decorativo con estado y acciones */}
                     <div className="px-5 pb-4 pt-2 border-t border-gray-100/50">
-                        <div className="flex items-center justify-between text-xs text-gray-400">
-                            <span className="flex items-center gap-1">
-                                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                                Confirmada
+                        <div className="flex items-center justify-between text-xs font-bold uppercase tracking-tight">
+                            <span className="flex items-center gap-1.5">
+                                <div className={`w-2 h-2 rounded-full ${(row as any).status === 'PENDING' ? 'bg-amber-400 animate-pulse' :
+                                        (row as any).status === 'APPROVED' ? 'bg-green-400' :
+                                            (row as any).status === 'COMPLETED' ? 'bg-blue-400' :
+                                                (row as any).status === 'CANCELED' ? 'bg-red-400' :
+                                                    (row as any).status === 'REJECTED' ? 'bg-gray-400' : 'bg-gray-300'
+                                    }`}></div>
+                                <span className={
+                                    (row as any).status === 'PENDING' ? 'text-amber-600' :
+                                        (row as any).status === 'APPROVED' ? 'text-green-600' :
+                                            (row as any).status === 'COMPLETED' ? 'text-blue-600' :
+                                                (row as any).status === 'CANCELED' ? 'text-red-600' :
+                                                    (row as any).status === 'REJECTED' ? 'text-gray-500' : 'text-gray-400'
+                                }>
+                                    {(row as any).status === 'PENDING' ? 'Pendiente' :
+                                        (row as any).status === 'APPROVED' ? 'Confirmada' :
+                                            (row as any).status === 'COMPLETED' ? 'Completada' :
+                                                (row as any).status === 'CANCELED' ? 'Cancelada' :
+                                                    (row as any).status === 'REJECTED' ? 'Rechazada' : '—'}
+                                </span>
                             </span>
 
                             {renderActions && (

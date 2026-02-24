@@ -8,6 +8,7 @@ import ServicesPage from "../features/services/pages/ServicesPage";
 import BarbersPage from "../features/barbers/pages/BarbersPage";
 import SchedulesPage from "../features/schedules/pages/SchedulesPage";
 import TenantSettings from "../features/tenants/pages/TenantSettings";
+import StatisticsPage from "../features/bookings/pages/StatisticsPage";
 
 /**
  * Tenant Admin routes - business owner/manager dashboard
@@ -24,6 +25,7 @@ export const tenantAdminRoutes = (
             <Route path="services" element={<ServicesPage />} />
             <Route path="barbers" element={<BarbersPage />} />
             <Route path="schedules" element={<SchedulesPage />} />
+            <Route path="statistics" element={<StatisticsPage />} />
             <Route path="settings" element={<TenantSettings />} />
         </Route>
     </Route>

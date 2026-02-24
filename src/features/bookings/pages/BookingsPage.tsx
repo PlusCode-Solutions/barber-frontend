@@ -145,13 +145,25 @@ export default function BookingsPage() {
                         //{ header: "Notas 📝", accessor: "notes" },
                     ]}
                     renderActions={(booking) => {
-                        // Only show cancel button if status is PENDING or CONFIRMED (assuming user can cancel confirmed)
-                        if (booking.status === 'CANCELLED' || booking.status === 'COMPLETED') return null;
-
                         const originalBooking = bookings.find(b => b.id === booking.id);
+
+                        // Determinar si la cita es pasada, cancelada o ya completada
                         const isPast = originalBooking
                             ? isPastBooking(originalBooking.date, originalBooking.startTime)
                             : true;
+
+                        const isInactive = booking.status === 'CANCELED' ||
+                            booking.status === 'REJECTED' ||
+                            booking.status === 'COMPLETED';
+
+                        // Los botones se deshabilitan si es pasada O si ya está inactiva (cancelada/completada)
+                        const isDisabled = isPast || isInactive;
+
+                        let tooltip = "";
+                        if (isPast) tooltip = "No se pueden modificar citas pasadas";
+                        else if (booking.status === 'CANCELED') tooltip = "Esta cita ya está cancelada";
+                        else if (booking.status === 'REJECTED') tooltip = "Esta cita fue rechazada";
+                        else if (booking.status === 'COMPLETED') tooltip = "Esta cita ya fue completada";
 
                         return (
                             <div className="flex items-center gap-2">
@@ -159,10 +171,10 @@ export default function BookingsPage() {
                                     onClick={() => {
                                         if (originalBooking) setBookingToReschedule(originalBooking);
                                     }}
-                                    disabled={isPast}
-                                    title={isPast ? "No se pueden editar citas pasadas" : "Editar cita"}
+                                    disabled={isDisabled}
+                                    title={tooltip || "Editar cita"}
                                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border
-                                        ${isPast
+                                        ${isDisabled
                                             ? "bg-gray-100 text-gray-400 border-gray-100 cursor-not-allowed"
                                             : "bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100"
                                         }`}
@@ -172,10 +184,10 @@ export default function BookingsPage() {
                                 </button>
                                 <button
                                     onClick={() => setBookingToCancel(booking.id)}
-                                    disabled={isPast}
-                                    title={isPast ? "No se pueden cancelar citas pasadas" : "Cancelar cita"}
+                                    disabled={isDisabled}
+                                    title={tooltip || "Cancelar cita"}
                                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border
-                                        ${isPast
+                                        ${isDisabled
                                             ? "bg-gray-100 text-gray-400 border-gray-100 cursor-not-allowed"
                                             : "bg-red-50 text-red-600 border-red-100 hover:bg-red-100"
                                         }`}

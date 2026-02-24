@@ -52,7 +52,7 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
             setClosures(Array.from(closureMap.values()));
             setSchedules(schedulesData);
             setTenantSchedules(tenantSchedulesData);
-        }).catch(() => {});
+        }).catch(() => { });
     }, [barber, tenant?.slug]);
 
     // 2. Calcular Slots y Verificar Disponibilidad
@@ -75,7 +75,7 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
                 const isScopeMatch = !c.barberId || (barber && c.barberId === barber.id);
                 // Only block the entire day if it is EXPLICITLY a full day closure
                 const isFullDay = c.isFullDay === true || c.isFullDay === undefined;
-                
+
                 return isDateMatch && isScopeMatch && isFullDay;
             });
 
@@ -93,7 +93,7 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
             const tenantSchedule = tenantSchedules.find(s => Number(s.dayOfWeek) === Number(dayOfWeek));
 
             if (!tenantSchedule || tenantSchedule.isClosed || !tenantSchedule.startTime || !tenantSchedule.endTime) {
-                setAllPotentialSlots([]); 
+                setAllPotentialSlots([]);
                 setError(`No abrimos los ${parsedDate.toLocaleDateString('es-ES', { weekday: 'long' })}.`);
                 return;
             }
@@ -113,7 +113,7 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
                 } else {
                     const start = minutesToTime(startMin);
                     const end = minutesToTime(endMin);
-                    
+
                     // Fallback to tenant lunch times if not defined in barber schedule
                     const hasBarberLunch = schedule.lunchStartTime || schedule.lunchEndTime;
                     const lunchStart = hasBarberLunch ? schedule.lunchStartTime : tenantSchedule?.lunchStartTime;
@@ -142,21 +142,21 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
 
                 const isAdmin = user?.role === 'TENANT_ADMIN' || user?.role === 'SUPER_ADMIN';
                 const formattedDate = parsedDate.toISOString().split('T')[0];
-                
+
                 const [availabilityRes, existingBookings] = await Promise.all([
                     BookingsService.checkAvailability(barber.id, formattedDate),
-                    isAdmin 
-                        ? BookingsService.getTenantBookings(formattedDate, formattedDate, barber.id).catch(() => []) 
+                    isAdmin
+                        ? BookingsService.getTenantBookings(formattedDate, formattedDate, barber.id).catch(() => [])
                         : Promise.resolve([])
                 ]);
 
-                const rawSlots: AvailabilitySlot[] = Array.isArray(availabilityRes) 
-                    ? availabilityRes 
+                const rawSlots: AvailabilitySlot[] = Array.isArray(availabilityRes)
+                    ? availabilityRes
                     : (availabilityRes?.slots || []);
 
                 const occupiedRanges: { start: number, end: number }[] = [];
                 existingBookings.forEach((b: any) => {
-                    if (b.status !== 'CANCELLED' && b.id !== bookingIdToExclude) {
+                    if (b.status !== 'CANCELED' && b.id !== bookingIdToExclude) {
                         const start = timeToMinutes(b.startTime);
                         let end = start + 30;
                         if (b.endTime) end = timeToMinutes(b.endTime);
@@ -167,19 +167,19 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
                 const mappedRawSlots = rawSlots
                     .filter(s => s.available && typeof s.time === 'string')
                     .map(s => s.time.substring(0, 5));
-                
+
                 const finalSlots = mappedRawSlots.filter(time => {
                     const slotStart = timeToMinutes(time);
                     const slotEnd = slotStart + (durationMinutes || 30);
                     return !occupiedRanges.some(range => (slotStart < range.end) && (slotEnd > range.start));
                 });
-                
+
                 // Helper to get effective closing/lunch
                 const hasBarberLunchOrig = schedule?.lunchStartTime || schedule?.lunchEndTime;
                 const lunchStart = hasBarberLunchOrig ? schedule?.lunchStartTime : tenantSchedule?.lunchStartTime;
                 const lunchEnd = hasBarberLunchOrig ? schedule?.lunchEndTime : tenantSchedule?.lunchEndTime;
-                
-                const closingTime = (schedule?.endTime && tenantSchedule?.endTime) 
+
+                const closingTime = (schedule?.endTime && tenantSchedule?.endTime)
                     ? (timeToMinutes(schedule.endTime) < timeToMinutes(tenantSchedule.endTime) ? schedule.endTime : tenantSchedule.endTime)
                     : (schedule?.endTime || tenantSchedule?.endTime);
 
@@ -215,6 +215,6 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
         error,
         closures,
         schedules,
-        tenantSchedules 
+        tenantSchedules
     };
 }

@@ -122,7 +122,7 @@ export default function TenantBookingsPage() {
             const barberBookings = bookings.filter(b =>
                 b.barber?.id === barber.id &&
                 normalizeDateString(b.date) === dateStr &&
-                b.status !== 'CANCELLED'
+                b.status !== 'CANCELED'
             );
 
             const occupiedRanges = barberBookings.map(b => {
