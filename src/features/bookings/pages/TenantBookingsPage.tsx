@@ -162,7 +162,8 @@ export default function TenantBookingsPage() {
             const bookingDate = normalizeDateString(b.date);
             const dateMatch = bookingDate === selectedDate;
             const barberMatch = selectedBarberId ? b.barber?.id === selectedBarberId : true;
-            return dateMatch && barberMatch;
+            const statusMatch = b.status !== 'CANCELED';
+            return dateMatch && barberMatch && statusMatch;
         }).map(b => ({
             ...b,
             type: 'BOOKING' as const
