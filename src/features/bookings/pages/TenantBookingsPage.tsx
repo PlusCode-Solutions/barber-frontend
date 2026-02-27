@@ -90,7 +90,7 @@ export default function TenantBookingsPage() {
 
         const dayOfWeek = getDay(parsedDate);
 
-        const isGloballyClosed = closures.some(c => !c.barberId && normalizeDateString(c.date) === dateStr);
+        const isGloballyClosed = closures.some(c => !c.barberId && c.isFullDay && normalizeDateString(c.date) === dateStr);
         if (isGloballyClosed) return [];
 
         const allSlots: { time: string, barberId: string, barberName: string }[] = [];
@@ -101,7 +101,7 @@ export default function TenantBookingsPage() {
             : barbers;
 
         barbersToCheck.forEach(barber => {
-            const isBarberClosed = closures.some(c => c.barberId === barber.id && normalizeDateString(c.date) === dateStr);
+            const isBarberClosed = closures.some(c => c.barberId === barber.id && c.isFullDay && normalizeDateString(c.date) === dateStr);
             if (isBarberClosed) return;
 
             let schedule = schedules.find(s => s.barberId === barber.id && Number(s.dayOfWeek) === dayOfWeek);
@@ -132,13 +132,27 @@ export default function TenantBookingsPage() {
                 return { start, end };
             });
 
+            // Also block times covered by partial special closures
+            const partialClosureRanges = closures.filter(c =>
+                !c.isFullDay &&
+                c.startTime &&
+                c.endTime &&
+                normalizeDateString(c.date) === dateStr &&
+                (!c.barberId || c.barberId === barber.id)
+            ).map(c => ({
+                start: timeToMinutes(c.startTime),
+                end: timeToMinutes(c.endTime)
+            }));
+
+            const allOccupied = [...occupiedRanges, ...partialClosureRanges];
+
             const free = slots
                 .filter(time => {
                     const slotStart = timeToMinutes(time);
                     const slotEnd = slotStart + 30; // Assuming "Free Slot" is a 30m block
 
                     // Check strict overlap
-                    return !occupiedRanges.some(range =>
+                    return !allOccupied.some(range =>
                         (slotStart < range.end) && (slotEnd > range.start)
                     );
                 })
@@ -186,10 +200,37 @@ export default function TenantBookingsPage() {
             barber: { name: slot.barberName }
         }));
 
-        const combined = [...realBookings, ...freeSlotsCalls];
+        // Show partial closures as visual orange blocks in the admin view
+        const closureItems = closures
+            .filter(c =>
+                !c.isFullDay &&
+                c.startTime &&
+                c.endTime &&
+                normalizeDateString(c.date) === selectedDate &&
+                (selectedBarberId
+                    ? (c.barberId === selectedBarberId || !c.barberId)
+                    : !c.barberId)
+            )
+            .map(c => ({
+                id: `closure-${c.startTime}-${c.barberId || 'global'}`,
+                date: selectedDate,
+                startTime: c.startTime,
+                endTime: c.endTime,
+                customerName: c.reason || 'Horario Especial',
+                barberName: c.barberId
+                    ? (barbers.find((b: any) => b.id === c.barberId)?.name || 'Barbero')
+                    : 'Todos los barberos',
+                service: { name: 'Cierre Especial', price: 0 },
+                status: 'CLOSED' as const,
+                type: 'CLOSURE' as const,
+                user: { name: c.reason || 'Horario Especial' },
+                barber: { name: c.barberId ? (barbers.find((b: any) => b.id === c.barberId)?.name || '') : 'Todos los barberos' }
+            }));
+
+        const combined = [...realBookings, ...freeSlotsCalls, ...closureItems];
         return combined.sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-    }, [bookings, selectedDate, selectedBarberId, computedFreeSlots]);
+    }, [bookings, selectedDate, selectedBarberId, computedFreeSlots, closures, barbers]);
 
     if (loading) return <BookingsSkeleton />;
 
@@ -251,7 +292,7 @@ export default function TenantBookingsPage() {
         endTime: formatHour(b.endTime),
         service: {
             ...b.service,
-            name: b.status === 'AVAILABLE' ? "Espacio Libre" : (b.service?.name || "Servicio General"),
+            name: b.status === 'AVAILABLE' ? "Espacio Libre" : b.status === 'CLOSED' ? "Cierre Especial" : (b.service?.name || "Servicio General"),
             price: b.service?.price ? formatCurrency(b.service.price) : "—",
         },
         customerName: b.user?.name || "Cliente Desconocido",
