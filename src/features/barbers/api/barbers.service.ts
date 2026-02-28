@@ -18,7 +18,8 @@ export const BarbersService = {
     },
 
     // Create barber
-    create: async (tenantSlug: string, data: Partial<Barber>): Promise<Barber> => {
+    create: async (tenantSlug: string, data: Partial<Barber> | FormData): Promise<Barber> => {
+        // Axios detecta automáticamente FormData y establece los headers correctos con su 'boundary'
         const res = await axios.post(`/${tenantSlug}/barbers`, data);
         return res.data;
     },
@@ -27,7 +28,7 @@ export const BarbersService = {
     update: async (
         tenantSlug: string,
         barberId: string,
-        data: Partial<Barber>
+        data: Partial<Barber> | FormData
     ): Promise<Barber> => {
         const res = await axios.patch(`/${tenantSlug}/barbers/${barberId}`, data);
         return res.data;

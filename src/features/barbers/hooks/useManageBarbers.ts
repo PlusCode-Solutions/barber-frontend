@@ -45,9 +45,9 @@ export function useManageBarbers() {
 
     // CREAR
     const createMutation = useMutation({
-        mutationFn: (payload: Partial<Barber>) => {
+        mutationFn: (payload: Partial<Barber> | FormData) => {
             if (!slug) throw new Error("Tenant no disponible");
-            const body = cleanPayload(payload);
+            const body = payload instanceof FormData ? payload : cleanPayload(payload);
             return BarbersService.create(slug, body);
         },
         onSuccess: () => {
@@ -60,9 +60,9 @@ export function useManageBarbers() {
 
     // ACTUALIZAR
     const updateMutation = useMutation({
-        mutationFn: ({ id, payload }: { id: string; payload: Partial<Barber> }) => {
+        mutationFn: ({ id, payload }: { id: string; payload: Partial<Barber> | FormData }) => {
             if (!slug) throw new Error("Tenant no disponible");
-            const body = cleanPayload(payload);
+            const body = payload instanceof FormData ? payload : cleanPayload(payload);
             return BarbersService.update(slug, id, body);
         },
         onSuccess: () => {
@@ -92,9 +92,9 @@ export function useManageBarbers() {
         loading,
         error: error ? (error as Error).message : null,
         submitting: createMutation.isPending || updateMutation.isPending || deleteMutation.isPending,
-        
-        createBarber: (payload: Partial<Barber>) => createMutation.mutateAsync(payload),
-        updateBarber: (id: string, payload: Partial<Barber>) => updateMutation.mutateAsync({ id, payload }),
+
+        createBarber: (payload: Partial<Barber> | FormData) => createMutation.mutateAsync(payload),
+        updateBarber: (id: string, payload: Partial<Barber> | FormData) => updateMutation.mutateAsync({ id, payload }),
         deleteBarber: (id: string) => deleteMutation.mutateAsync(id),
     };
 }

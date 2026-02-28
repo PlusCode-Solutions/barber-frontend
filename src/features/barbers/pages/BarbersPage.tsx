@@ -117,7 +117,11 @@ export default function BarbersPage() {
                 onClose={() => setShowCreate(false)}
                 onSubmit={async (payload) => {
                     try {
-                        await createBarber({ ...payload, isActive: undefined });
+                        const finalPayload = payload instanceof FormData
+                            ? payload
+                            : { ...payload, isActive: undefined };
+
+                        await createBarber(finalPayload);
                         setShowCreate(false);
                         setToastType("success");
                         setToastMessage("✅ Barbero creado correctamente");
@@ -139,7 +143,11 @@ export default function BarbersPage() {
                 onSubmit={async (payload) => {
                     if (!editing) return;
                     try {
-                        await updateBarber(editing.id, payload);
+                        const finalPayload = payload instanceof FormData
+                            ? payload
+                            : { ...payload, isActive: undefined };
+
+                        await updateBarber(editing.id, finalPayload as any);
                         setEditing(null);
                         setToastType("success");
                         setToastMessage("✅ Barbero actualizado correctamente");
