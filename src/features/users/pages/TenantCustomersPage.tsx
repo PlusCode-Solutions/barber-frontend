@@ -23,7 +23,7 @@ export default function TenantCustomersPage() {
 
     // Filter State
     const [searchTerm, setSearchTerm] = useState("");
-    const [roleFilter, setRoleFilter] = useState<'ALL' | 'CLIENT' | 'TENANT_ADMIN'>('ALL');
+    const [roleFilter, setRoleFilter] = useState<'ALL' | 'USER' | 'TENANT_ADMIN' | 'BARBER'>('ALL');
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
@@ -146,6 +146,7 @@ export default function TenantCustomersPage() {
                             >
                                 <option value="ALL">Todos los Roles</option>
                                 <option value="USER">Cliente</option>
+                                <option value="BARBER">Barberos</option>
                                 <option value="TENANT_ADMIN">Administradores</option>
                             </select>
                             <Filter className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
@@ -203,10 +204,12 @@ export default function TenantCustomersPage() {
                                         <td className="px-6 py-4">
                                             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border shadow-sm ${user.role === 'TENANT_ADMIN'
                                                 ? 'bg-purple-50 text-purple-700 border-purple-200'
-                                                : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                : user.role === 'BARBER'
+                                                    ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                                 }`}>
-                                                <span className={`w-1.5 h-1.5 rounded-full ${user.role === 'TENANT_ADMIN' ? 'bg-purple-500' : 'bg-emerald-500'}`}></span>
-                                                {user.role === 'TENANT_ADMIN' ? 'Admin' : 'Cliente'}
+                                                <span className={`w-1.5 h-1.5 rounded-full ${user.role === 'TENANT_ADMIN' ? 'bg-purple-500' : user.role === 'BARBER' ? 'bg-blue-500' : 'bg-emerald-500'}`}></span>
+                                                {user.role === 'TENANT_ADMIN' ? 'Admin' : user.role === 'BARBER' ? 'Barbero' : 'Cliente'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
@@ -289,10 +292,12 @@ export default function TenantCustomersPage() {
                                     <div className="flex items-center justify-between pt-2">
                                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${user.role === 'TENANT_ADMIN'
                                             ? 'bg-purple-50 text-purple-700 border-purple-200'
-                                            : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                            : user.role === 'BARBER'
+                                                ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                                : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                             }`}>
-                                            <span className={`w-1.5 h-1.5 rounded-full ${user.role === 'TENANT_ADMIN' ? 'bg-purple-500' : 'bg-emerald-500'}`}></span>
-                                            {user.role === 'TENANT_ADMIN' ? 'Admin' : 'Cliente'}
+                                            <span className={`w-1.5 h-1.5 rounded-full ${user.role === 'TENANT_ADMIN' ? 'bg-purple-500' : user.role === 'BARBER' ? 'bg-blue-500' : 'bg-emerald-500'}`}></span>
+                                            {user.role === 'TENANT_ADMIN' ? 'Admin' : user.role === 'BARBER' ? 'Barbero' : 'Cliente'}
                                         </span>
 
                                         <div className="flex items-center gap-1.5 text-gray-400 text-xs">

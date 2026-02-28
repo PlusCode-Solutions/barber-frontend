@@ -1,6 +1,6 @@
 import { PERMISSIONS, type Permission } from './permissions';
 
-export type UserRole = 'SUPER_ADMIN' | 'TENANT_ADMIN' | 'USER';
+export type UserRole = 'SUPER_ADMIN' | 'TENANT_ADMIN' | 'USER' | 'BARBER';
 
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     // ========== SUPER ADMIN ==========
@@ -46,6 +46,18 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
         PERMISSIONS.BOOKINGS_DELETE, // Can cancel (delete) own bookings
 
         // Read-only access to resources needed for booking
+        PERMISSIONS.SERVICES_VIEW,
+        PERMISSIONS.BARBERS_VIEW,
+        PERMISSIONS.SCHEDULES_VIEW,
+    ],
+
+    // ========== BARBER ==========
+    // Barber permissions
+    BARBER: [
+        PERMISSIONS.BOOKINGS_VIEW_OWN,
+        PERMISSIONS.BOOKINGS_CREATE,
+        PERMISSIONS.BOOKINGS_UPDATE,
+        PERMISSIONS.BOOKINGS_DELETE,
         PERMISSIONS.SERVICES_VIEW,
         PERMISSIONS.BARBERS_VIEW,
         PERMISSIONS.SCHEDULES_VIEW,

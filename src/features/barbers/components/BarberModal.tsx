@@ -155,28 +155,32 @@ export default function BarberModal({
                                 />
                             </div>
                         )}
-                        <div>
-                            <label className="text-sm font-semibold text-gray-700">Correo *</label>
-                            <input
-                                type="email"
-                                value={form.email}
-                                onChange={(e) => handleChange("email", e.target.value)}
-                                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
-                                placeholder="correo@barberia.com"
-                            />
-                        </div>
+                        {mode === 'create' && (
+                            <div>
+                                <label className="text-sm font-semibold text-gray-700">Correo *</label>
+                                <input
+                                    type="email"
+                                    value={form.email}
+                                    onChange={(e) => handleChange("email", e.target.value)}
+                                    className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                                    placeholder="correo@barberia.com"
+                                />
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div>
-                            <label className="text-sm font-semibold text-gray-700">Teléfono</label>
-                            <input
-                                value={form.phone}
-                                onChange={(e) => handleChange("phone", e.target.value)}
-                                className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
-                                placeholder="+57 300 000 0000"
-                            />
-                        </div>
+                        {mode === 'create' && (
+                            <div>
+                                <label className="text-sm font-semibold text-gray-700">Teléfono</label>
+                                <input
+                                    value={form.phone}
+                                    onChange={(e) => handleChange("phone", e.target.value)}
+                                    className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                                    placeholder="+57 300 000 0000"
+                                />
+                            </div>
+                        )}
                         <div>
                             <label className="text-sm font-semibold text-gray-700">Especialidad</label>
                             <input
