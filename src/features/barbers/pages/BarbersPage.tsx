@@ -60,7 +60,7 @@ export default function BarbersPage() {
                             <div className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-lg border border-white/20 inline-flex items-center gap-2">
                                 <Users className="w-4 h-4 text-white/90" />
                                 <span className="font-bold text-sm">
-                                    {barbers.length} {barbers.length === 1 ? "profesional" : "profesionales"}
+                                    {barbers.length} {barbers.length === 1 ? "barbero" : "barberos"}
                                 </span>
                             </div>
                         </div>
