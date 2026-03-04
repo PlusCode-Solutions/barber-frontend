@@ -55,10 +55,10 @@ export function useWeekScheduleEditor({ currentSchedules, onUpdate, onShowToast,
             lunchStartTime: data.lunchStartTime || null,
             lunchEndTime: data.lunchEndTime || null,
         };
-        
+
         const sanitizedPayload: any = { ...payload };
-        if (!sanitizedPayload.lunchStartTime) delete sanitizedPayload.lunchStartTime;
-        if (!sanitizedPayload.lunchEndTime) delete sanitizedPayload.lunchEndTime;
+        if (!sanitizedPayload.lunchStartTime) sanitizedPayload.lunchStartTime = null;
+        if (!sanitizedPayload.lunchEndTime) sanitizedPayload.lunchEndTime = null;
 
         // VALIDATION: If editing a barber, validate against Tenant Schedule
         if (barberId && tenantSchedules.length > 0) {
