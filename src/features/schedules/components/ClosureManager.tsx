@@ -4,6 +4,7 @@ import { useClosureManager } from "../hooks/useClosureManager";
 import { safeDate } from "../../../utils/dateUtils";
 import { useBarbers } from "../../barbers/hooks/useBarbers";
 import DeleteClosureModal from "./DeleteClosureModal";
+import { useAuth } from "../../../context/AuthContext";
 
 interface Props {
     onShowToast?: (message: string, type: "success" | "error") => void;
@@ -11,13 +12,16 @@ interface Props {
 }
 
 export default function ClosureManager({ onShowToast, barberId }: Props) {
+    const { user } = useAuth();
+    const isBarber = user?.role === 'BARBER';
+
     const { closures, loadingList, form, actions, deleteModal } = useClosureManager({ onShowToast, barberId });
     const { barbers } = useBarbers();
 
     // State for scope selection
-    // If barberId prop is present, default to BARBER, otherwise SHOP
-    const [scope, setScope] = useState<'SHOP' | 'BARBER'>(barberId ? 'BARBER' : 'SHOP');
-    const [targetBarberId, setTargetBarberId] = useState(barberId || "");
+    // If barberId prop is present OR user is BARBER, default to BARBER, otherwise SHOP
+    const [scope, setScope] = useState<'SHOP' | 'BARBER'>((barberId || isBarber) ? 'BARBER' : 'SHOP');
+    const [targetBarberId, setTargetBarberId] = useState(isBarber ? user?.barberId || "" : barberId || "");
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -52,39 +56,41 @@ export default function ClosureManager({ onShowToast, barberId }: Props) {
                 {/* Formulario de Creación */}
                 <form onSubmit={handleSubmit} className="space-y-3 mt-4">
 
-                    {/* Scope Selector */}
-                    <div className="bg-white p-1 rounded-lg border border-gray-200 flex mb-2">
-                        <button
-                            type="button"
-                            onClick={() => setScope('SHOP')}
-                            className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-semibold rounded-md transition-all ${scope === 'SHOP'
-                                ? 'bg-gray-100 text-gray-900 shadow-sm'
-                                : 'text-gray-500 hover:bg-gray-50'
-                                }`}
-                        >
-                            <Store size={14} />
-                            Toda la Tienda
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setScope('BARBER');
-                                if (!targetBarberId && barbers.length > 0) {
-                                    setTargetBarberId(barbers[0].id);
-                                }
-                            }}
-                            className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-semibold rounded-md transition-all ${scope === 'BARBER'
-                                ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
-                                : 'text-gray-500 hover:bg-gray-50'
-                                }`}
-                        >
-                            <User size={14} />
-                            Barbero
-                        </button>
-                    </div>
+                    {/* Scope Selector (Hidden for Barbers) */}
+                    {!isBarber && (
+                        <div className="bg-white p-1 rounded-lg border border-gray-200 flex mb-2">
+                            <button
+                                type="button"
+                                onClick={() => setScope('SHOP')}
+                                className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-semibold rounded-md transition-all ${scope === 'SHOP'
+                                    ? 'bg-gray-100 text-gray-900 shadow-sm'
+                                    : 'text-gray-500 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <Store size={14} />
+                                Toda la Tienda
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setScope('BARBER');
+                                    if (!targetBarberId && barbers.length > 0) {
+                                        setTargetBarberId(barbers[0].id);
+                                    }
+                                }}
+                                className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-semibold rounded-md transition-all ${scope === 'BARBER'
+                                    ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
+                                    : 'text-gray-500 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <User size={14} />
+                                Barbero
+                            </button>
+                        </div>
+                    )}
 
-                    {/* Barber Dropdown (Only if scope is BARBER) */}
-                    {scope === 'BARBER' && (
+                    {/* Barber Dropdown (Only if scope is BARBER, Hidden for Barbers) */}
+                    {scope === 'BARBER' && !isBarber && (
                         <div className="animate-fade-in-down">
                             <select
                                 value={targetBarberId}

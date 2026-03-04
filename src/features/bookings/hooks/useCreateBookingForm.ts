@@ -10,13 +10,15 @@ import { useTenant } from "../../../context/TenantContext";
 import type { Closure, Schedule } from "../../schedules/types";
 import { useAvailabilityCalculator } from "./useAvailabilityCalculator";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "../../../context/AuthContext";
 
 type Step = 1 | 2 | 3 | 4;
 
 export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => void) {
     const queryClient = useQueryClient();
     const { tenant } = useTenant();
-    
+    const { user } = useAuth();
+
     // Form State
     const [step, setStep] = useState<Step>(1);
     const [selectedService, setSelectedService] = useState<Service | null>(null);
@@ -24,16 +26,16 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
     const [selectedDate, setSelectedDate] = useState("");
     const [selectedSlot, setSelectedSlot] = useState("");
     const [notes, setNotes] = useState("");
-    
+
 
     // UI State
     const [submitting, setSubmitting] = useState(false);
     const [formError, setFormError] = useState<string | null>(null);
     const [validationErrors, setValidationErrors] = useState<FormValidationError[]>([]);
-    
+
     // Data State (Schedules)
     const [closures, setClosures] = useState<Closure[]>([]);
-	const [schedules, setSchedules] = useState<Schedule[]>([]);
+    const [schedules, setSchedules] = useState<Schedule[]>([]);
     const [tenantSchedules, setTenantSchedules] = useState<Schedule[]>([]);
 
     // 1. Fetch Schedules when Barber is selected
@@ -45,24 +47,24 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
                 SchedulesService.getClosures(),
                 SchedulesService.getSchedules() // Tenant General Schedules
             ])
-            .then(([barberClosures, schedulesData, globalClosures, tenantSchedulesData]) => {
-                const closureMap = new Map<string, Closure>();
-                [...globalClosures, ...barberClosures].forEach(c => closureMap.set(c.id, c));
-                
-                setClosures(Array.from(closureMap.values()));
-                setSchedules(schedulesData);
-                setTenantSchedules(tenantSchedulesData);
-            })
-            .catch(console.error);
+                .then(([barberClosures, schedulesData, globalClosures, tenantSchedulesData]) => {
+                    const closureMap = new Map<string, Closure>();
+                    [...globalClosures, ...barberClosures].forEach(c => closureMap.set(c.id, c));
+
+                    setClosures(Array.from(closureMap.values()));
+                    setSchedules(schedulesData);
+                    setTenantSchedules(tenantSchedulesData);
+                })
+                .catch(console.error);
         }
     }, [selectedBarber, tenant?.slug]);
 
     // 2. Calculate Availability using extracted logic
-    const { 
-        availableSlots, 
+    const {
+        availableSlots,
         allPotentialSlots,
         breakSlots,
-        loadingSlots, 
+        loadingSlots,
         error: availabilityError,
         refresh: refreshAvailability
     } = useAvailabilityCalculator({
@@ -88,7 +90,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         setFormError(null);
         setValidationErrors([]);
         setClosures([]);
-		setSchedules([]);
+        setSchedules([]);
         setTenantSchedules([]);
     }, []);
 
@@ -99,9 +101,14 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
 
     const handleServiceSelect = useCallback((service: Service) => {
         setSelectedService(service);
-        setStep(2);
+        if (user?.role === 'BARBER' && user?.barberId) {
+            setSelectedBarber({ id: user.barberId, name: user.name || 'Barbero' } as Barber);
+            setStep(3);
+        } else {
+            setStep(2);
+        }
         setFormError(null);
-    }, []);
+    }, [user]);
 
     const handleBarberSelect = useCallback((barber: Barber) => {
         setSelectedBarber(barber);
@@ -170,19 +177,19 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         } catch (err: any) {
             let errorMessage = err.response?.data?.message ||
                 "No se pudo crear la cita. Por favor intenta de nuevo.";
-            
+
             // Handle Concurrent Booking Conflict (409)
             if (err.response?.status === 409) {
                 errorMessage = "Lo sentimos, este horario acaba de ser reservado por otra persona. Por favor selecciona otro.";
-                
+
                 // Refresh slots to show the latest availability
                 refreshAvailability();
-                
+
                 // Go back to time selection step so user can pick a new slot
                 setStep(3);
-                setSelectedSlot(""); 
+                setSelectedSlot("");
             }
-            
+
             setFormError(errorMessage);
         } finally {
             setSubmitting(false);
@@ -220,7 +227,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         validationErrors,
         canProceedToConfirm,
         closures,
-		schedules,
+        schedules,
         tenantSchedules,
 
         // Actions

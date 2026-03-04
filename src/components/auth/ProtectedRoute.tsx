@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 
 interface ProtectedRouteProps {
     requiredRole?: UserRole;
+    allowedRoles?: UserRole[];
     /**
      * User must have ALL of these permissions (AND logic)
      */
@@ -15,6 +16,7 @@ interface ProtectedRouteProps {
      * User must have AT LEAST ONE of these permissions (OR logic)
      */
     requiredAnyPermission?: Permission[];
+    children?: React.ReactNode;
 }
 
 /**
@@ -34,8 +36,10 @@ interface ProtectedRouteProps {
  */
 export default function ProtectedRoute({
     requiredRole,
+    allowedRoles,
     requiredPermissions,
-    requiredAnyPermission
+    requiredAnyPermission,
+    children
 }: ProtectedRouteProps) {
     // Use AuthContext for reactive authentication state
     const { user, isAuthenticated, isLoading } = useAuth();
@@ -53,7 +57,11 @@ export default function ProtectedRoute({
     }
 
     // 1. Check Role Match
-    if (requiredRole && !isRole(requiredRole)) {
+    if (allowedRoles && allowedRoles.length > 0) {
+        if (!allowedRoles.some(role => isRole(role))) {
+            return <Navigate to="/unauthorized" replace />;
+        }
+    } else if (requiredRole && !isRole(requiredRole)) {
         return <Navigate to="/unauthorized" replace />;
     }
 
@@ -71,5 +79,5 @@ export default function ProtectedRoute({
         }
     }
 
-    return <Outlet />;
+    return children ? <>{children}</> : <Outlet />;
 }

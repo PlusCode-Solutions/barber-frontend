@@ -27,6 +27,8 @@ export default function LoginForm({ variant = 'default' }: LoginFormProps) {
 
       if (result.user.role === 'TENANT_ADMIN') {
         navigate(`/${tenant?.slug}/admin/dashboard`);
+      } else if (result.user.role === 'BARBER') {
+        navigate(`/${tenant?.slug}/admin/bookings`);
       } else if (result.user.role === 'SUPER_ADMIN') {
         navigate(`/admin/dashboard`);
       } else {

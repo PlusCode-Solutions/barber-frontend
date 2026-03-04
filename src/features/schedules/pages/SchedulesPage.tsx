@@ -17,12 +17,14 @@ export default function SchedulesPage() {
     const { tenant } = useTenant();
     const { user } = useAuth();
     const isAdmin = user?.role === 'TENANT_ADMIN';
+    const isBarber = user?.role === 'BARBER';
+    const canEdit = isAdmin || isBarber;
 
     // Obtener barberos para identificar el principal y permitir selección
     const { barbers } = useBarbers({ enabled: isAdmin });
 
     // Estado para el barbero seleccionado
-    const [selectedBarberId, setSelectedBarberId] = useState<string | undefined>(undefined);
+    const [selectedBarberId, setSelectedBarberId] = useState<string | undefined>(isBarber ? user?.barberId : undefined);
 
     // Removed auto-selection effect to allow viewing Tenant schedules by default
 
@@ -114,7 +116,7 @@ export default function SchedulesPage() {
                         )}
                     </div>
 
-                    {isAdmin && (
+                    {canEdit && (
                         <div>
                             <Button
                                 onClick={() => setIsEditing(!isEditing)}
@@ -192,7 +194,7 @@ export default function SchedulesPage() {
                                     </div>
                                     <h3 className="text-xl font-bold text-gray-900 mb-2">Sin horarios definidos</h3>
                                     <p className="text-gray-500 text-sm max-w-xs mb-6 mx-auto">Aún no se han configurado los horarios de atención.</p>
-                                    {isAdmin && (
+                                    {canEdit && (
                                         <Button onClick={() => setIsEditing(true)}>
                                             Configurar ahora
                                         </Button>

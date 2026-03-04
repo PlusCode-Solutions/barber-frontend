@@ -12,6 +12,7 @@ export interface AuthUser extends RBACUser {
     name?: string;
     tenantId?: string;
     tenantSlug?: string;
+    barberId?: string;
 }
 
 interface AuthContextType {

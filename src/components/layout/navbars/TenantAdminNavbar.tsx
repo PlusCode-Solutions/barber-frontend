@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, LayoutDashboard, FileText, Scissors, Users, Calendar, UserCircle, LogOut, Settings, TrendingUp } from "lucide-react";
 import { useTenant } from "../../../context/TenantContext";
+import { useAuth } from "../../../context/AuthContext";
 
 export default function TenantAdminNavbar() {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -9,17 +10,20 @@ export default function TenantAdminNavbar() {
     const { tenant } = useTenant();
     const location = useLocation();
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const menuItems = [
-        { icon: LayoutDashboard, label: "Dashboard", path: "admin/dashboard" },
-        { icon: FileText, label: "Citas", path: "admin/bookings" },
-        { icon: TrendingUp, label: "Estadísticas", path: "admin/statistics" },
-        { icon: Scissors, label: "Servicios", path: "admin/services" },
-        { icon: Users, label: "Barberos", path: "admin/barbers" },
-        { icon: Calendar, label: "Horarios", path: "admin/schedules" },
-        { icon: UserCircle, label: "Clientes", path: "admin/customers" },
-        { icon: Settings, label: "Configuración", path: "admin/settings" },
+        { icon: LayoutDashboard, label: "Dashboard", path: "admin/dashboard", roles: ['TENANT_ADMIN'] },
+        { icon: FileText, label: "Citas", path: "admin/bookings", roles: ['TENANT_ADMIN', 'BARBER'] },
+        { icon: TrendingUp, label: "Estadísticas", path: "admin/statistics", roles: ['TENANT_ADMIN'] },
+        { icon: Scissors, label: "Servicios", path: "admin/services", roles: ['TENANT_ADMIN'] },
+        { icon: Users, label: "Barberos", path: "admin/barbers", roles: ['TENANT_ADMIN'] },
+        { icon: Calendar, label: "Horarios", path: "admin/schedules", roles: ['TENANT_ADMIN', 'BARBER'] },
+        { icon: UserCircle, label: "Clientes", path: "admin/customers", roles: ['TENANT_ADMIN'] },
+        { icon: Settings, label: "Configuración", path: "admin/settings", roles: ['TENANT_ADMIN'] },
     ];
+
+    const visibleMenuItems = menuItems.filter(item => item.roles.includes(user?.role as string));
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -50,14 +54,14 @@ export default function TenantAdminNavbar() {
                                 {tenant?.name ?? "Barbería"}
                             </span>
                             <span className="text-white/80 text-xs font-medium bg-white/20 px-2 py-0.5 rounded-full">
-                                ADMIN PANEL
+                                {user?.role === 'BARBER' ? 'BARBER PANEL' : 'ADMIN PANEL'}
                             </span>
                         </div>
                     </Link>
 
                     {/* Desktop Menu */}
                     <nav className="hidden md:flex items-center gap-6 absolute left-1/2 transform -translate-x-1/2">
-                        {menuItems.slice(0, 6).map((item) => (
+                        {visibleMenuItems.slice(0, 6).map((item) => (
                             <Link
                                 key={item.path}
                                 to={`/${tenantSlug}/${item.path}`}
@@ -138,7 +142,7 @@ export default function TenantAdminNavbar() {
 
                 {/* Items del menú */}
                 <div className="p-4 flex-1 overflow-y-auto">
-                    {menuItems.map((item) => {
+                    {visibleMenuItems.map((item) => {
                         const Icon = item.icon;
                         const isActive = location.pathname.includes(`/${tenantSlug}/${item.path}`);
 

@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect } from "react";
 import { useTenantBookings } from "../hooks/useTenantBookings";
 import BookingsList from "../components/BookingsList";
 import CancelBookingModal from "../components/CancelBookingModal";
+import CreateBookingModal from "../components/CreateBookingModal";
 import { useAuth } from "../../../context/AuthContext";
 import { BookingsService } from "../api/bookings.service";
 import BookingsSkeleton from "../components/BookingsSkeleton";
@@ -15,7 +16,7 @@ import {
 import TenantBookingsDateFilter from "../components/TenantBookingsDateFilter";
 import { useBarbers } from "../../barbers/hooks/useBarbers"; // Import useBarbers
 import { formatCurrency } from "../../../utils/formatUtils";
-import { Filter, RefreshCw } from "lucide-react"; // Icons
+import { Filter, RefreshCw, Plus } from "lucide-react"; // Icons
 import Toast from "../../../components/ui/Toast";
 import { calculateEndTime } from "../utils/timeUtils";
 import { SchedulesService } from "../../schedules/api/schedules.service";
@@ -24,16 +25,19 @@ import { getDay } from "date-fns";
 
 
 export default function TenantBookingsPage() {
-    const [selectedBarberId, setSelectedBarberId] = useState<string | undefined>(undefined);
+    const { user } = useAuth();
+    const isBarber = user?.role === 'BARBER';
+    const [selectedBarberId, setSelectedBarberId] = useState<string | undefined>(isBarber ? user?.barberId : undefined);
     const { bookings, loading, refetch } = useTenantBookings({ barberId: selectedBarberId }); // Pass filter
     const { barbers } = useBarbers(); // Fetch barbers for dropdown
-    const { user } = useAuth();
     const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
     const [isCancelling, setIsCancelling] = useState(false);
     const [selectedDate, setSelectedDate] = useState<string>(formatDateForInput(new Date()));
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 6;
+
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     const [toast, setToast] = useState<{ message: string; type: "success" | "error"; isVisible: boolean }>({
         message: "",
@@ -333,6 +337,14 @@ export default function TenantBookingsPage() {
 
                         <div className="flex items-center gap-3">
                             <button
+                                onClick={() => setIsCreateModalOpen(true)}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-blue-700 transition"
+                            >
+                                <Plus className="w-4 h-4" />
+                                <span className="hidden sm:inline">Nueva Cita</span>
+                            </button>
+
+                            <button
                                 onClick={handleRefresh}
                                 disabled={isRefreshing}
                                 className={`
@@ -351,9 +363,10 @@ export default function TenantBookingsPage() {
                                 <select
                                     value={selectedBarberId || ""}
                                     onChange={(e) => setSelectedBarberId(e.target.value || undefined)}
-                                    className="bg-transparent border-none text-sm font-medium text-gray-700 focus:ring-0 cursor-pointer min-w-[180px]"
+                                    disabled={isBarber}
+                                    className={`bg-transparent border-none text-sm font-medium text-gray-700 focus:ring-0 min-w-[180px] ${isBarber ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
                                 >
-                                    <option value="">Todos los barberos</option>
+                                    {!isBarber && <option value="">Todos los barberos</option>}
                                     {barbers.map(barber => (
                                         <option key={barber.id} value={barber.id}>
                                             {barber.name}
@@ -393,6 +406,15 @@ export default function TenantBookingsPage() {
                 isCancelling={isCancelling}
                 onClose={() => setBookingToCancel(null)}
                 onConfirm={handleConfirmCancel}
+            />
+
+            <CreateBookingModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onSuccess={() => {
+                    refetch();
+                    setIsCreateModalOpen(false);
+                }}
             />
         </div>
     );
