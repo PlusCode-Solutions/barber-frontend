@@ -16,17 +16,17 @@ import StatisticsPage from "../features/bookings/pages/StatisticsPage";
 export const tenantAdminRoutes = (
     <Route
         path=":tenantSlug/admin"
-        element={<ProtectedRoute requiredRole="TENANT_ADMIN" />}
+        element={<ProtectedRoute allowedRoles={['TENANT_ADMIN', 'BARBER']} />}
     >
         <Route element={<TenantAdminLayout />}>
-            <Route path="dashboard" element={<TenantAdminDashboard />} />
+            <Route path="dashboard" element={<ProtectedRoute requiredRole="TENANT_ADMIN"><TenantAdminDashboard /></ProtectedRoute>} />
             <Route path="bookings" element={<TenantBookingsPage />} />
-            <Route path="customers" element={<TenantCustomersPage />} />
-            <Route path="services" element={<ServicesPage />} />
-            <Route path="barbers" element={<BarbersPage />} />
+            <Route path="customers" element={<ProtectedRoute requiredRole="TENANT_ADMIN"><TenantCustomersPage /></ProtectedRoute>} />
+            <Route path="services" element={<ProtectedRoute requiredRole="TENANT_ADMIN"><ServicesPage /></ProtectedRoute>} />
+            <Route path="barbers" element={<ProtectedRoute requiredRole="TENANT_ADMIN"><BarbersPage /></ProtectedRoute>} />
             <Route path="schedules" element={<SchedulesPage />} />
-            <Route path="statistics" element={<StatisticsPage />} />
-            <Route path="settings" element={<TenantSettings />} />
+            <Route path="statistics" element={<ProtectedRoute requiredRole="TENANT_ADMIN"><StatisticsPage /></ProtectedRoute>} />
+            <Route path="settings" element={<ProtectedRoute requiredRole="TENANT_ADMIN"><TenantSettings /></ProtectedRoute>} />
         </Route>
     </Route>
 );

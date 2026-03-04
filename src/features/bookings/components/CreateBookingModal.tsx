@@ -5,6 +5,7 @@ import SelectBarberStep from "./booking-steps/SelectBarberStep";
 import SelectDateTimeStep from "./booking-steps/SelectDateTimeStep";
 import ConfirmBookingStep from "./booking-steps/ConfirmBookingStep";
 import { useTenant } from "../../../context/TenantContext";
+import { useAuth } from "../../../context/AuthContext";
 
 interface CreateBookingModalProps {
     isOpen: boolean;
@@ -16,6 +17,8 @@ interface CreateBookingModalProps {
 export default function CreateBookingModal({ isOpen, onClose, onSuccess, viewOnly = false }: CreateBookingModalProps) {
     const { tenant } = useTenant();
     const primaryColor = tenant?.primaryColor || tenant?.secondaryColor || '#2563eb';
+    const { user } = useAuth();
+    const isBarber = user?.role === 'BARBER';
 
     const {
         step,
@@ -132,7 +135,7 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess, viewOnl
                             barberId={selectedBarber?.id}
                             onDateChange={handleDateChange}
                             onSelectSlot={handleSlotSelect}
-                            onBack={() => goToStep(2)}
+                            onBack={() => isBarber ? goToStep(1) : goToStep(2)}
                             viewOnly={viewOnly}
                         />
                     )}
