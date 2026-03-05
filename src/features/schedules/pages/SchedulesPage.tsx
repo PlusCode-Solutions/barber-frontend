@@ -18,7 +18,7 @@ export default function SchedulesPage() {
     const { user } = useAuth();
     const isAdmin = user?.role === 'TENANT_ADMIN';
     const isBarber = user?.role === 'BARBER';
-    const canEdit = isAdmin || isBarber;
+    const canEdit = isAdmin; // Solo el admin puede gestionar horarios generales/barberos
 
     // Obtener barberos para identificar el principal y permitir selección
     const { barbers } = useBarbers({ enabled: isAdmin });

@@ -2,7 +2,6 @@ import { useState, useCallback, useEffect } from "react";
 import { BookingsService } from "../api/bookings.service";
 import { generateTimeSlots, timeToMinutes, minutesToTime } from "../utils/timeUtils";
 import { normalizeDateString } from "../../../utils/dateUtils";
-import { getDay, parse } from "date-fns";
 import type { Barber } from "../../barbers/types";
 import type { Closure, Schedule } from "../../schedules/types";
 import type { Service } from "../../services/types";
@@ -61,8 +60,8 @@ export function useAvailabilityCalculator({
             }
 
             // 2. Validate Schedule Restrictions
-            const parsedDate = parse(selectedDate, 'yyyy-MM-dd', new Date());
-            const dayOfWeek = getDay(parsedDate);
+            const parsedDate = new Date(`${selectedDate}T00:00:00Z`);
+            const dayOfWeek = parsedDate.getUTCDay();
 
             const schedule = schedules.find(s => Number(s.dayOfWeek) === Number(dayOfWeek));
             const tenantSchedule = tenantSchedules.find(s => Number(s.dayOfWeek) === Number(dayOfWeek));
@@ -76,10 +75,10 @@ export function useAvailabilityCalculator({
             }
 
             // 3. Generate Potential Slots
-            const activeSchedule = (schedule && !schedule.isClosed && schedule.startTime && schedule.endTime) 
-                ? schedule 
+            const activeSchedule = (schedule && !schedule.isClosed && schedule.startTime && schedule.endTime)
+                ? schedule
                 : tenantSchedule;
-            
+
             if (activeSchedule && !activeSchedule.isClosed && activeSchedule.startTime && activeSchedule.endTime) {
                 const sStart = timeToMinutes(activeSchedule.startTime);
                 const sEnd = timeToMinutes(activeSchedule.endTime);
@@ -88,7 +87,7 @@ export function useAvailabilityCalculator({
 
                 const startMin = Math.max(sStart, tStart);
                 const endMin = Math.min(sEnd, tEnd);
-                
+
                 const hasBarberLunch = activeSchedule.lunchStartTime || activeSchedule.lunchEndTime;
                 const lunchStart = hasBarberLunch ? activeSchedule.lunchStartTime : tenantSchedule?.lunchStartTime;
                 const lunchEnd = hasBarberLunch ? activeSchedule.lunchEndTime : tenantSchedule?.lunchEndTime;
@@ -100,14 +99,14 @@ export function useAvailabilityCalculator({
                     setAllPotentialSlots([]);
                 } else {
                     const slots = generateTimeSlots(
-                        minutesToTime(startMin), 
-                        minutesToTime(endMin), 
-                        30, 
-                        lStartMin > 0 ? minutesToTime(lStartMin) : null, 
+                        minutesToTime(startMin),
+                        minutesToTime(endMin),
+                        30,
+                        lStartMin > 0 ? minutesToTime(lStartMin) : null,
                         lEndMin > 0 ? minutesToTime(lEndMin) : null
                     );
                     setAllPotentialSlots(slots);
-                    
+
                     // Generate break slots for visual display (orange styling)
                     if (lStartMin > 0 && lEndMin > 0) {
                         const lunchSlots = generateTimeSlots(
@@ -133,13 +132,13 @@ export function useAvailabilityCalculator({
                 .map((s) => s.time.substring(0, 5));
 
             const serviceDuration = selectedService?.durationMinutes || 30;
-            
+
             // Calculate effective constraints
             let closingTime = "23:59";
             if (schedule && !schedule.isClosed && schedule.endTime) {
-                 closingTime = schedule.endTime;
+                closingTime = schedule.endTime;
             } else if (tenantSchedule && !tenantSchedule.isClosed && tenantSchedule.endTime) {
-                 closingTime = tenantSchedule.endTime;
+                closingTime = tenantSchedule.endTime;
             }
 
             const hasBarberLunch2 = activeSchedule?.lunchStartTime || activeSchedule?.lunchEndTime;
@@ -153,20 +152,12 @@ export function useAvailabilityCalculator({
                 lStartStr,
                 lEndStr
             );
-            
-            // Check if we have available slots, if not set informative message
-            if (apiAvailableTimes.length > 0 && finalAvailableSlots.length === 0) {
-                // Backend has slots but none fit the service duration
-                setError(`No hay horarios disponibles para un servicio de ${serviceDuration} minutos. Selecciona otra fecha o un servicio más corto.`);
-            }
-            
+
             setAvailableSlots(finalAvailableSlots);
 
-            // Fallback: If local slot calculation failed but API returned slots, use API slots as potential slots
-            // This ensures we show "Occupied" (Red) slots instead of hiding them
             if (rawSlots.length > 0) {
-                 const apiAllTimes = rawSlots.map(s => s.time.substring(0, 5));
-                 setAllPotentialSlots(prev => prev.length > 0 ? prev : apiAllTimes);
+                const apiAllTimes = rawSlots.map(s => s.time.substring(0, 5));
+                setAllPotentialSlots(apiAllTimes);
             }
 
         } catch (err: any) {
