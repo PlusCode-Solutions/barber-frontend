@@ -19,7 +19,6 @@ export const BarbersService = {
 
     // Create barber
     create: async (tenantSlug: string, data: Partial<Barber> | FormData): Promise<Barber> => {
-        // Axios detecta automáticamente FormData y establece los headers correctos con su 'boundary'
         const res = await axios.post(`/${tenantSlug}/barbers`, data);
         return res.data;
     },

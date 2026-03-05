@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import type { Permission } from '../config/permissions';
 import { resolveUserPermissions, syncPermissionsToStorage, type RBACUser } from '../utils/auth.utils';
-// import instance from '../lib/axios'; // Removed unused import
 
 /**
  * Interface for the user state in Context
@@ -81,9 +80,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setPermissions([]);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-
-        // Optional: Redirect to home or login is usually handled by the component calling logout
-        // or by the ProtectedRoute detecting lack of auth
     };
 
     const value = {

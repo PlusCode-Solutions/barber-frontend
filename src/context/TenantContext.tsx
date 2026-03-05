@@ -64,8 +64,6 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     }
   }, []); // Empty dependency array is fine as we only want this check on mount
 
-  // NOTE: We don't need the old useEffect that purely loaded from localStorage anymore,
-  // because we did it in the useState initializer.
 
   // Guarda automáticamente cuando cambia
   const setTenant = (t: Tenant) => {

@@ -38,24 +38,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
         const widthClass = fullWidth ? "w-full" : "";
 
-        // Hook for context inside component if possible, but Button is UI.
-        // Better to rely on CSS vars or pass it. 
-        // User requested "like login" (inline). Since Button is generic, we can't easily hook useTenant here without circular deps or overhead.
-        // However, we can keep the CSS variable approach as fallback, OR allows style override.
-        // But the user said "like login". 
-        // Let's modify the component to use the CSS variable directly in style as a "hard" fallback if the class fails?
-        // Actually, the previous fix to TenantContext (smart hex) SHOULD make the variable work.
-        // But sticking to the user's request: "Inline Style".
-
-        // We will stick to the CSS variable for Button as it's too granular to hook context everywhere.
-        // But we will ensure the class 'bg-primary' is NOT used if we can allow style injection.
-        // Re-reading: The user said "Login uses inline". 
-        // Login page uses: style={{ color: tenant.primaryColor }}
-
-        // Let's trust the TenantContext fix for the button (variables), but maybe the user meant the NAVBAR specifically was failing.
-        // I updated Navbars. Let's see if that's enough.
-        // Wait, if I change Button to use inline style, I need to fetch tenant context here.
-
         return (
             <button
                 ref={ref}
