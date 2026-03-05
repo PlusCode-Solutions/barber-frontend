@@ -66,4 +66,13 @@ export const BookingsService = {
         });
         return res.data;
     },
+
+    // Get timeline (Admin/Barber view)
+    // Endpoint: GET /bookings/timeline
+    getTimeline: async (date: string, barberId?: string): Promise<any[]> => {
+        const res = await axios.get(`/bookings/timeline`, {
+            params: { date, barberId }
+        });
+        return res.data;
+    },
 };

@@ -78,13 +78,15 @@ export default function TenantAdminNavbar() {
 
                     {/* Desktop Actions */}
                     <div className="hidden md:flex items-center gap-3">
-                        <Link
-                            to={`/${tenantSlug}/admin/settings`}
-                            className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                            title="Configuración"
-                        >
-                            <Settings size={20} />
-                        </Link>
+                        {user?.role === 'TENANT_ADMIN' && (
+                            <Link
+                                to={`/${tenantSlug}/admin/settings`}
+                                className="p-2 text-white/80 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                title="Configuración"
+                            >
+                                <Settings size={20} />
+                            </Link>
+                        )}
                         <button
                             onClick={handleLogout}
                             className="flex items-center gap-2 bg-red-500/80 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm hover:shadow-md"

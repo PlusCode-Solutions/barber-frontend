@@ -1,5 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
-import { useTenantBookings } from "../hooks/useTenantBookings";
+import { useState, useEffect } from "react";
 import BookingsList from "../components/BookingsList";
 import CancelBookingModal from "../components/CancelBookingModal";
 import CreateBookingModal from "../components/CreateBookingModal";
@@ -11,28 +10,27 @@ import {
     formatDateForInput,
     formatHour,
     formatRelativeDate,
-    normalizeDateString
 } from "../../../utils/dateUtils";
 import TenantBookingsDateFilter from "../components/TenantBookingsDateFilter";
-import { useBarbers } from "../../barbers/hooks/useBarbers"; // Import useBarbers
+import { useBarbers } from "../../barbers/hooks/useBarbers";
 import { formatCurrency } from "../../../utils/formatUtils";
-import { Filter, RefreshCw, Plus } from "lucide-react"; // Icons
+import { Filter, RefreshCw, Plus } from "lucide-react";
 import Toast from "../../../components/ui/Toast";
-import { calculateEndTime } from "../utils/timeUtils";
-import { SchedulesService } from "../../schedules/api/schedules.service";
-import { generateTimeSlots, timeToMinutes } from "../utils/timeUtils";
-import { getDay } from "date-fns";
+import { useTimeline } from "../hooks/useTimeline";
 
 
 export default function TenantBookingsPage() {
     const { user } = useAuth();
     const isBarber = user?.role === 'BARBER';
     const [selectedBarberId, setSelectedBarberId] = useState<string | undefined>(isBarber ? user?.barberId : undefined);
-    const { bookings, loading, refetch } = useTenantBookings({ barberId: selectedBarberId }); // Pass filter
-    const { barbers } = useBarbers(); // Fetch barbers for dropdown
+    const [selectedDate, setSelectedDate] = useState<string>(formatDateForInput(new Date()));
+
+    // 🔥 EL CAMBIO CLAVE: Usamos el nuevo hook que trae TODO calculado del backend
+    const { items: timelineItems, loading, refetch } = useTimeline(selectedDate, selectedBarberId);
+
+    const { barbers } = useBarbers();
     const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
     const [isCancelling, setIsCancelling] = useState(false);
-    const [selectedDate, setSelectedDate] = useState<string>(formatDateForInput(new Date()));
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 6;
@@ -49,192 +47,7 @@ export default function TenantBookingsPage() {
         setCurrentPage(1);
     }, [selectedDate, selectedBarberId]);
 
-    const [schedules, setSchedules] = useState<any[]>([]);
-    const [tenantSchedules, setTenantSchedules] = useState<any[]>([]);
-    const [closures, setClosures] = useState<any[]>([]);
-    const [hasLoadedMetadata, setHasLoadedMetadata] = useState(false);
-
-    /**
-     * Loads schedule metadata once to enable efficient client-side availability calculations.
-     */
-    useEffect(() => {
-        const loadMetadata = async () => {
-            if (hasLoadedMetadata) return;
-
-            try {
-                const [allScheds, allClosures, tScheds] = await Promise.all([
-                    SchedulesService.getAllSchedules(),
-                    SchedulesService.getClosures(),
-                    SchedulesService.getSchedules()
-                ]);
-                setSchedules(allScheds);
-                setClosures(allClosures);
-                setTenantSchedules(tScheds);
-            } catch (e) {
-                console.error("Error loading schedules metadata", e);
-            } finally {
-                setHasLoadedMetadata(true);
-            }
-        };
-        loadMetadata();
-    }, []);
-
-    /**
-     * Computes available time slots for all barbers based on schedules and existing bookings.
-     * Memoized to optimize performance and prevent re-renders.
-     */
-    const computedFreeSlots = useMemo(() => {
-        if (barbers.length === 0 || !hasLoadedMetadata) {
-            return [];
-        }
-
-        const dateStr = normalizeDateString(selectedDate) || selectedDate;
-        const parsedDate = new Date(selectedDate + 'T00:00:00');
-        if (isNaN(parsedDate.getTime())) return [];
-
-        const dayOfWeek = getDay(parsedDate);
-
-        const isGloballyClosed = closures.some(c => !c.barberId && c.isFullDay && normalizeDateString(c.date) === dateStr);
-        if (isGloballyClosed) return [];
-
-        const allSlots: { time: string, barberId: string, barberName: string }[] = [];
-
-        // If a barber is selected, only iterate over that one. Otherwise, check all.
-        const barbersToCheck = selectedBarberId
-            ? barbers.filter(b => b.id === selectedBarberId)
-            : barbers;
-
-        barbersToCheck.forEach(barber => {
-            const isBarberClosed = closures.some(c => c.barberId === barber.id && c.isFullDay && normalizeDateString(c.date) === dateStr);
-            if (isBarberClosed) return;
-
-            let schedule = schedules.find(s => s.barberId === barber.id && Number(s.dayOfWeek) === dayOfWeek);
-            if (!schedule) {
-                schedule = tenantSchedules.find(s => Number(s.dayOfWeek) === dayOfWeek);
-            }
-
-            if (!schedule || schedule.isClosed || !schedule.startTime || !schedule.endTime) return;
-
-            const slots = generateTimeSlots(
-                schedule.startTime,
-                schedule.endTime,
-                30,
-                schedule.lunchStartTime,
-                schedule.lunchEndTime
-            );
-            // Filter out busy times (checking overlaps)
-            const barberBookings = bookings.filter(b =>
-                b.barber?.id === barber.id &&
-                normalizeDateString(b.date) === dateStr &&
-                b.status !== 'CANCELED'
-            );
-
-            const occupiedRanges = barberBookings.map(b => {
-                const start = timeToMinutes(b.startTime);
-                let end = start + 30; // default assumption
-                if (b.endTime) end = timeToMinutes(b.endTime);
-                return { start, end };
-            });
-
-            // Also block times covered by partial special closures
-            const partialClosureRanges = closures.filter(c =>
-                !c.isFullDay &&
-                c.startTime &&
-                c.endTime &&
-                normalizeDateString(c.date) === dateStr &&
-                (!c.barberId || c.barberId === barber.id)
-            ).map(c => ({
-                start: timeToMinutes(c.startTime),
-                end: timeToMinutes(c.endTime)
-            }));
-
-            const allOccupied = [...occupiedRanges, ...partialClosureRanges];
-
-            const free = slots
-                .filter(time => {
-                    const slotStart = timeToMinutes(time);
-                    const slotEnd = slotStart + 30; // Assuming "Free Slot" is a 30m block
-
-                    // Check strict overlap
-                    return !allOccupied.some(range =>
-                        (slotStart < range.end) && (slotEnd > range.start)
-                    );
-                })
-                .map(time => ({
-                    time,
-                    barberId: barber.id,
-                    barberName: barber.name
-                }));
-
-            allSlots.push(...free);
-        });
-
-        return allSlots;
-    }, [selectedBarberId, selectedDate, barbers, bookings, schedules, tenantSchedules, closures, hasLoadedMetadata]);
-
-    /**
-     * Merges bookings and available slots into a single chronological list.
-     */
-    const filteredBookings = useMemo(() => {
-        const realBookings = bookings.filter((b) => {
-            const bookingDate = normalizeDateString(b.date);
-            const dateMatch = bookingDate === selectedDate;
-            const barberMatch = selectedBarberId ? b.barber?.id === selectedBarberId : true;
-            const statusMatch = b.status !== 'CANCELED';
-            return dateMatch && barberMatch && statusMatch;
-        }).map(b => ({
-            ...b,
-            type: 'BOOKING' as const
-        }));
-
-        // Now we always use the locally computed slots, which handles both single and all barber cases
-        const slotsToDisplay = computedFreeSlots;
-
-        const freeSlotsCalls = slotsToDisplay.map(slot => ({
-            id: `free-${slot.time}-${slot.barberId}`,
-            date: selectedDate,
-            startTime: slot.time,
-            endTime: calculateEndTime(slot.time, 30),
-            customerName: "Disponible",
-            barberName: slot.barberName,
-            service: { name: "Espacio Libre", price: 0 },
-            status: 'AVAILABLE' as const,
-            type: 'FREE' as const,
-            user: { name: "Disponible" },
-            barber: { name: slot.barberName }
-        }));
-
-        // Show partial closures as visual orange blocks in the admin view
-        const closureItems = closures
-            .filter(c =>
-                !c.isFullDay &&
-                c.startTime &&
-                c.endTime &&
-                normalizeDateString(c.date) === selectedDate &&
-                (selectedBarberId
-                    ? (c.barberId === selectedBarberId || !c.barberId)
-                    : !c.barberId)
-            )
-            .map(c => ({
-                id: `closure-${c.startTime}-${c.barberId || 'global'}`,
-                date: selectedDate,
-                startTime: c.startTime,
-                endTime: c.endTime,
-                customerName: c.reason || 'Horario Especial',
-                barberName: c.barberId
-                    ? (barbers.find((b: any) => b.id === c.barberId)?.name || 'Barbero')
-                    : 'Todos los barberos',
-                service: { name: 'Cierre Especial', price: 0 },
-                status: 'CLOSED' as const,
-                type: 'CLOSURE' as const,
-                user: { name: c.reason || 'Horario Especial' },
-                barber: { name: c.barberId ? (barbers.find((b: any) => b.id === c.barberId)?.name || '') : 'Todos los barberos' }
-            }));
-
-        const combined = [...realBookings, ...freeSlotsCalls, ...closureItems];
-        return combined.sort((a, b) => a.startTime.localeCompare(b.startTime));
-
-    }, [bookings, selectedDate, selectedBarberId, computedFreeSlots, closures, barbers]);
+    const filteredBookings = timelineItems;
 
     if (loading) return <BookingsSkeleton />;
 
@@ -331,7 +144,7 @@ export default function TenantBookingsPage() {
                                 selectedDate={selectedDate}
                                 onDateChange={setSelectedDate}
                                 countForDay={filteredBookings.filter(b => b.type === 'BOOKING').length}
-                                totalCount={bookings.length}
+                                totalCount={filteredBookings.filter(b => b.type === 'BOOKING').length}
                             />
                         </div>
 
