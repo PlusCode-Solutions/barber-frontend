@@ -29,21 +29,25 @@ export interface UpdateTenantDTO {
 }
 
 export const TenantsService = {
+    //get all tenants
     getAll: async (): Promise<Tenant[]> => {
         const res = await axios.get('/tenants');
         return res.data;
     },
 
+    //create a new tenant
     create: async (data: CreateTenantDTO): Promise<Tenant> => {
         const res = await axios.post('/tenants', data);
         return res.data;
     },
 
+    //update a tenant
     update: async (id: string, data: UpdateTenantDTO): Promise<Tenant> => {
         const res = await axios.patch(`/tenants/${id}`, data);
         return res.data;
     },
 
+    //upload logo
     uploadLogo: async (tenantId: string, file: File): Promise<Tenant> => {
         const formData = new FormData();
         formData.append('file', file);
@@ -55,6 +59,7 @@ export const TenantsService = {
         return res.data;
     },
 
+    //upload background
     uploadBackground: async (tenantId: string, file: File): Promise<Tenant> => {
         const formData = new FormData();
         formData.append('file', file);
@@ -66,6 +71,7 @@ export const TenantsService = {
         return res.data;
     },
 
+    //delete a tenant
     delete: async (id: string): Promise<void> => {
         await axios.delete(`/tenants/${id}`);
     }

@@ -4,11 +4,6 @@ import type { Permission } from '../../config/permissions';
 
 interface CanProps {
     permission: Permission | Permission[];
-    /**
-     * Logic to use when multiple permissions are provided:
-     * - 'any': User needs at least one (OR) - Default
-     * - 'all': User needs all permissions (AND)
-     */
     match?: 'any' | 'all';
     children: ReactNode;
     fallback?: ReactNode;

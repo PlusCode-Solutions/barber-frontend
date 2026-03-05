@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { StatisticsService, type DashboardStats } from '../api/statistics.service';
-import { useTenant } from '../../../context/TenantContext'; // ID: 3e86bdaf-dc9b-4538-8102-76dec32f9eeb
+import { useTenant } from '../../../context/TenantContext';
 
 export function useDashboardStats() {
     const { tenant } = useTenant();
