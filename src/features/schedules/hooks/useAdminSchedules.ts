@@ -26,7 +26,7 @@ export function useAdminSchedules() {
             return SchedulesService.createClosure(data);
         },
         onSuccess: (_, variables) => {
-            queryClient.invalidateQueries({ queryKey: ['closures', variables.barberId] });
+            queryClient.invalidateQueries({ queryKey: ['closures', slug, variables.barberId] });
         }
     });
 

@@ -327,6 +327,64 @@ export default function ClosureManager({ onShowToast, barberId }: Props) {
                 onConfirm={deleteModal.onConfirm}
                 onCancel={deleteModal.onCancel}
             />
+
+            {/* Conflict Confirmation Modal */}
+            {form.showConflictModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-6">
+                            <div className="flex items-center gap-4 mb-5">
+                                <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center text-amber-600 flex-shrink-0">
+                                    <CalendarOff className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-900">Conflictos Detectados</h3>
+                                    <p className="text-sm text-gray-500">Hay citas agendadas para este horario.</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-amber-50 rounded-xl border border-amber-100 p-4 mb-6">
+                                <p className="text-sm font-semibold text-amber-900 mb-3 flex items-center gap-2">
+                                    ⚠️ Las siguientes {form.conflictingBookings.length} personas tienen cita:
+                                </p>
+                                <div className="max-h-48 overflow-y-auto custom-scrollbar space-y-2 pr-2">
+                                    {form.conflictingBookings.map((b: any) => (
+                                        <div key={b.id} className="bg-white/80 p-2.5 rounded-lg border border-amber-200/50 flex justify-between items-center">
+                                            <div>
+                                                <p className="text-sm font-bold text-gray-800">{b.customerName}</p>
+                                                <p className="text-[10px] text-gray-500 uppercase font-medium">{b.service}</p>
+                                            </div>
+                                            <span className="text-xs font-mono bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md">
+                                                {b.time}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="space-y-3">
+                                <button
+                                    onClick={() => actions.handleConfirmForce()}
+                                    disabled={form.isCreating}
+                                    className="w-full bg-red-600 text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-red-200 hover:bg-red-700 transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50"
+                                >
+                                    {form.isCreating ? 'Procesando...' : 'Cancelar Citas y Confirmar Cierre'}
+                                </button>
+                                <button
+                                    onClick={() => form.setShowConflictModal(false)}
+                                    className="w-full bg-gray-100 text-gray-700 py-3 rounded-xl font-bold text-sm hover:bg-gray-200 transition-all"
+                                >
+                                    Volver Atrás
+                                </button>
+                            </div>
+
+                            <p className="mt-4 text-[10px] text-center text-gray-400">
+                                Al confirmar, se enviará automáticamente un correo profesional a cada cliente informando la cancelación.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div >
     );
 }
