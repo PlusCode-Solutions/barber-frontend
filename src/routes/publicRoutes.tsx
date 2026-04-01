@@ -5,6 +5,7 @@ import ForgotPasswordPage from "../features/auth/pages/ForgotPasswordPage";
 import ResetPasswordPage from "../features/auth/pages/ResetPasswordPage";
 import UnauthorizedPage from "../pages/UnauthorizedPage";
 import AdminLoginPage from "../features/admin/auth/pages/AdminLoginPage";
+import LandingPage from "../features/public/landing/LandingPage";
 
 /**
  * Public routes - accessible without authentication
@@ -25,5 +26,8 @@ export const publicRoutes = (
         <Route path="/" element={<Navigate to="/admin/dashboard" replace />} />
 
         <Route path="/unauthorized" element={<UnauthorizedPage />} />
+        
+        {/* Dynamic Tenant Landing Page */}
+        <Route path="/:tenantSlug" element={<LandingPage />} />
     </>
 );

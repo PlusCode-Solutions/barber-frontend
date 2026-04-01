@@ -1,19 +1,25 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
-import { Save, Upload, Building2, Palette, Image as ImageIcon, Lock } from "lucide-react";
+import { Save, Upload, Building2, Palette, Image as ImageIcon, Lock, MapPin } from "lucide-react";
 import { useTenant } from "../../../context/TenantContext";
 import { useAuth } from "../../../context/AuthContext";
 import { TenantsService } from "../api/tenants.service";
 import { Card } from "../../../components/ui/Card";
 import { Input } from "../../../components/ui/Input";
+import LocationPicker from "../components/LocationPicker";
 
 interface TenantForm {
     name: string;
     slug: string;
     primaryColor: string;
     secondaryColor: string;
-    accentColor: string;
+    description: string;
+    address: string;
+    phone: string;
+    latitude: number;
+    longitude: number;
+    googleMapsUrl: string;
 }
 
 export default function TenantSettings() {
@@ -46,6 +52,12 @@ export default function TenantSettings() {
             setValue("slug", tenant.slug);
             setValue("primaryColor", tenant.primaryColor || "#000000");
             setValue("secondaryColor", tenant.secondaryColor || "#000000");
+            setValue("description", tenant.description || "");
+            setValue("address", tenant.address || "");
+            setValue("phone", tenant.phone || "");
+            setValue("latitude", tenant.latitude || 0);
+            setValue("longitude", tenant.longitude || 0);
+            setValue("googleMapsUrl", tenant.googleMapsUrl || "");
         }
     }, [tenant, setValue]);
 
@@ -61,18 +73,34 @@ export default function TenantSettings() {
                 : {
                     name: data.name,
                     primaryColor: data.primaryColor,
-                    secondaryColor: data.secondaryColor
+                    secondaryColor: data.secondaryColor,
+                    description: data.description,
+                    address: data.address,
+                    phone: data.phone,
+                    latitude: Number(data.latitude),
+                    longitude: Number(data.longitude),
+                    googleMapsUrl: data.googleMapsUrl
                 };
 
+            console.log("Saving payload:", payload);
             const updated = await TenantsService.update(tenant.id, payload);
             setTenant({ ...tenant, ...updated });
             toast.success("Información actualizada exitosamente");
         } catch (error) {
-            // Error actualizando información
+            console.error("Error al actualizar:", error);
             toast.error("Error al actualizar la información");
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const onMapLocationSelect = (lat: number, lng: number) => {
+        setValue("latitude", parseFloat(lat.toFixed(6)));
+        setValue("longitude", parseFloat(lng.toFixed(6)));
+        
+        // Auto-generate Google Maps URL for convenience
+        const gMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+        setValue("googleMapsUrl", gMapsUrl);
     };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'logo' | 'background') => {
@@ -123,13 +151,13 @@ export default function TenantSettings() {
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Datos Generales */}
+                {/* Datos Generales y Descripción */}
                 <Card className="p-6">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
                             <Building2 size={20} />
                         </div>
-                        <h2 className="text-lg font-bold text-gray-900">Información General</h2>
+                        <h2 className="text-lg font-bold text-gray-900">Configuración del Perfil</h2>
                     </div>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -149,6 +177,72 @@ export default function TenantSettings() {
                                 helperText="Identificador único para tu URL (No editable)"
                             />
                             <Lock size={14} className="absolute right-3 top-9 text-gray-400" />
+                        </div>
+
+                        <div className="space-y-1">
+                            <label className="text-sm font-medium text-gray-700">Descripción de la Barbería</label>
+                            <textarea
+                                {...register("description")}
+                                rows={4}
+                                className="w-full px-4 py-2 bg-white border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all outline-none text-sm placeholder:text-gray-400"
+                                placeholder="Describe tu barbería, servicios destacados, etc..."
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Input
+                                label="Teléfono"
+                                {...register("phone")}
+                                placeholder="+52 123 456 7890"
+                            />
+                            <Input
+                                label="Dirección Física"
+                                {...register("address")}
+                                placeholder="Calle, Número, Ciudad"
+                            />
+                        </div>
+
+                        <div className="pt-6 border-t border-gray-100">
+                            <div className="flex items-center gap-2 mb-4 text-sm font-bold text-gray-600 uppercase tracking-widest">
+                                <MapPin size={16} /> Ubicación (Mapa Interactivo)
+                            </div>
+                            
+                            {/* Interactive Picker */}
+                            <div className="mb-6">
+                                <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                                    Selecciona tu punto exacto
+                                </label>
+                                <LocationPicker 
+                                    initialLat={tenant.latitude || 19.4326}
+                                    initialLng={tenant.longitude || -99.1332}
+                                    onLocationSelect={onMapLocationSelect}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <Input
+                                    label="Latitud"
+                                    type="number"
+                                    step="any"
+                                    {...register("latitude")}
+                                    placeholder="19.4326"
+                                    helperText="Se actualiza automáticamente al marcar el mapa"
+                                />
+                                <Input
+                                    label="Longitud"
+                                    type="number"
+                                    step="any"
+                                    {...register("longitude")}
+                                    placeholder="-99.1332"
+                                    helperText="Se actualiza automáticamente al marcar el mapa"
+                                />
+                            </div>
+                            <Input
+                                label="Google Maps URL"
+                                {...register("googleMapsUrl")}
+                                placeholder="https://goo.gl/maps/..."
+                                helperText="Generado automáticamente desde el mapa"
+                            />
                         </div>
 
                         <div className="pt-4">

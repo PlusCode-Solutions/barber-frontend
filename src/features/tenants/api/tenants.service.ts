@@ -8,6 +8,13 @@ interface Tenant {
     backgroundUrl?: string;
     primaryColor?: string;
     secondaryColor?: string;
+    accentColor?: string;
+    description?: string;
+    latitude?: number;
+    longitude?: number;
+    googleMapsUrl?: string;
+    address?: string;
+    phone?: string;
     createdAt: string;
     updatedAt: string;
 }

@@ -8,6 +8,12 @@ interface Tenant {
   backgroundUrl?: string | null;
   primaryColor?: string | null;
   secondaryColor?: string | null;
+  description?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  googleMapsUrl?: string | null;
+  address?: string | null;
+  phone?: string | null;
 }
 
 interface TenantContextType {
