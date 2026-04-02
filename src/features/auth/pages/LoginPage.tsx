@@ -1,4 +1,5 @@
 import { Link, useParams } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { useTenantLoader } from "../../tenants/hooks/useTenantLoader";
 import LoginForm from "../components/LoginForm";
 
@@ -38,6 +39,25 @@ export default function LoginPage() {
     >
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/35 backdrop-blur-sm"></div>
+
+      {/* BOTÓN VOLVER (TOP LEFT) */}
+      <Link
+        to={`/${tenantSlug}`}
+        className="
+          absolute top-8 left-8 
+          flex items-center gap-2 
+          bg-white/10 backdrop-blur-md 
+          text-white px-5 py-2.5 
+          rounded-2xl border border-white/20 
+          hover:bg-white/20 transition-all 
+          font-bold text-sm uppercase tracking-wide 
+          shadow-xl hover:scale-105 active:scale-95
+          z-50
+        "
+      >
+        <ArrowLeft size={18} />
+
+      </Link>
 
       {/* CARD PRINCIPAL */}
       <div className="
