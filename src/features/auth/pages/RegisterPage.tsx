@@ -1,13 +1,14 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useTenant } from "../../../context/TenantContext";
+import { ArrowLeft } from "lucide-react";
+import { useTenantLoader } from "../../tenants/hooks/useTenantLoader";
 import { useRegister } from "../hooks/useRegister";
 import RegisterForm from "../components/RegisterForm";
 import { useState } from "react";
 
 export default function RegisterPage() {
-    const { tenant } = useTenant();
-    const { register } = useRegister();
     const { tenantSlug } = useParams();
+    const { tenant, loading: tenantLoading } = useTenantLoader(tenantSlug!);
+    const { register } = useRegister();
     const navigate = useNavigate();
 
     const [successMsg, setSuccessMsg] = useState("");
@@ -34,10 +35,13 @@ export default function RegisterPage() {
         setLoading(false);
     };
 
-    if (!tenant) {
+    if (tenantLoading || !tenant) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-100">
-                <p className="text-lg font-semibold">Cargando...</p>
+                <div className="text-center">
+                    <div className="animate-spin h-12 w-12 border-4 border-indigo-600 border-t-transparent rounded-full mx-auto mb-3"></div>
+                    <p className="text-gray-600 text-lg font-medium">Cargando barbería...</p>
+                </div>
             </div>
         );
     }
@@ -49,6 +53,25 @@ export default function RegisterPage() {
         >
             {/* Overlay elegante */}
             <div className="absolute inset-0 bg-black/35 backdrop-blur-sm"></div>
+
+            {/* BOTÓN VOLVER (TOP LEFT) */}
+            <Link
+                to={`/${tenantSlug}`}
+                className="
+                    absolute top-8 left-8 
+                    flex items-center gap-2 
+                    bg-white/10 backdrop-blur-md 
+                    text-white px-5 py-2.5 
+                    rounded-2xl border border-white/20 
+                    hover:bg-white/20 transition-all 
+                    font-bold text-sm uppercase tracking-wide 
+                    shadow-xl hover:scale-105 active:scale-95
+                    z-50
+                "
+            >
+                <ArrowLeft size={18} />
+                Volver
+            </Link>
 
             <div className="relative bg-black/30 backdrop-blur-xl px-7 py-10 sm:px-10 sm:py-12 rounded-3xl shadow-2xl w-full max-w-sm border border-white/10 animate-fadeIn">
 

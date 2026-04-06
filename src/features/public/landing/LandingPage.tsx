@@ -245,7 +245,7 @@ const LandingPage = () => {
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <Link 
-                            to={`/${tenant.slug}/auth/register`}
+                            to={`/${tenant.slug}/auth/login`}
                             style={{ backgroundColor: primaryColor }}
                             className="px-10 py-5 text-white font-black text-lg rounded-full shadow-2xl hover:brightness-110 transition-all flex items-center gap-3 active:scale-95 group"
                         >
@@ -486,7 +486,7 @@ const LandingPage = () => {
 
                             <div className="mt-14 flex flex-col gap-4">
                                 <Link 
-                                    to={`/${tenant.slug}/auth/register`}
+                                    to={`/${tenant.slug}/auth/login`}
                                     style={{ backgroundColor: primaryColor }}
                                     className="w-full py-6 text-white font-black uppercase text-lg rounded-3xl hover:brightness-110 transition-all hover:scale-[1.02] active:scale-[0.98] text-center shadow-2xl"
                                 >
