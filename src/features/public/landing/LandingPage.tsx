@@ -16,40 +16,40 @@ import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 
 const DefaultIcon = L.icon({
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
+    iconUrl: markerIcon,
+    shadowUrl: markerShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-import { 
-  MapPin, 
-  Phone, 
-  ArrowRight,
-  Scissors, 
-  Clock, 
-  User,
-  X,
-  Sparkles,
-  Waves,
-  Smile,
-  Zap,
-  Navigation
+import {
+    MapPin,
+    Phone,
+    ArrowRight,
+    Scissors,
+    Clock,
+    User,
+    X,
+    Sparkles,
+    Waves,
+    Smile,
+    Zap,
+    Navigation
 } from "lucide-react";
 
 /**
  * Helper to get a dynamic icon based on service name
  */
 const getServiceIcon = (name: string) => {
-  const n = name.toLowerCase();
-  if (n.includes("corte") || n.includes("haircut")) return <Scissors size={32} />;
-  if (n.includes("barba") || n.includes("beard")) return <User size={32} />;
-  if (n.includes("lavado") || n.includes("wash") || n.includes("agua")) return <Waves size={32} />;
-  if (n.includes("facial") || n.includes("mascarilla") || n.includes("limpieza")) return <Smile size={32} />;
-  if (n.includes("combo") || n.includes("especial") || n.includes("completo")) return <Sparkles size={32} />;
-  if (n.includes("rapido") || n.includes("express")) return <Zap size={32} />;
-  return <Scissors size={32} />; // Default
+    const n = name.toLowerCase();
+    if (n.includes("corte") || n.includes("haircut")) return <Scissors size={32} />;
+    if (n.includes("barba") || n.includes("beard")) return <User size={32} />;
+    if (n.includes("lavado") || n.includes("wash") || n.includes("agua")) return <Waves size={32} />;
+    if (n.includes("facial") || n.includes("mascarilla") || n.includes("limpieza")) return <Smile size={32} />;
+    if (n.includes("combo") || n.includes("especial") || n.includes("completo")) return <Sparkles size={32} />;
+    if (n.includes("rapido") || n.includes("express")) return <Zap size={32} />;
+    return <Scissors size={32} />; // Default
 };
 
 const LandingPage = () => {
@@ -135,9 +135,9 @@ const LandingPage = () => {
 
     return (
         <div className="min-h-screen bg-black text-gray-900 font-sans selection:bg-white selection:text-black">
-            
+
             {/* 1. Navigation */}
-            <nav 
+            <nav
                 className={`fixed w-full z-50 transition-all duration-500 ${scrolled ? "py-4 shadow-2xl border-b border-black/5" : "bg-transparent py-8"}`}
                 style={scrolled ? { backgroundColor: `${primaryColor}EE`, backdropFilter: 'blur(20px)' } : {}}
             >
@@ -152,8 +152,8 @@ const LandingPage = () => {
                         <a href="#barberos" className="text-xs font-black uppercase tracking-widest text-white/70 hover:text-white transition-colors">Barberos</a>
                         <a href="#servicios" className="text-xs font-black uppercase tracking-widest text-white/70 hover:text-white transition-colors">Servicios</a>
                         <a href="#localizacion" className="text-xs font-black uppercase tracking-widest text-white/70 hover:text-white transition-colors">Localización</a>
-                        <Link 
-                            to={`/${tenant.slug}/auth/login`} 
+                        <Link
+                            to={`/${tenant.slug}/auth/login`}
                             className="px-6 py-2.5 bg-white text-black rounded-full text-xs font-black uppercase hover:bg-gray-100 transition-all shadow-lg active:scale-95"
                         >
                             Iniciar Sesión
@@ -173,7 +173,7 @@ const LandingPage = () => {
             {/* Mobile Menu Overlay - Moved to Root for absolute isolation */}
             {isMenuOpen && (
                 <div className="fixed inset-0 z-[10000] bg-black flex flex-col items-center justify-center gap-12 p-10 animate-in fade-in duration-300">
-                    <button 
+                    <button
                         onClick={() => setIsMenuOpen(false)}
                         className="absolute top-8 right-8 text-white p-2 hover:bg-white/10 rounded-full transition-all"
                     >
@@ -181,31 +181,31 @@ const LandingPage = () => {
                     </button>
 
                     <div className="flex flex-col items-center gap-10">
-                        <a 
-                            href="#barberos" 
+                        <a
+                            href="#barberos"
                             onClick={() => setIsMenuOpen(false)}
                             className="text-4xl font-black italic uppercase tracking-tighter text-white hover:scale-110 transition-transform"
                         >
                             Barberos
                         </a>
-                        <a 
-                            href="#servicios" 
+                        <a
+                            href="#servicios"
                             onClick={() => setIsMenuOpen(false)}
                             className="text-4xl font-black italic uppercase tracking-tighter text-white hover:scale-110 transition-transform"
                         >
                             Servicios
                         </a>
-                        <a 
-                            href="#localizacion" 
+                        <a
+                            href="#localizacion"
                             onClick={() => setIsMenuOpen(false)}
                             className="text-4xl font-black italic uppercase tracking-tighter text-white hover:scale-110 transition-transform"
                         >
                             Localización
                         </a>
                     </div>
-                    
-                    <Link 
-                        to={`/${tenant.slug}/auth/login`} 
+
+                    <Link
+                        to={`/${tenant.slug}/auth/login`}
                         onClick={() => setIsMenuOpen(false)}
                         style={{ backgroundColor: primaryColor }}
                         className="px-14 py-5 text-white rounded-full text-xl font-black uppercase shadow-2xl active:scale-95 transition-all mt-4"
@@ -216,11 +216,11 @@ const LandingPage = () => {
             )}
 
             {/* 2. Hero Section */}
-            <header 
+            <header
                 id="hero"
                 className="relative h-screen flex items-center justify-center bg-cover bg-center overflow-hidden"
-                style={{ 
-                    backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url(${tenant.backgroundUrl || 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2000'})` 
+                style={{
+                    backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url(${tenant.backgroundUrl || 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2000'})`
                 }}
             >
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
@@ -244,7 +244,7 @@ const LandingPage = () => {
                         {tenant.description || "Combinamos tradición y vanguardia para tu estilo."}
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <Link 
+                        <Link
                             to={`/${tenant.slug}/auth/login`}
                             style={{ backgroundColor: primaryColor }}
                             className="px-10 py-5 text-white font-black text-lg rounded-full shadow-2xl hover:brightness-110 transition-all flex items-center gap-3 active:scale-95 group"
@@ -274,13 +274,12 @@ const LandingPage = () => {
                             </div>
                         </div>
 
-                        <div className={`flex flex-wrap items-center justify-center gap-12 ${
-                            barbers.length === 1 ? "max-w-md mx-auto" : 
+                        <div className={`flex flex-wrap items-center justify-center gap-12 ${barbers.length === 1 ? "max-w-md mx-auto" :
                             barbers.length === 2 ? "max-w-3xl mx-auto" : ""
-                        }`}>
+                            }`}>
                             {barbers.map((barber, index) => (
-                                <div 
-                                    key={barber.id} 
+                                <div
+                                    key={barber.id}
                                     className="reveal-on-scroll opacity-0 translate-y-10 transition-all duration-700 group relative flex-1 min-w-[280px] max-w-[320px]"
                                     style={{ transitionDelay: `${index * 150}ms` }}
                                 >
@@ -318,14 +317,14 @@ const LandingPage = () => {
                     <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {services && services.length > 0 ? (
                             services.map((service, index) => (
-                                <div 
-                                    key={service.id} 
+                                <div
+                                    key={service.id}
                                     onClick={() => setSelectedService(service)}
                                     className="reveal-on-scroll opacity-0 translate-y-10 transition-all duration-700 group grid grid-cols-1 sm:grid-cols-[auto_1fr_auto] items-center gap-6 p-8 bg-white rounded-[35px] border-2 transition-all duration-500 cursor-pointer shadow-md hover:shadow-2xl"
-                                    style={{ 
+                                    style={{
                                         transitionDelay: `${index * 50}ms`,
                                         borderColor: `${primaryColor}20`,
-                                        borderLeft: `8px solid ${primaryColor}` 
+                                        borderLeft: `8px solid ${primaryColor}`
                                     }}
                                 >
                                     {/* Icon Container */}
@@ -349,7 +348,7 @@ const LandingPage = () => {
                                             <Clock size={12} /> {service.durationMinutes} min
                                         </div>
                                         <span style={{ color: primaryColor }} className="text-3xl font-black italic tracking-tighter">
-                                            ${service.price}
+                                            ₡{service.price}
                                         </span>
                                     </div>
                                 </div>
@@ -370,9 +369,9 @@ const LandingPage = () => {
                         {/* Map side */}
                         <div className="w-full lg:w-3/5 rounded-[60px] overflow-hidden shadow-2xl border-[15px] border-white h-[600px] group relative z-0">
                             {tenant.latitude && tenant.longitude ? (
-                                <MapContainer 
-                                    center={[tenant.latitude, tenant.longitude]} 
-                                    zoom={16} 
+                                <MapContainer
+                                    center={[tenant.latitude, tenant.longitude]}
+                                    zoom={16}
                                     scrollWheelZoom={false}
                                     dragging={!L.Browser.mobile}
                                     style={{ height: "100%", width: "100%" }}
@@ -393,7 +392,7 @@ const LandingPage = () => {
                         {/* Info side */}
                         <div className="w-full lg:w-2/5 reveal-on-scroll opacity-0 translate-y-10 transition-all duration-1000">
                             <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter mb-10 leading-none">Cómo Llegar</h2>
-                            
+
                             <div className="space-y-10 mb-14">
                                 <div className="flex items-start gap-6">
                                     <div style={{ border: `1px solid ${primaryColor}40` }} className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
@@ -416,8 +415,8 @@ const LandingPage = () => {
                                 </div>
                             </div>
 
-                            <a 
-                                href={tenant.latitude && tenant.longitude 
+                            <a
+                                href={tenant.latitude && tenant.longitude
                                     ? `https://www.google.com/maps/dir/?api=1&destination=${tenant.latitude},${tenant.longitude}`
                                     : (tenant.googleMapsUrl || "#")
                                 }
@@ -448,12 +447,12 @@ const LandingPage = () => {
             {/* Service Detail Modal */}
             {selectedService && (
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-                    <div 
+                    <div
                         className="absolute inset-0 bg-black/95 backdrop-blur-md"
                         onClick={() => setSelectedService(null)}
                     ></div>
                     <div className="bg-white border border-black/5 w-full max-w-xl rounded-[50px] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.5)] animate-in fade-in zoom-in duration-300 relative z-10 transition-all">
-                        <button 
+                        <button
                             onClick={() => setSelectedService(null)}
                             className="absolute top-8 right-8 text-gray-400 hover:text-black transition-colors"
                         >
@@ -464,7 +463,7 @@ const LandingPage = () => {
                             <div className="w-24 h-24 bg-gray-50 text-black border border-gray-100 rounded-[35px] flex items-center justify-center mb-10 shadow-sm">
                                 {getServiceIcon(selectedService.name)}
                             </div>
-                            
+
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] mb-4">Detalle del Servicio</p>
                             <h2 className="text-5xl font-black italic uppercase tracking-tighter text-black mb-4 leading-none">
                                 {selectedService.name}
@@ -485,14 +484,14 @@ const LandingPage = () => {
                             </div>
 
                             <div className="mt-14 flex flex-col gap-4">
-                                <Link 
+                                <Link
                                     to={`/${tenant.slug}/auth/login`}
                                     style={{ backgroundColor: primaryColor }}
                                     className="w-full py-6 text-white font-black uppercase text-lg rounded-3xl hover:brightness-110 transition-all hover:scale-[1.02] active:scale-[0.98] text-center shadow-2xl"
                                 >
                                     Reservar Cita
                                 </Link>
-                                <button 
+                                <button
                                     onClick={() => setSelectedService(null)}
                                     className="w-full py-4 text-gray-400 font-bold uppercase text-xs tracking-widest hover:text-black transition-all"
                                 >
