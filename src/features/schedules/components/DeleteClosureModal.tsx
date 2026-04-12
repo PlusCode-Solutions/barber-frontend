@@ -6,7 +6,7 @@ import { safeDate } from '../../../utils/dateUtils';
 interface DeleteClosureModalProps {
     isOpen: boolean;
     closure: Closure | null;
-    barberName?: string;
+    professionalName?: string;
     onConfirm: () => void;
     onCancel: () => void;
 }
@@ -14,7 +14,7 @@ interface DeleteClosureModalProps {
 export default function DeleteClosureModal({
     isOpen,
     closure,
-    barberName,
+    professionalName,
     onConfirm,
     onCancel
 }: DeleteClosureModalProps) {
@@ -41,8 +41,8 @@ export default function DeleteClosureModal({
         year: 'numeric'
     }) || 'Fecha inválida';
 
-    const scope = closure.barberId ? barberName || 'Barbero específico' : 'Toda la Tienda';
-    const ScopeIcon = closure.barberId ? User : Store;
+    const scope = closure.professionalId ? professionalName || 'Profesional específico' : 'Toda la Tienda';
+    const ScopeIcon = closure.professionalId ? User : Store;
 
     return (
         <div

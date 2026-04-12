@@ -142,9 +142,9 @@ export default function TenantSettings() {
         <div className="space-y-6 animate-fade-in p-6">
             <header>
                 <div className="flex items-center gap-3">
-                    <h1 className="text-3xl font-bold text-gray-900">Configuración de la Barbería</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">Configuración de la Professionalía</h1>
                     <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-medium rounded-full flex items-center gap-1">
-                        <Lock size={12} /> {isSuperAdmin ? 'Gestión de Plataforma' : 'Gestión de Barbería'}
+                        <Lock size={12} /> {isSuperAdmin ? 'Gestión de Plataforma' : 'Gestión de Professionalía'}
                     </span>
                 </div>
                 <p className="text-gray-500 mt-2">Gestiona la identidad visual y datos de tu negocio</p>
@@ -165,7 +165,7 @@ export default function TenantSettings() {
                             label="Nombre del Negocio"
                             {...register("name", { required: "El nombre es obligatorio" })}
                             error={errors.name?.message}
-                            placeholder="Ej: Barbería Top"
+                            placeholder="Ej: Professionalía Top"
                         />
 
                         <div className="relative">
@@ -180,12 +180,12 @@ export default function TenantSettings() {
                         </div>
 
                         <div className="space-y-1">
-                            <label className="text-sm font-medium text-gray-700">Descripción de la Barbería</label>
+                            <label className="text-sm font-medium text-gray-700">Descripción de la Professionalía</label>
                             <textarea
                                 {...register("description")}
                                 rows={4}
                                 className="w-full px-4 py-2 bg-white border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all outline-none text-sm placeholder:text-gray-400"
-                                placeholder="Describe tu barbería, servicios destacados, etc..."
+                                placeholder="Describe tu professionalía, servicios destacados, etc..."
                             />
                         </div>
 
@@ -362,7 +362,7 @@ export default function TenantSettings() {
                         {isSuperAdmin && (
                             <div className="absolute inset-0 z-10 bg-white/50 backdrop-blur-[1px] cursor-not-allowed rounded-2xl flex items-center justify-center">
                                 <span className="bg-white px-3 py-1.5 rounded-lg shadow-sm border text-xs font-medium text-gray-600 flex items-center gap-2">
-                                    <Lock size={14} /> Solo editable por el dueño de la barbería
+                                    <Lock size={14} /> Solo editable por el dueño de la professionalía
                                 </span>
                             </div>
                         )}

@@ -8,15 +8,15 @@ interface Props {
     currentSchedules: Schedule[];
     onUpdate: () => void;
     onShowToast?: (message: string, type: "success" | "error") => void;
-    barberId?: string;
+    professionalId?: string;
 }
 
-export default function WeekScheduleEditor({ currentSchedules, onUpdate, onShowToast, barberId }: Props) {
+export default function WeekScheduleEditor({ currentSchedules, onUpdate, onShowToast, professionalId }: Props) {
     const { formData, savingDay, handleSave, handleChange, DAYS } = useWeekScheduleEditor({
         currentSchedules,
         onUpdate,
         onShowToast,
-        barberId
+        professionalId
     });
 
     return (

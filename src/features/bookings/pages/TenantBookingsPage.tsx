@@ -12,7 +12,7 @@ import {
     formatRelativeDate,
 } from "../../../utils/dateUtils";
 import TenantBookingsDateFilter from "../components/TenantBookingsDateFilter";
-import { useBarbers } from "../../barbers/hooks/useBarbers";
+import { useProfessionals } from "../../professionals/hooks/useProfessionals";
 import { formatCurrency } from "../../../utils/formatUtils";
 import { Filter, RefreshCw, Plus } from "lucide-react";
 import Toast from "../../../components/ui/Toast";
@@ -21,14 +21,14 @@ import { useTimeline } from "../hooks/useTimeline";
 
 export default function TenantBookingsPage() {
     const { user } = useAuth();
-    const isBarber = user?.role === 'BARBER';
-    const [selectedBarberId, setSelectedBarberId] = useState<string | undefined>(isBarber ? user?.barberId : undefined);
+    const isProfessional = user?.role === 'PROFESSIONAL';
+    const [selectedProfessionalId, setSelectedProfessionalId] = useState<string | undefined>(isProfessional ? user?.professionalId : undefined);
     const [selectedDate, setSelectedDate] = useState<string>(formatDateForInput(new Date()));
 
     // 🔥 EL CAMBIO CLAVE: Usamos el nuevo hook que trae TODO calculado del backend
-    const { items: timelineItems, loading, refetch } = useTimeline(selectedDate, selectedBarberId);
+    const { items: timelineItems, loading, refetch } = useTimeline(selectedDate, selectedProfessionalId);
 
-    const { barbers } = useBarbers();
+    const { professionals } = useProfessionals();
     const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
     const [isCancelling, setIsCancelling] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -45,7 +45,7 @@ export default function TenantBookingsPage() {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [selectedDate, selectedBarberId]);
+    }, [selectedDate, selectedProfessionalId]);
 
     const filteredBookings = timelineItems;
 
@@ -113,7 +113,7 @@ export default function TenantBookingsPage() {
             price: b.service?.price ? formatCurrency(b.service.price) : "—",
         },
         customerName: b.user?.name || "Cliente Desconocido",
-        barberName: b.barber?.name || "Barbero Asignado",
+        professionalName: b.professional?.name || "Profesional Asignado",
         isOwner: b.userId === user?.id || b.user?.id === user?.id
     });
 
@@ -174,15 +174,15 @@ export default function TenantBookingsPage() {
                             <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg border border-gray-200">
                                 <Filter className="w-4 h-4 text-gray-400" />
                                 <select
-                                    value={selectedBarberId || ""}
-                                    onChange={(e) => setSelectedBarberId(e.target.value || undefined)}
-                                    disabled={isBarber}
-                                    className={`bg-transparent border-none text-sm font-medium text-gray-700 focus:ring-0 min-w-[180px] ${isBarber ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
+                                    value={selectedProfessionalId || ""}
+                                    onChange={(e) => setSelectedProfessionalId(e.target.value || undefined)}
+                                    disabled={isProfessional}
+                                    className={`bg-transparent border-none text-sm font-medium text-gray-700 focus:ring-0 min-w-[180px] ${isProfessional ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
                                 >
-                                    {!isBarber && <option value="">Todos los barberos</option>}
-                                    {barbers.map(barber => (
-                                        <option key={barber.id} value={barber.id}>
-                                            {barber.name}
+                                    {!isProfessional && <option value="">Todos los profesionales</option>}
+                                    {professionals.map(professional => (
+                                        <option key={professional.id} value={professional.id}>
+                                            {professional.name}
                                         </option>
                                     ))}
                                 </select>

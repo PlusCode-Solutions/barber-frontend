@@ -9,13 +9,13 @@ import {
 
 interface UseClosureManagerProps {
     onShowToast?: (message: string, type: "success" | "error") => void;
-    barberId?: string;
+    professionalId?: string;
 }
 
-export function useClosureManager({ onShowToast, barberId }: UseClosureManagerProps = {}) {
+export function useClosureManager({ onShowToast, professionalId }: UseClosureManagerProps = {}) {
     const { createClosure, deleteClosure } = useAdminSchedules();
-    const { closures, loading: loadingList, refetch, error: fetchError } = useClosures(barberId);
-    const { schedules } = useSchedules(barberId);
+    const { closures, loading: loadingList, refetch, error: fetchError } = useClosures(professionalId);
+    const { schedules } = useSchedules(professionalId);
 
     useEffect(() => {
         if (fetchError) {
@@ -49,7 +49,7 @@ export function useClosureManager({ onShowToast, barberId }: UseClosureManagerPr
         setScheduleForDate(schedule || null);
     }, [newDate, schedules]);
 
-    const handleCreate = async (e?: React.FormEvent, overrideBarberId?: string | null, force: boolean = false) => {
+    const handleCreate = async (e?: React.FormEvent, overrideProfessionalId?: string | null, force: boolean = false) => {
         if (e) e.preventDefault();
         if (!newDate || !newReason) return;
 
@@ -65,13 +65,13 @@ export function useClosureManager({ onShowToast, barberId }: UseClosureManagerPr
 
         setIsCreating(true);
 
-        const finalBarberId = overrideBarberId !== undefined ? overrideBarberId : barberId;
+        const finalProfessionalId = overrideProfessionalId !== undefined ? overrideProfessionalId : professionalId;
         let dto: CreateClosureDto;
 
         const baseDto = {
             date: newDate,
             reason: newReason,
-            barberId: finalBarberId,
+            professionalId: finalProfessionalId,
             force
         };
 

@@ -33,7 +33,7 @@ export default function DashboardHome() {
         <div className="min-h-screen bg-gray-50 px-5 py-6 transition-all duration-500">
             <SEO
                 title="Inicio"
-                description={`Bienvenido a ${tenant?.name || 'tu barbería'}. Gestiona tus citas y servicios fácilmente.`}
+                description={`Bienvenido a ${tenant?.name || 'tu professionalía'}. Gestiona tus citas y servicios fácilmente.`}
             />
 
             {/* Success Message */}
@@ -72,7 +72,7 @@ export default function DashboardHome() {
 
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900 leading-tight">
-                                Bienvenidos a {tenant?.name ?? "tu barbería"}
+                                Bienvenidos a {tenant?.name ?? "tu professionalía"}
                             </h1>
                             <p className="text-gray-500 text-sm">
                                 Es un gusto tenerte con nosotros ✂️
@@ -82,7 +82,7 @@ export default function DashboardHome() {
 
                     {/* Mensaje principal */}
                     <p className="text-gray-700 text-base leading-relaxed">
-                        Gestiona tus citas, barberos, servicios y más desde este panel.
+                        Gestiona tus citas, profesionales, servicios y más desde este panel.
                         <span
                             className="font-semibold block mt-1"
                             style={{ color: tenant?.primaryColor || tenant?.secondaryColor || '#2563eb' }}

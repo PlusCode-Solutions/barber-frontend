@@ -9,7 +9,7 @@ import PublicClosuresView from "../components/PublicClosuresView";
 import { useAuth } from "../../../context/AuthContext";
 import { Button } from "../../../components/ui/Button";
 import Toast from "../../../components/ui/Toast";
-import { useBarbers } from "../../../features/barbers/hooks/useBarbers";
+import { useProfessionals } from "../../../features/professionals/hooks/useProfessionals";
 import SEO from "../../../components/shared/SEO";
 import { useTenant } from "../../../context/TenantContext";
 
@@ -17,19 +17,19 @@ export default function SchedulesPage() {
     const { tenant } = useTenant();
     const { user } = useAuth();
     const isAdmin = user?.role === 'TENANT_ADMIN';
-    const isBarber = user?.role === 'BARBER';
-    const canEdit = isAdmin; // Solo el admin puede gestionar horarios generales/barberos
+    const isProfessional = user?.role === 'PROFESSIONAL';
+    const canEdit = isAdmin; // Solo el admin puede gestionar horarios generales/profesionales
 
-    // Obtener barberos para identificar el principal y permitir selección
-    const { barbers } = useBarbers({ enabled: isAdmin });
+    // Obtener profesionales para identificar el principal y permitir selección
+    const { professionals } = useProfessionals({ enabled: isAdmin });
 
-    // Estado para el barbero seleccionado
-    const [selectedBarberId, setSelectedBarberId] = useState<string | undefined>(isBarber ? user?.barberId : undefined);
+    // Estado para el profesional seleccionado
+    const [selectedProfessionalId, setSelectedProfessionalId] = useState<string | undefined>(isProfessional ? user?.professionalId : undefined);
 
     // Removed auto-selection effect to allow viewing Tenant schedules by default
 
-    // Cargar horarios del barbero seleccionado
-    const { schedules, loading, error, refresh } = useSchedules(selectedBarberId, false);
+    // Cargar horarios del profesional seleccionado
+    const { schedules, loading, error, refresh } = useSchedules(selectedProfessionalId, false);
 
     const [isEditing, setIsEditing] = useState(false);
 
@@ -96,19 +96,19 @@ export default function SchedulesPage() {
                             </div>
                         </div>
 
-                        {/* Selector de Barbero (Solo Admin) */}
+                        {/* Selector de Profesional (Solo Admin) */}
                         {isAdmin && isEditing && (
                             <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md p-1.5 rounded-lg border border-white/20 sm:ml-4">
                                 <User className="w-4 h-4 ml-2 opacity-80" />
                                 <select
-                                    value={selectedBarberId || ""}
-                                    onChange={(e) => setSelectedBarberId(e.target.value || undefined)}
+                                    value={selectedProfessionalId || ""}
+                                    onChange={(e) => setSelectedProfessionalId(e.target.value || undefined)}
                                     className="bg-transparent border-none text-white text-sm font-medium focus:ring-0 cursor-pointer [&>option]:text-gray-900"
                                 >
-                                    <option value="">🕒 Horarios Generales (Barbería)</option>
-                                    {barbers.map(barber => (
-                                        <option key={barber.id} value={barber.id}>
-                                            {barber.name}
+                                    <option value="">🕒 Horarios Generales (Professionalía)</option>
+                                    {professionals.map(professional => (
+                                        <option key={professional.id} value={professional.id}>
+                                            {professional.name}
                                         </option>
                                     ))}
                                 </select>
@@ -147,11 +147,11 @@ export default function SchedulesPage() {
                         {/* Columna Izquierda: Editor Semanal */}
                         <div className="lg:col-span-2">
                             <WeekScheduleEditor
-                                key={selectedBarberId} // Force re-mount on barber change to reset form state
+                                key={selectedProfessionalId} // Force re-mount on professional change to reset form state
                                 currentSchedules={schedules}
                                 onUpdate={refresh}
                                 onShowToast={handleShowToast}
-                                barberId={selectedBarberId}
+                                professionalId={selectedProfessionalId}
                             />
                         </div>
 
@@ -159,24 +159,24 @@ export default function SchedulesPage() {
                         <div className="lg:col-span-1">
                             <div className="sticky top-32">
                                 <ClosureManager
-                                    key={`closure-${selectedBarberId}`}
+                                    key={`closure-${selectedProfessionalId}`}
                                     onShowToast={handleShowToast}
-                                    barberId={selectedBarberId}
+                                    professionalId={selectedProfessionalId}
                                 />
                             </div>
                         </div>
                     </div>
                 ) : (
-                    // Vista Pública (Siempre muestra horarios del primer barbero/tienda por defecto o el seleccionado si quisiéramos)
+                    // Vista Pública (Siempre muestra horarios del primer profesional/tienda por defecto o el seleccionado si quisiéramos)
                     // Para vista pública habitual, solemos mostrar "Horarios de la Tienda" (General). 
-                    // Si la tienda usa el perfil del primer barbero como "General", está bien.
+                    // Si la tienda usa el perfil del primer profesional como "General", está bien.
                     // Vista Pública
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                         {/* Sidebar: Próximos Días Libres (1 col) */}
                         <div className="lg:col-span-1">
                             {/* Make sticky so it stays visible while scrolling schedule if list is long */}
                             <div className="sticky top-24">
-                                <PublicClosuresView barberId={selectedBarberId} />
+                                <PublicClosuresView professionalId={selectedProfessionalId} />
                             </div>
                         </div>
 

@@ -3,8 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { TenantsService } from "../../tenants/api/tenants.service";
 import { ServicesService } from "../../services/api/services.service";
-import { BarbersService } from "../../barbers/api/barbers.service";
-import type { Barber } from "../../barbers/types";
+import { ProfessionalsService } from "../../professionals/api/professionals.service";
+import type { Professional } from "../../professionals/types";
 import type { Service } from "../../services/types";
 // @ts-ignore
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
@@ -73,10 +73,10 @@ const LandingPage = () => {
         enabled: !!tenant && !!tenantSlug
     });
 
-    // Fetch Barbers
-    const { data: barbers } = useQuery<Barber[]>({
-        queryKey: ["barbers", tenantSlug],
-        queryFn: () => BarbersService.getAll(tenantSlug!),
+    // Fetch Professionals
+    const { data: professionals } = useQuery<Professional[]>({
+        queryKey: ["professionals", tenantSlug],
+        queryFn: () => ProfessionalsService.getAll(tenantSlug!),
         enabled: !!tenant && !!tenantSlug
     });
 
@@ -100,7 +100,7 @@ const LandingPage = () => {
         elements.forEach(el => observer.observe(el));
 
         return () => observer.disconnect();
-    }, [services, barbers, loadingTenant]);
+    }, [services, professionals, loadingTenant]);
 
     // Handle Navbar Scroll Effect
     useEffect(() => {
@@ -121,9 +121,9 @@ const LandingPage = () => {
     if (tenantError || !tenant) return (
         <div className="h-screen w-full flex flex-col items-center justify-center bg-black text-center p-6">
             <Scissors size={64} className="text-primary-500 mb-8 animate-bounce" />
-            <h1 className="text-4xl font-black italic uppercase tracking-tighter text-white mb-4">Barbería No Encontrada</h1>
+            <h1 className="text-4xl font-black italic uppercase tracking-tighter text-white mb-4">Professionalía No Encontrada</h1>
             <p className="text-gray-400 max-w-md mx-auto mb-10 font-medium italic">
-                No hemos podido encontrar la barbería que buscas. Por favor, verifica el enlace e intenta de nuevo.
+                No hemos podido encontrar la professionalía que buscas. Por favor, verifica el enlace e intenta de nuevo.
             </p>
             <Link to="/" className="px-10 py-4 bg-white text-black font-black uppercase text-sm rounded-full hover:bg-gray-200 transition-all">
                 Volver al Inicio
@@ -149,7 +149,7 @@ const LandingPage = () => {
 
                     {/* Desktop Menu */}
                     <div className="hidden md:flex items-center gap-10">
-                        <a href="#barberos" className="text-xs font-black uppercase tracking-widest text-white/70 hover:text-white transition-colors">Barberos</a>
+                        <a href="#profesionales" className="text-xs font-black uppercase tracking-widest text-white/70 hover:text-white transition-colors">Profesionales</a>
                         <a href="#servicios" className="text-xs font-black uppercase tracking-widest text-white/70 hover:text-white transition-colors">Servicios</a>
                         <a href="#localizacion" className="text-xs font-black uppercase tracking-widest text-white/70 hover:text-white transition-colors">Localización</a>
                         <Link
@@ -182,11 +182,11 @@ const LandingPage = () => {
 
                     <div className="flex flex-col items-center gap-10">
                         <a
-                            href="#barberos"
+                            href="#profesionales"
                             onClick={() => setIsMenuOpen(false)}
                             className="text-4xl font-black italic uppercase tracking-tighter text-white hover:scale-110 transition-transform"
                         >
-                            Barberos
+                            Profesionales
                         </a>
                         <a
                             href="#servicios"
@@ -259,14 +259,14 @@ const LandingPage = () => {
                 </div>
             </header>
 
-            {/* 3. Barberos Section */}
-            {barbers && barbers.length > 0 && (
-                <section id="barberos" className="py-48 bg-gray-50 overflow-hidden relative border-t-8 border-white">
+            {/* 3. Profesionales Section */}
+            {professionals && professionals.length > 0 && (
+                <section id="profesionales" className="py-48 bg-gray-50 overflow-hidden relative border-t-8 border-white">
                     <div className="absolute top-0 left-0 w-full h-8 bg-white/50 skew-y-1 origin-top-left"></div>
                     <div className="container mx-auto px-6">
                         <div className="flex flex-col items-center mb-20 text-center">
                             <span style={{ color: primaryColor }} className="font-black uppercase tracking-[0.3em] text-xs mb-4">Conoce a los</span>
-                            <h2 className="text-6xl md:text-8xl font-black italic uppercase tracking-tighter text-black mb-10">Maestros</h2>
+                            <h2 className="text-6xl md:text-8xl font-black italic uppercase tracking-tighter text-black mb-10">Profesionales</h2>
                             <div className="flex items-center gap-4">
                                 <div style={{ backgroundColor: primaryColor }} className="h-1.5 w-16 rounded-full"></div>
                                 <div className="h-1.5 w-4 bg-gray-200 rounded-full"></div>
@@ -274,26 +274,26 @@ const LandingPage = () => {
                             </div>
                         </div>
 
-                        <div className={`flex flex-wrap items-center justify-center gap-12 ${barbers.length === 1 ? "max-w-md mx-auto" :
-                            barbers.length === 2 ? "max-w-3xl mx-auto" : ""
+                        <div className={`flex flex-wrap items-center justify-center gap-12 ${professionals.length === 1 ? "max-w-md mx-auto" :
+                            professionals.length === 2 ? "max-w-3xl mx-auto" : ""
                             }`}>
-                            {barbers.map((barber, index) => (
+                            {professionals.map((professional, index) => (
                                 <div
-                                    key={barber.id}
+                                    key={professional.id}
                                     className="reveal-on-scroll opacity-0 translate-y-10 transition-all duration-700 group relative flex-1 min-w-[280px] max-w-[320px]"
                                     style={{ transitionDelay: `${index * 150}ms` }}
                                 >
                                     <div className="relative h-[480px] rounded-[50px] overflow-hidden shadow-2xl border-4 border-white group-hover:border-white transition-all duration-500">
-                                        {barber.avatar ? (
-                                            <img src={barber.avatar} alt={barber.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                                        {professional.avatar ? (
+                                            <img src={professional.avatar} alt={professional.name} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
                                         ) : (
                                             <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
                                                 <User size={120} />
                                             </div>
                                         )}
                                         <div className="absolute inset-x-0 bottom-0 p-10 bg-gradient-to-t from-black via-black/40 to-transparent pt-32">
-                                            <h3 className="text-3xl font-black uppercase text-white tracking-tight mb-2 leading-none">{barber.name}</h3>
-                                            <p style={{ color: primaryColor }} className="font-black uppercase text-[10px] tracking-[0.2em]">{barber.specialty || "Barbería Pro"}</p>
+                                            <h3 className="text-3xl font-black uppercase text-white tracking-tight mb-2 leading-none">{professional.name}</h3>
+                                            <p style={{ color: primaryColor }} className="font-black uppercase text-[10px] tracking-[0.2em]">{professional.specialty || "Professionalía Pro"}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -438,7 +438,7 @@ const LandingPage = () => {
                     <div className="flex flex-col items-center gap-6">
                         <div className="flex flex-col items-center gap-4">
                             <span style={{ color: primaryColor }} className="text-4xl font-black italic tracking-tighter uppercase">{tenant.name}</span>
-                            <p className="text-gray-400 text-xs font-bold uppercase tracking-[0.3em]">&copy; {new Date().getFullYear()} - Maestros del Estilo</p>
+                            <p className="text-gray-400 text-xs font-bold uppercase tracking-[0.3em]">&copy; {new Date().getFullYear()} - Red de Profesionales</p>
                         </div>
                     </div>
                 </div>

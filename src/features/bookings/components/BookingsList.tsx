@@ -4,7 +4,7 @@ import { formatHour } from "../../../utils/dateUtils";
 interface BookingItem {
     id: string;
     customerName: string;
-    barberName: string;
+    professionalName: string;
     service: {
         name: string;
         price: string;
@@ -70,10 +70,10 @@ export default function BookingsList({ bookings, onSelectBooking, onCancelBookin
                                 {booking.status !== 'AVAILABLE' && ` - ${formatHour(booking.endTime, "12h")}`}
                             </span>
                         </div>
-                        {/* Optional: Small barber name or price below time if needed */}
+                        {/* Optional: Small professional name or price below time if needed */}
                         <div className="flex items-center gap-2 mt-2">
                             <span className="text-xs text-gray-400">
-                                {booking.barberName}
+                                {booking.professionalName}
                             </span>
                             {booking.isOwner && onCancelBooking && booking.status !== 'AVAILABLE' && booking.status !== 'CLOSED' && (
                                 <button

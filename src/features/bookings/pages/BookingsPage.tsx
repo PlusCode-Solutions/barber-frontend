@@ -96,7 +96,7 @@ export default function BookingsPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pb-8">
-            <SEO title="Mis Citas" description="Revisa y administra tus próximas citas de barbería." />
+            <SEO title="Mis Citas" description="Revisa y administra tus próximas citas de professionalía." />
 
             <Toast
                 message={toast.message}

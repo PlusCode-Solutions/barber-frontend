@@ -15,7 +15,7 @@ export function useDashboardStats() {
     const defaultStats: DashboardStats = {
         appointmentsToday: 0,
         appointmentsLastMonth: 0,
-        activeBarbers: 0,
+        activeProfessionals: 0,
         monthlyRevenue: 0
     };
 

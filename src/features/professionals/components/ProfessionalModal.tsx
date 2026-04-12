@@ -1,13 +1,13 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { X } from "lucide-react";
-import type { Barber } from "../types";
+import type { Professional } from "../types";
 
 type Mode = "create" | "edit";
 
 interface Props {
     mode: Mode;
     open: boolean;
-    initialData?: Barber;
+    initialData?: Professional;
     submitting?: boolean;
     onClose: () => void;
     onSubmit: (data: {
@@ -24,7 +24,7 @@ interface Props {
     } | FormData) => Promise<void> | void;
 }
 
-export default function BarberModal({
+export default function ProfessionalModal({
     mode,
     open,
     initialData,
@@ -70,8 +70,8 @@ export default function BarberModal({
 
     if (!open) return null;
 
-    const title = mode === "create" ? "Agregar barbero" : "Editar barbero";
-    const actionLabel = mode === "create" ? "Crear barbero" : "Guardar cambios";
+    const title = mode === "create" ? "Agregar profesional" : "Editar profesional";
+    const actionLabel = mode === "create" ? "Crear profesional" : "Guardar cambios";
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -134,13 +134,13 @@ export default function BarberModal({
                 <form onSubmit={handleSubmit} className="space-y-4 px-6 py-5">
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
-                            <label className="text-sm font-semibold text-gray-700">Alias del Barbero *</label>
+                            <label className="text-sm font-semibold text-gray-700">Alias del Profesional *</label>
                             <input
                                 required
                                 value={form.name}
                                 onChange={(e) => handleChange("name", e.target.value)}
                                 className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
-                                placeholder="Tony Barber"
+                                placeholder="Tony Professional"
                             />
                         </div>
                         {mode === 'create' && (
@@ -163,7 +163,7 @@ export default function BarberModal({
                                     value={form.email}
                                     onChange={(e) => handleChange("email", e.target.value)}
                                     className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
-                                    placeholder="correo@barberia.com"
+                                    placeholder="correo@professionalia.com"
                                 />
                             </div>
                         )}

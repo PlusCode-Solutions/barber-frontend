@@ -7,7 +7,7 @@ export interface Schedule {
     lunchStartTime?: string;
     lunchEndTime?: string;
     tenantId?: string;
-    barberId?: string;
+    professionalId?: string;
 }
 
 export interface Closure {
@@ -15,7 +15,7 @@ export interface Closure {
     date: string; // YYYY-MM-DD
     reason: string;
     tenantId: string;
-    barberId?: string;
+    professionalId?: string;
     isFullDay?: boolean;
     startTime?: string;
     endTime?: string;
@@ -28,13 +28,13 @@ export interface CreateScheduleDto {
     isClosed: boolean;
     lunchStartTime?: string;
     lunchEndTime?: string;
-    barberId?: string;
+    professionalId?: string;
 }
 
 export interface CreateClosureDto {
     date: string;
     reason: string;
-    barberId?: string | null;
+    professionalId?: string | null;
     isFullDay?: boolean;
     startTime?: string;
     endTime?: string;

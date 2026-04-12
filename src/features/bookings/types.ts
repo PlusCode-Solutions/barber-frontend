@@ -15,7 +15,7 @@ export interface Booking {
         name: string;
         email?: string;
     };
-    barber?: {
+    professional?: {
         id: string;
         name: string;
     };
@@ -23,7 +23,7 @@ export interface Booking {
 
 export interface CreateBookingDto {
     serviceId: string;
-    barberId: string;
+    professionalId: string;
     date: string; // YYYY-MM-DD
     startTime: string; // HH:mm
     endTime: string; // HH:mm

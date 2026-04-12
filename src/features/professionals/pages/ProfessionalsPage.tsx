@@ -2,31 +2,31 @@ import { useState } from "react";
 import { Users, Plus } from "lucide-react";
 import { PERMISSIONS } from "../../../config/permissions";
 import { usePermissions } from "../../../hooks/usePermissions";
-import { useManageBarbers } from "../hooks/useManageBarbers";
-import BarbersSkeleton from "../components/BarbersSkeleton";
-import BarberCard from "../components/BarberCard";
-import BarberModal from "../components/BarberModal";
-import DeleteBarberModal from "../components/DeleteBarberModal";
+import { useManageProfessionals } from "../hooks/useManageProfessionals";
+import ProfessionalsSkeleton from "../components/ProfessionalsSkeleton";
+import ProfessionalCard from "../components/ProfessionalCard";
+import ProfessionalModal from "../components/ProfessionalModal";
+import DeleteProfessionalModal from "../components/DeleteProfessionalModal";
 import Toast from "../../../components/ui/Toast";
 import SEO from "../../../components/shared/SEO";
 import { useTenant } from "../../../context/TenantContext";
 import { handleApiError } from "../../../lib/errorHandler";
-import type { Barber } from "../types";
+import type { Professional } from "../types";
 
-export default function BarbersPage() {
+export default function ProfessionalsPage() {
     const { tenant } = useTenant();
     const { can, isRole } = usePermissions();
-    const { barbers, loading, error, submitting, createBarber, updateBarber, deleteBarber } = useManageBarbers();
+    const { professionals, loading, error, submitting, createProfessional, updateProfessional, deleteProfessional } = useManageProfessionals();
     const [showCreate, setShowCreate] = useState(false);
-    const [editing, setEditing] = useState<Barber | null>(null);
-    const [deleting, setDeleting] = useState<Barber | null>(null);
+    const [editing, setEditing] = useState<Professional | null>(null);
+    const [deleting, setDeleting] = useState<Professional | null>(null);
     const [toastMessage, setToastMessage] = useState("");
     const [toastType, setToastType] = useState<"success" | "error">("success");
     const [showToast, setShowToast] = useState(false);
 
-    const isAdmin = can(PERMISSIONS.BARBERS_MANAGE) || isRole("TENANT_ADMIN");
+    const isAdmin = can(PERMISSIONS.PROFESSIONALS_MANAGE) || isRole("TENANT_ADMIN");
 
-    if (loading || !tenant) return <BarbersSkeleton />;
+    if (loading || !tenant) return <ProfessionalsSkeleton />;
 
     if (error) {
         return (
@@ -40,7 +40,7 @@ export default function BarbersPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pb-8">
-            <SEO title="Barberos" description="Conoce a nuestro equipo de barberos." />
+            <SEO title="Profesionales" description="Conoce a nuestro equipo de profesionales." />
             {/* HEADER */}
             <div
                 className="mx-4 mt-4 px-6 py-8 shadow-2xl sticky top-20 z-10 text-white rounded-3xl overflow-hidden relative"
@@ -53,14 +53,14 @@ export default function BarbersPage() {
                     <div className="space-y-2">
                         <div className="flex items-center gap-3">
                             <h1 className="text-3xl font-black tracking-tight leading-none">
-                                {isAdmin ? "Barberos del tenant" : "Nuestros Barberos"}
+                                {isAdmin ? "Profesionales del tenant" : "Nuestros Profesionales"}
                             </h1>
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-lg border border-white/20 inline-flex items-center gap-2">
                                 <Users className="w-4 h-4 text-white/90" />
                                 <span className="font-bold text-sm">
-                                    {barbers.length} {barbers.length === 1 ? "barbero" : "barberos"}
+                                    {professionals.length} {professionals.length === 1 ? "profesional" : "profesionales"}
                                 </span>
                             </div>
                         </div>
@@ -78,28 +78,28 @@ export default function BarbersPage() {
                             >
                                 <Plus className="w-5 h-5" strokeWidth={3} />
                             </div>
-                            <span className="text-base">Nuevo Barbero</span>
+                            <span className="text-base">Nuevo Profesional</span>
                         </button>
                     )}
                 </div>
             </div>
 
-            {/* BARBERS GRID */}
+            {/* PROFESSIONALS GRID */}
             <div className="px-6 pt-6">
-                {barbers.length === 0 ? (
+                {professionals.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl border-2 border-dashed border-purple-200 shadow-sm">
                         <div className="w-24 h-24 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mb-5 shadow-lg">
                             <Users className="w-12 h-12 text-purple-500" />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-800 mb-2">No hay barberos disponibles</h3>
-                        <p className="text-gray-500 text-sm max-w-xs">Los barberos aparecerán aquí cuando estén disponibles.</p>
+                        <h3 className="text-xl font-bold text-gray-800 mb-2">No hay profesionales disponibles</h3>
+                        <p className="text-gray-500 text-sm max-w-xs">Los profesionales aparecerán aquí cuando estén disponibles.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {barbers.map((barber) => (
-                            <BarberCard
-                                key={barber.id}
-                                barber={barber}
+                        {professionals.map((professional) => (
+                            <ProfessionalCard
+                                key={professional.id}
+                                professional={professional}
                                 isAdmin={isAdmin}
                                 onEdit={(b) => setEditing(b)}
                                 onDelete={(b) => setDeleting(b)}
@@ -110,7 +110,7 @@ export default function BarbersPage() {
             </div>
 
             {/* Modales */}
-            <BarberModal
+            <ProfessionalModal
                 mode="create"
                 open={showCreate}
                 submitting={submitting}
@@ -121,10 +121,10 @@ export default function BarbersPage() {
                             ? payload
                             : { ...payload, isActive: undefined };
 
-                        await createBarber(finalPayload);
+                        await createProfessional(finalPayload);
                         setShowCreate(false);
                         setToastType("success");
-                        setToastMessage("✅ Barbero creado correctamente");
+                        setToastMessage("✅ Profesional creado correctamente");
                         setShowToast(true);
                     } catch (e) {
                         setToastType("error");
@@ -134,7 +134,7 @@ export default function BarbersPage() {
                 }}
             />
 
-            <BarberModal
+            <ProfessionalModal
                 mode="edit"
                 open={!!editing}
                 initialData={editing ?? undefined}
@@ -147,10 +147,10 @@ export default function BarbersPage() {
                             ? payload
                             : { ...payload, isActive: undefined };
 
-                        await updateBarber(editing.id, finalPayload as any);
+                        await updateProfessional(editing.id, finalPayload as any);
                         setEditing(null);
                         setToastType("success");
-                        setToastMessage("✅ Barbero actualizado correctamente");
+                        setToastMessage("✅ Profesional actualizado correctamente");
                         setShowToast(true);
                     } catch (e) {
                         setToastType("error");
@@ -160,18 +160,18 @@ export default function BarbersPage() {
                 }}
             />
 
-            <DeleteBarberModal
+            <DeleteProfessionalModal
                 open={!!deleting}
-                barber={deleting}
+                professional={deleting}
                 submitting={submitting}
                 onClose={() => setDeleting(null)}
                 onConfirm={async () => {
                     if (!deleting) return;
                     try {
-                        await deleteBarber(deleting.id);
+                        await deleteProfessional(deleting.id);
                         setDeleting(null);
                         setToastType("success");
-                        setToastMessage("🗑️ Barbero eliminado");
+                        setToastMessage("🗑️ Profesional eliminado");
                         setShowToast(true);
                     } catch (e) {
                         setToastType("error");

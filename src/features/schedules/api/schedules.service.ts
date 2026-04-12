@@ -13,12 +13,12 @@ const normalizeSchedule = (s: any): Schedule => ({
     lunchStartTime: s.lunchStartTime ?? s.lunch_start_time,
     lunchEndTime: s.lunchEndTime ?? s.lunch_end_time,
     tenantId: s.tenantId ?? s.tenant_id,
-    barberId: s.barberId ?? s.barber_id
+    professionalId: s.professionalId ?? s.professional_id
 });
 
 export const SchedulesService = {
-    getSchedules: async (barberId?: string): Promise<Schedule[]> => {
-        const params = barberId ? { barberId } : {};
+    getSchedules: async (professionalId?: string): Promise<Schedule[]> => {
+        const params = professionalId ? { professionalId } : {};
         // Endpoint: GET /schedules
         const res = await axios.get(`/schedules`, { params });
         
@@ -48,8 +48,8 @@ export const SchedulesService = {
         return res.data;
     },
 
-    getClosures: async (barberId?: string): Promise<Closure[]> => {
-        const params = barberId ? { barberId } : {};
+    getClosures: async (professionalId?: string): Promise<Closure[]> => {
+        const params = professionalId ? { professionalId } : {};
         // Endpoint: GET /closures
         const res = await axios.get(`/closures`, { params });
         return res.data;

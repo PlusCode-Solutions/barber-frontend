@@ -7,13 +7,13 @@ import { useAuth } from "../../../context/AuthContext";
  * Hook estrella para el Panel Administrativo.
  * Consume el nuevo endpoint de timeline que ya trae todo calculado del backend.
  */
-export function useTimeline(date: string, barberId?: string) {
+export function useTimeline(date: string, professionalId?: string) {
     const { tenant } = useTenant();
     const { token } = useAuth();
 
     const { data, isLoading, error, refetch, isPlaceholderData } = useQuery({
-        queryKey: ['timeline', tenant?.id, date, barberId],
-        queryFn: () => BookingsService.getTimeline(date, barberId),
+        queryKey: ['timeline', tenant?.id, date, professionalId],
+        queryFn: () => BookingsService.getTimeline(date, professionalId),
         enabled: !!tenant?.id && !!date && !!token,
         placeholderData: (previousData) => previousData,
         staleTime: 1000 * 30,

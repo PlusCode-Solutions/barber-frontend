@@ -17,9 +17,9 @@ export const PERMISSIONS = {
     SERVICES_VIEW: 'services.view',
     SERVICES_MANAGE: 'services.manage', // Create, Update, Delete
 
-    // ========== BARBERS ==========
-    BARBERS_VIEW: 'barbers.view',
-    BARBERS_MANAGE: 'barbers.manage',
+    // ========== PROFESSIONALS ==========
+    PROFESSIONALS_VIEW: 'professionals.view',
+    PROFESSIONALS_MANAGE: 'professionals.manage',
 
     // ========== SCHEDULES ==========
     SCHEDULES_VIEW: 'schedules.view',

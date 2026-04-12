@@ -23,7 +23,7 @@ interface CalendarProps {
     closures?: Closure[];
     schedules?: Schedule[];
     tenantSchedules?: Schedule[];
-    barberId?: string; // Selected barber ID for filtering closures
+    professionalId?: string; // Selected professional ID for filtering closures
     className?: string;
     minDate?: Date;
     maxDate?: Date;
@@ -35,7 +35,7 @@ export default function Calendar({
     closures = [],
     schedules = [],
     tenantSchedules = [],
-    barberId,
+    professionalId,
     className = "",
     minDate,
     maxDate
@@ -66,7 +66,7 @@ export default function Calendar({
 
         const closure = closures.find(c => {
             const isDateMatch = normalizeDateString(c.date) === dayLabel;
-            const isScopeMatch = !c.barberId || (barberId && c.barberId === barberId);
+            const isScopeMatch = !c.professionalId || (professionalId && c.professionalId === professionalId);
             const isFullDay = c.isFullDay === true || c.isFullDay === undefined;
             return isDateMatch && isScopeMatch && isFullDay;
         });
@@ -83,7 +83,7 @@ export default function Calendar({
             return 'off-schedule';
         }
 
-        // 2. Check Barber Schedule
+        // 2. Check Professional Schedule
         const schedule = schedules.find(s => Number(s.dayOfWeek) === Number(dayOfWeek));
 
         if (schedules.length > 0 && (!schedule || schedule.isClosed)) {

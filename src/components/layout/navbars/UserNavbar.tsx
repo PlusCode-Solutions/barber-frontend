@@ -19,7 +19,7 @@ export default function UserNavbar() {
         { icon: Home, label: "Inicio", path: "dashboard" },
         { icon: CalendarCheck, label: "Citas", path: "dashboard/bookings" },
         { icon: Scissors, label: "Servicios", path: "dashboard/services" },
-        { icon: Users, label: "Barberos", path: "dashboard/barbers" },
+        { icon: Users, label: "Profesionales", path: "dashboard/professionals" },
         { icon: Clock, label: "Horarios", path: "dashboard/schedules" }
     ];
 
@@ -54,7 +54,7 @@ export default function UserNavbar() {
                                     </div>
                                 )}
                                 <span className="text-2xl font-bold text-white tracking-tight">
-                                    {tenant?.name || "BarberShop"}
+                                    {tenant?.name || "ProfessionalShop"}
                                 </span>
                             </Link>
                         </div>

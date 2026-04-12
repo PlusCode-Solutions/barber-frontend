@@ -36,23 +36,23 @@ export default function PerformanceTables({ stats }: PerformanceTablesProps) {
                 </div>
             </Card>
 
-            {/* Barbers */}
+            {/* Professionals */}
             <Card className="p-0 overflow-hidden border-none shadow-xl shadow-gray-200/50">
                 <div className="p-6 bg-white border-b border-gray-100 flex items-center gap-3">
                     <TrendingUp size={20} className="text-emerald-600" />
-                    <h2 className="text-lg font-bold text-gray-900">Rendimiento por Barbero</h2>
+                    <h2 className="text-lg font-bold text-gray-900">Rendimiento por Profesional</h2>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="bg-gray-50/50">
                             <tr>
-                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Barbero</th>
+                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Profesional</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase">Trabajos</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase text-right">Producido</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 bg-white">
-                            {(stats?.barbersBreakdown || []).map((b: any) => (
+                            {(stats?.professionalsBreakdown || []).map((b: any) => (
                                 <tr key={b.name} className="hover:bg-emerald-50/30 transition-colors">
                                     <td className="px-6 py-4 border-b border-gray-100">
                                         <div className="flex items-center gap-3">

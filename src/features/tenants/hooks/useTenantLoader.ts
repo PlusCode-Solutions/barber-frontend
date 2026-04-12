@@ -30,7 +30,7 @@ export function useTenantLoader(slug: string) {
 
             } catch (err) {
                 const message = handleError(err, 'useTenantLoader');
-                setError(message || "No se encontró la barbería");
+                setError(message || "No se encontró la professionalía");
             }
 
             setLoading(false);

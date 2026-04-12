@@ -1,7 +1,7 @@
 import { AlertCircle, X } from "lucide-react";
 import { useCreateBookingForm } from "../hooks/useCreateBookingForm";
 import SelectServiceStep from "./booking-steps/SelectServiceStep";
-import SelectBarberStep from "./booking-steps/SelectBarberStep";
+import SelectProfessionalStep from "./booking-steps/SelectProfessionalStep";
 import SelectDateTimeStep from "./booking-steps/SelectDateTimeStep";
 import ConfirmBookingStep from "./booking-steps/ConfirmBookingStep";
 import { useTenant } from "../../../context/TenantContext";
@@ -18,12 +18,12 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess, viewOnl
     const { tenant } = useTenant();
     const primaryColor = tenant?.primaryColor || tenant?.secondaryColor || '#2563eb';
     const { user } = useAuth();
-    const isBarber = user?.role === 'BARBER';
+    const isProfessional = user?.role === 'PROFESSIONAL';
 
     const {
         step,
         selectedService,
-        selectedBarber,
+        selectedProfessional,
         selectedDate,
         selectedSlot,
         notes,
@@ -36,7 +36,7 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess, viewOnl
         error,
         handleClose,
         handleServiceSelect,
-        handleBarberSelect,
+        handleProfessionalSelect,
         handleDateChange,
         handleSlotSelect,
         handleSubmit,
@@ -116,8 +116,8 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess, viewOnl
                     )}
 
                     {step === 2 && (
-                        <SelectBarberStep
-                            onSelectBarber={handleBarberSelect}
+                        <SelectProfessionalStep
+                            onSelectProfessional={handleProfessionalSelect}
                             onBack={() => goToStep(1)}
                         />
                     )}
@@ -132,18 +132,18 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess, viewOnl
                             closures={closures}
                             schedules={schedules}
                             tenantSchedules={tenantSchedules}
-                            barberId={selectedBarber?.id}
+                            professionalId={selectedProfessional?.id}
                             onDateChange={handleDateChange}
                             onSelectSlot={handleSlotSelect}
-                            onBack={() => isBarber ? goToStep(1) : goToStep(2)}
+                            onBack={() => isProfessional ? goToStep(1) : goToStep(2)}
                             viewOnly={viewOnly}
                         />
                     )}
 
-                    {step === 4 && selectedService && selectedBarber && (
+                    {step === 4 && selectedService && selectedProfessional && (
                         <ConfirmBookingStep
                             service={selectedService}
-                            barber={selectedBarber}
+                            professional={selectedProfessional}
                             date={selectedDate}
                             slot={selectedSlot}
                             notes={notes}

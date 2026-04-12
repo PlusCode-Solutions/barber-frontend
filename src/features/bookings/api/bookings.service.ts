@@ -15,12 +15,12 @@ export const BookingsService = {
     getTenantBookings: async (
         startDate?: string,
         endDate?: string,
-        barberId?: string
+        professionalId?: string
     ): Promise<Booking[]> => {
         const params: Record<string, string> = {};
         if (startDate) params.startDate = startDate;
         if (endDate) params.endDate = endDate;
-        if (barberId) params.barberId = barberId;
+        if (professionalId) params.professionalId = professionalId;
 
         const res = await axios.get(`/bookings`, { params });
         return res.data;
@@ -36,11 +36,12 @@ export const BookingsService = {
     // Check availability
     // Endpoint: GET /bookings/availability
     checkAvailability: async (
-        barberId: string,
-        date: string
+        professionalId: string,
+        date: string,
+        userId?: string
     ): Promise<AvailabilityResponse> => {
         const res = await axios.get(`/bookings/availability`, {
-            params: { barberId, date }
+            params: { professionalId, date, userId }
         });
         return res.data;
     },
@@ -67,11 +68,11 @@ export const BookingsService = {
         return res.data;
     },
 
-    // Get timeline (Admin/Barber view)
+    // Get timeline (Admin/Professional view)
     // Endpoint: GET /bookings/timeline
-    getTimeline: async (date: string, barberId?: string): Promise<any[]> => {
+    getTimeline: async (date: string, professionalId?: string): Promise<any[]> => {
         const res = await axios.get(`/bookings/timeline`, {
-            params: { date, barberId }
+            params: { date, professionalId }
         });
         return res.data;
     },

@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import type { Service } from "../../services/types";
-import type { Barber } from "../../barbers/types";
+import type { Professional } from "../../professionals/types";
 import type { CreateBookingDto } from "../types";
 import { BookingsService } from "../api/bookings.service";
 import { validateBookingForm, type FormValidationError } from "../utils/validation";
@@ -22,7 +22,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
     // Form State
     const [step, setStep] = useState<Step>(1);
     const [selectedService, setSelectedService] = useState<Service | null>(null);
-    const [selectedBarber, setSelectedBarber] = useState<Barber | null>(null);
+    const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
     const [selectedDate, setSelectedDate] = useState("");
     const [selectedSlot, setSelectedSlot] = useState("");
     const [notes, setNotes] = useState("");
@@ -38,18 +38,18 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
     const [schedules, setSchedules] = useState<Schedule[]>([]);
     const [tenantSchedules, setTenantSchedules] = useState<Schedule[]>([]);
 
-    // 1. Fetch Schedules when Barber is selected
+    // 1. Fetch Schedules when Professional is selected
     useEffect(() => {
-        if (selectedBarber && tenant?.slug) {
+        if (selectedProfessional && tenant?.slug) {
             Promise.all([
-                SchedulesService.getClosures(selectedBarber.id),
-                SchedulesService.getSchedules(selectedBarber.id),
+                SchedulesService.getClosures(selectedProfessional.id),
+                SchedulesService.getSchedules(selectedProfessional.id),
                 SchedulesService.getClosures(),
                 SchedulesService.getSchedules() // Tenant General Schedules
             ])
-                .then(([barberClosures, schedulesData, globalClosures, tenantSchedulesData]) => {
+                .then(([professionalClosures, schedulesData, globalClosures, tenantSchedulesData]) => {
                     const closureMap = new Map<string, Closure>();
-                    [...globalClosures, ...barberClosures].forEach(c => closureMap.set(c.id, c));
+                    [...globalClosures, ...professionalClosures].forEach(c => closureMap.set(c.id, c));
 
                     setClosures(Array.from(closureMap.values()));
                     setSchedules(schedulesData);
@@ -57,7 +57,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
                 })
                 .catch(console.error);
         }
-    }, [selectedBarber, tenant?.slug]);
+    }, [selectedProfessional, tenant?.slug]);
 
     // 2. Calculate Availability using extracted logic
     const {
@@ -68,7 +68,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         error: availabilityError,
         refresh: refreshAvailability
     } = useAvailabilityCalculator({
-        selectedBarber,
+        selectedProfessional,
         selectedService,
         selectedDate,
         closures,
@@ -82,7 +82,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
     const reset = useCallback(() => {
         setStep(1);
         setSelectedService(null);
-        setSelectedBarber(null);
+        setSelectedProfessional(null);
         setSelectedDate("");
         setSelectedSlot("");
         setNotes("");
@@ -101,8 +101,8 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
 
     const handleServiceSelect = useCallback((service: Service) => {
         setSelectedService(service);
-        if (user?.role === 'BARBER' && user?.barberId) {
-            setSelectedBarber({ id: user.barberId, name: user.name || 'Barbero' } as Barber);
+        if (user?.role === 'PROFESSIONAL' && user?.professionalId) {
+            setSelectedProfessional({ id: user.professionalId, name: user.name || 'Profesional' } as Professional);
             setStep(3);
         } else {
             setStep(2);
@@ -110,8 +110,8 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         setFormError(null);
     }, [user]);
 
-    const handleBarberSelect = useCallback((barber: Barber) => {
-        setSelectedBarber(barber);
+    const handleProfessionalSelect = useCallback((professional: Professional) => {
+        setSelectedProfessional(professional);
         setStep(3);
         setFormError(null);
     }, []);
@@ -133,7 +133,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         // Validate form
         const errors = validateBookingForm({
             selectedService,
-            selectedBarber,
+            selectedProfessional,
             selectedDate,
             selectedSlot
         });
@@ -150,7 +150,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
             return;
         }
 
-        if (!selectedService || !selectedBarber || !selectedDate || !selectedSlot) return;
+        if (!selectedService || !selectedProfessional || !selectedDate || !selectedSlot) return;
 
         setValidationErrors([]);
         setFormError(null);
@@ -160,7 +160,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
 
         const dto: CreateBookingDto = {
             serviceId: selectedService.id,
-            barberId: selectedBarber.id,
+            professionalId: selectedProfessional.id,
             date: selectedDate,
             startTime: selectedSlot,
             endTime: endTime,
@@ -180,7 +180,10 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
 
             // Handle Concurrent Booking Conflict (409)
             if (err.response?.status === 409) {
-                errorMessage = "Lo sentimos, este horario acaba de ser reservado por otra persona. Por favor selecciona otro.";
+                // If the backend didn't provide a specific message, use the fallback
+                if (!err.response?.data?.message) {
+                    errorMessage = "Lo sentimos, este horario acaba de ser reservado por otra persona. Por favor selecciona otro.";
+                }
 
                 // Refresh slots to show the latest availability
                 refreshAvailability();
@@ -194,7 +197,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         } finally {
             setSubmitting(false);
         }
-    }, [selectedService, selectedBarber, selectedDate, selectedSlot, notes, availableSlots, handleClose, onSuccess, tenant?.slug, refreshAvailability]);
+    }, [selectedService, selectedProfessional, selectedDate, selectedSlot, notes, availableSlots, handleClose, onSuccess, tenant?.slug, refreshAvailability]);
 
     const goToStep = useCallback((newStep: Step) => {
         setStep(newStep);
@@ -207,14 +210,14 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
     }, []);
 
     const canProceedToConfirm = useMemo(() => {
-        return !!(selectedService && selectedBarber && selectedDate && selectedSlot);
-    }, [selectedService, selectedBarber, selectedDate, selectedSlot]);
+        return !!(selectedService && selectedProfessional && selectedDate && selectedSlot);
+    }, [selectedService, selectedProfessional, selectedDate, selectedSlot]);
 
     return {
         // State
         step,
         selectedService,
-        selectedBarber,
+        selectedProfessional,
         selectedDate,
         selectedSlot,
         notes,
@@ -233,7 +236,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         // Actions
         handleClose,
         handleServiceSelect,
-        handleBarberSelect,
+        handleProfessionalSelect,
         handleDateChange,
         handleSlotSelect,
         handleSubmit,

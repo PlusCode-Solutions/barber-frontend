@@ -3,7 +3,7 @@ import axios from "../../../lib/axios";
 export interface DashboardStats {
     appointmentsToday: number;
     appointmentsLastMonth: number;
-    activeBarbers: number;
+    activeProfessionals: number;
     monthlyRevenue: number;
 }
 

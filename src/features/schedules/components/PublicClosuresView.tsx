@@ -1,16 +1,16 @@
 import { Calendar, Store, User, Clock } from "lucide-react";
 import { useClosures } from "../hooks/useClosures";
 import { safeDate } from "../../../utils/dateUtils";
-import { useBarbers } from "../../barbers/hooks/useBarbers";
+import { useProfessionals } from "../../professionals/hooks/useProfessionals";
 import ClosuresSkeleton from "./ClosuresSkeleton";
 
 interface Props {
-    barberId?: string;
+    professionalId?: string;
 }
 
-export default function PublicClosuresView({ barberId }: Props) {
-    const { closures, loading } = useClosures(barberId);
-    const { barbers } = useBarbers();
+export default function PublicClosuresView({ professionalId }: Props) {
+    const { closures, loading } = useClosures(professionalId);
+    const { professionals } = useProfessionals();
 
     if (loading) return <ClosuresSkeleton />;
     if (closures.length === 0) return null;
@@ -26,9 +26,9 @@ export default function PublicClosuresView({ barberId }: Props) {
                     const d = safeDate(closure.date);
                     if (!d) return null;
 
-                    // Find barber name if closure is barber-specific
-                    const barberName = closure.barberId
-                        ? barbers.find(b => b.id === closure.barberId)?.name
+                    // Find professional name if closure is professional-specific
+                    const professionalName = closure.professionalId
+                        ? professionals.find(b => b.id === closure.professionalId)?.name
                         : null;
 
                     const isPartial = closure.isFullDay === false;
@@ -64,11 +64,11 @@ export default function PublicClosuresView({ barberId }: Props) {
                                     </p>
 
                                     <div className="flex flex-col gap-2 mt-3">
-                                        {/* Show barber name or "Toda la Tienda" */}
-                                        {barberName ? (
+                                        {/* Show professional name or "Toda la Tienda" */}
+                                        {professionalName ? (
                                             <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50/50 rounded-xl border border-blue-100 w-fit">
                                                 <User size={14} className="text-blue-600" />
-                                                <span className="text-xs text-blue-700 font-bold">{barberName}</span>
+                                                <span className="text-xs text-blue-700 font-bold">{professionalName}</span>
                                             </div>
                                         ) : (
                                             <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-xl border border-gray-100 w-fit">

@@ -8,7 +8,7 @@ interface UseWeekScheduleEditorProps {
     currentSchedules: Schedule[];
     onUpdate: () => void;
     onShowToast?: (message: string, type: "success" | "error") => void;
-    barberId?: string;
+    professionalId?: string;
 }
 
 const DAYS = [
@@ -21,7 +21,7 @@ const DAYS = [
     { id: 0, name: "Domingo" },
 ];
 
-export function useWeekScheduleEditor({ currentSchedules, onUpdate, onShowToast, barberId }: UseWeekScheduleEditorProps) {
+export function useWeekScheduleEditor({ currentSchedules, onUpdate, onShowToast, professionalId }: UseWeekScheduleEditorProps) {
     const { updateSchedule } = useAdminSchedules();
     const { schedules: tenantSchedules } = useSchedules(undefined, false); // Get Tenant General Hours
     const [savingDay, setSavingDay] = useState<number | null>(null);
@@ -49,7 +49,7 @@ export function useWeekScheduleEditor({ currentSchedules, onUpdate, onShowToast,
 
         const payload = {
             ...data,
-            barberId,
+            professionalId,
             startTime: data.startTime || null,
             endTime: data.endTime || null,
             lunchStartTime: data.lunchStartTime || null,
@@ -60,8 +60,8 @@ export function useWeekScheduleEditor({ currentSchedules, onUpdate, onShowToast,
         if (!sanitizedPayload.lunchStartTime) sanitizedPayload.lunchStartTime = null;
         if (!sanitizedPayload.lunchEndTime) sanitizedPayload.lunchEndTime = null;
 
-        // VALIDATION: If editing a barber, validate against Tenant Schedule
-        if (barberId && tenantSchedules.length > 0) {
+        // VALIDATION: If editing a professional, validate against Tenant Schedule
+        if (professionalId && tenantSchedules.length > 0) {
             const tenantDay = tenantSchedules.find(s => s.dayOfWeek === dayOfWeek);
             const { isValid, error } = validateScheduleMargin({
                 startTime: sanitizedPayload.startTime,

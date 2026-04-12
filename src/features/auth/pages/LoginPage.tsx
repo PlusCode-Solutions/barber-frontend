@@ -12,7 +12,7 @@ export default function LoginPage() {
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center">
           <div className="animate-spin h-12 w-12 border-4 border-indigo-600 border-t-transparent rounded-full mx-auto mb-3"></div>
-          <p className="text-gray-600 text-lg font-medium">Cargando barbería...</p>
+          <p className="text-gray-600 text-lg font-medium">Cargando professionalía...</p>
         </div>
       </div>
     );
@@ -24,7 +24,7 @@ export default function LoginPage() {
         <div className="bg-white p-8 rounded-2xl shadow-lg text-center max-w-sm w-full">
           <div className="text-5xl mb-4">⚠️</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            Barbería no encontrada
+            Professionalía no encontrada
           </h2>
           <p className="text-gray-600">El espacio solicitado no existe.</p>
         </div>

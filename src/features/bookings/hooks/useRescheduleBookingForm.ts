@@ -16,7 +16,7 @@ export function useRescheduleBookingForm(booking: Booking, onSuccess?: () => voi
     
     // 1. Inicialización de datos
     const selectedService = booking.service;
-    const selectedBarber = booking.barber;
+    const selectedProfessional = booking.professional;
 
     const duration = useMemo(() => {
         if (!booking.startTime || !booking.endTime) return 60;
@@ -55,7 +55,7 @@ export function useRescheduleBookingForm(booking: Booking, onSuccess?: () => voi
         schedules,
         tenantSchedules
     } = useBookingAvailability({
-        barber: selectedBarber,
+        professional: selectedProfessional,
         date: selectedDate,
         bookingIdToExclude: booking.id,
         durationMinutes: duration // Pass the calculated duration
@@ -110,7 +110,7 @@ export function useRescheduleBookingForm(booking: Booking, onSuccess?: () => voi
 
     return {
         selectedService,
-        selectedBarber,
+        selectedProfessional,
         selectedDate,
         selectedSlot,
         availableSlots,

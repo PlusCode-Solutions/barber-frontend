@@ -60,11 +60,11 @@ export default function TenantAdminDashboard() {
                     iconBgClassName="bg-purple-500 shadow-purple-200 shadow-lg"
                 />
 
-                {/* 3. Barberos Activos */}
+                {/* 3. Profesionales Activos */}
                 <StatCard
                     icon={<Users className="text-white" size={24} />}
-                    label="Barberos Activos"
-                    value={loading ? "..." : (stats?.activeBarbers?.toString() ?? "0")}
+                    label="Profesionales Activos"
+                    value={loading ? "..." : (stats?.activeProfessionals?.toString() ?? "0")}
                     subtitle="En turno actualmente"
                     className="border-pink-100 hover:border-pink-200"
                     iconBgClassName="bg-pink-500 shadow-pink-200 shadow-lg"

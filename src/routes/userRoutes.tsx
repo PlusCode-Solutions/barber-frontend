@@ -4,7 +4,7 @@ import DashboardLayout from "../components/layout/DashboardLayout";
 import DashboardHome from "../pages/dashboard/DashboardHome";
 import BookingsPage from "../features/bookings/pages/BookingsPage";
 import ServicesPage from "../features/services/pages/ServicesPage";
-import BarbersPage from "../features/barbers/pages/BarbersPage";
+import ProfessionalsPage from "../features/professionals/pages/ProfessionalsPage";
 import SchedulesPage from "../features/schedules/pages/SchedulesPage";
 import { PERMISSIONS } from "../config/permissions";
 
@@ -20,7 +20,7 @@ export const userRoutes = (
             <Route index element={<DashboardHome />} />
             <Route path="bookings" element={<BookingsPage />} />
             <Route path="services" element={<ServicesPage />} />
-            <Route path="barbers" element={<BarbersPage />} />
+            <Route path="professionals" element={<ProfessionalsPage />} />
             <Route path="schedules" element={<SchedulesPage />} />
         </Route>
     </Route>
