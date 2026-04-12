@@ -14,11 +14,11 @@ export default function TenantAdminNavbar() {
 
     const menuItems = [
         { icon: LayoutDashboard, label: "Dashboard", path: "admin/dashboard", roles: ['TENANT_ADMIN'] },
-        { icon: FileText, label: "Citas", path: "admin/bookings", roles: ['TENANT_ADMIN', 'BARBER'] },
+        { icon: FileText, label: "Citas", path: "admin/bookings", roles: ['TENANT_ADMIN', 'PROFESSIONAL'] },
         { icon: TrendingUp, label: "Estadísticas", path: "admin/statistics", roles: ['TENANT_ADMIN'] },
         { icon: Scissors, label: "Servicios", path: "admin/services", roles: ['TENANT_ADMIN'] },
-        { icon: Users, label: "Barberos", path: "admin/barbers", roles: ['TENANT_ADMIN'] },
-        { icon: Calendar, label: "Horarios", path: "admin/schedules", roles: ['TENANT_ADMIN', 'BARBER'] },
+        { icon: Users, label: "Profesionales", path: "admin/professionals", roles: ['TENANT_ADMIN'] },
+        { icon: Calendar, label: "Horarios", path: "admin/schedules", roles: ['TENANT_ADMIN', 'PROFESSIONAL'] },
         { icon: UserCircle, label: "Clientes", path: "admin/customers", roles: ['TENANT_ADMIN'] },
         { icon: Settings, label: "Configuración", path: "admin/settings", roles: ['TENANT_ADMIN'] },
     ];
@@ -51,10 +51,10 @@ export default function TenantAdminNavbar() {
                         )}
                         <div>
                             <span className="font-bold text-xl block leading-tight">
-                                {tenant?.name ?? "Barbería"}
+                                {tenant?.name ?? "Professionalía"}
                             </span>
                             <span className="text-white/80 text-xs font-medium bg-white/20 px-2 py-0.5 rounded-full">
-                                {user?.role === 'BARBER' ? 'BARBER PANEL' : 'ADMIN PANEL'}
+                                {user?.role === 'PROFESSIONAL' ? 'PROFESSIONAL PANEL' : 'ADMIN PANEL'}
                             </span>
                         </div>
                     </Link>

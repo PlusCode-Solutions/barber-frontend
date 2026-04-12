@@ -1,10 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTenant } from "../../../context/TenantContext";
 import { useErrorHandler } from "../../../hooks/useErrorHandler";
-import type { Barber } from "../types";
-import { BarbersService } from "../api/barbers.service";
+import type { Professional } from "../types";
+import { ProfessionalsService } from "../api/professionals.service";
 
-export function useManageBarbers() {
+export function useManageProfessionals() {
     const { tenant } = useTenant();
     const { handleError } = useErrorHandler();
     const queryClient = useQueryClient();
@@ -12,17 +12,17 @@ export function useManageBarbers() {
 
     // LEER
     const {
-        data: barbers = [],
+        data: professionals = [],
         isLoading: loading,
         error
     } = useQuery({
-        queryKey: ['barbers', slug],
-        queryFn: () => BarbersService.getAll(slug!),
+        queryKey: ['professionals', slug],
+        queryFn: () => ProfessionalsService.getAll(slug!),
         enabled: !!slug
     });
 
     // Clean payload helper
-    const cleanPayload = (payload: Partial<Barber>) => {
+    const cleanPayload = (payload: Partial<Professional>) => {
         const body: Record<string, unknown> = {};
 
         if (payload.name !== undefined) {
@@ -45,31 +45,31 @@ export function useManageBarbers() {
 
     // CREAR
     const createMutation = useMutation({
-        mutationFn: (payload: Partial<Barber> | FormData) => {
+        mutationFn: (payload: Partial<Professional> | FormData) => {
             if (!slug) throw new Error("Tenant no disponible");
             const body = payload instanceof FormData ? payload : cleanPayload(payload);
-            return BarbersService.create(slug, body);
+            return ProfessionalsService.create(slug, body);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['barbers', slug] });
+            queryClient.invalidateQueries({ queryKey: ['professionals', slug] });
         },
         onError: (err) => {
-            handleError(err, 'createBarber');
+            handleError(err, 'createProfessional');
         }
     });
 
     // ACTUALIZAR
     const updateMutation = useMutation({
-        mutationFn: ({ id, payload }: { id: string; payload: Partial<Barber> | FormData }) => {
+        mutationFn: ({ id, payload }: { id: string; payload: Partial<Professional> | FormData }) => {
             if (!slug) throw new Error("Tenant no disponible");
             const body = payload instanceof FormData ? payload : cleanPayload(payload);
-            return BarbersService.update(slug, id, body);
+            return ProfessionalsService.update(slug, id, body);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['barbers', slug] });
+            queryClient.invalidateQueries({ queryKey: ['professionals', slug] });
         },
         onError: (err) => {
-            handleError(err, 'updateBarber');
+            handleError(err, 'updateProfessional');
         }
     });
 
@@ -77,24 +77,24 @@ export function useManageBarbers() {
     const deleteMutation = useMutation({
         mutationFn: (id: string) => {
             if (!slug) throw new Error("Tenant no disponible");
-            return BarbersService.delete(slug, id);
+            return ProfessionalsService.delete(slug, id);
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['barbers', slug] });
+            queryClient.invalidateQueries({ queryKey: ['professionals', slug] });
         },
         onError: (err) => {
-            handleError(err, 'deleteBarber');
+            handleError(err, 'deleteProfessional');
         }
     });
 
     return {
-        barbers,
+        professionals,
         loading,
         error: error ? (error as Error).message : null,
         submitting: createMutation.isPending || updateMutation.isPending || deleteMutation.isPending,
 
-        createBarber: (payload: Partial<Barber> | FormData) => createMutation.mutateAsync(payload),
-        updateBarber: (id: string, payload: Partial<Barber> | FormData) => updateMutation.mutateAsync({ id, payload }),
-        deleteBarber: (id: string) => deleteMutation.mutateAsync(id),
+        createProfessional: (payload: Partial<Professional> | FormData) => createMutation.mutateAsync(payload),
+        updateProfessional: (id: string, payload: Partial<Professional> | FormData) => updateMutation.mutateAsync({ id, payload }),
+        deleteProfessional: (id: string) => deleteMutation.mutateAsync(id),
     };
 }

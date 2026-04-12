@@ -1,4 +1,4 @@
-export interface Barber {
+export interface Professional {
     id: string;
     name: string;
     email?: string | null;
@@ -10,7 +10,7 @@ export interface Barber {
     updatedAt?: string;
 }
 
-export interface CreateBarberDto {
+export interface CreateProfessionalDto {
     name: string;
     email?: string | null;
     phone?: string | null;
@@ -19,6 +19,6 @@ export interface CreateBarberDto {
     isActive?: boolean;
 }
 
-export interface UpdateBarberDto extends Partial<CreateBarberDto> {
+export interface UpdateProfessionalDto extends Partial<CreateProfessionalDto> {
     isActive?: boolean;
 }

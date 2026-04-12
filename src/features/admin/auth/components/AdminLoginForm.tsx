@@ -21,7 +21,7 @@ export default function AdminLoginForm() {
                 </label>
                 <Input
                     type="email"
-                    placeholder="admin@sassbarber.com"
+                    placeholder="admin@sassprofessional.com"
                     value={email}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                     required

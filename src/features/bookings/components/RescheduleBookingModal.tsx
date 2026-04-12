@@ -45,7 +45,7 @@ function RescheduleBookingModalContent({ booking, onClose, onSuccess, primaryCol
         handleSlotSelect,
         handleSubmit,
         selectedService,
-        selectedBarber
+        selectedProfessional
     } = useRescheduleBookingForm(booking, onSuccess, onClose);
 
     return (
@@ -66,7 +66,7 @@ function RescheduleBookingModalContent({ booking, onClose, onSuccess, primaryCol
                         </div>
                         <div>
                             <h2 className="text-xl font-bold text-white">Reprogramar Cita</h2>
-                            <p className="text-blue-100 text-sm">{selectedService?.name} con {selectedBarber?.name}</p>
+                            <p className="text-blue-100 text-sm">{selectedService?.name} con {selectedProfessional?.name}</p>
                         </div>
                     </div>
                     <button
@@ -98,7 +98,7 @@ function RescheduleBookingModalContent({ booking, onClose, onSuccess, primaryCol
                         closures={closures}
                         schedules={schedules}
                         tenantSchedules={tenantSchedules} // Pass it here
-                        barberId={selectedBarber?.id}
+                        professionalId={selectedProfessional?.id}
                         onDateChange={handleDateChange}
                         onSelectSlot={handleSlotSelect}
                     />

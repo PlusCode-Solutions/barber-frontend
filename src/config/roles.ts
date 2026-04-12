@@ -1,6 +1,6 @@
 import { PERMISSIONS, type Permission } from './permissions';
 
-export type UserRole = 'SUPER_ADMIN' | 'TENANT_ADMIN' | 'USER' | 'BARBER';
+export type UserRole = 'SUPER_ADMIN' | 'TENANT_ADMIN' | 'USER' | 'PROFESSIONAL';
 
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     // ========== SUPER ADMIN ==========
@@ -20,9 +20,9 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
         PERMISSIONS.SERVICES_VIEW,
         PERMISSIONS.SERVICES_MANAGE,
 
-        // Barbers
-        PERMISSIONS.BARBERS_VIEW,
-        PERMISSIONS.BARBERS_MANAGE,
+        // Professionals
+        PERMISSIONS.PROFESSIONALS_VIEW,
+        PERMISSIONS.PROFESSIONALS_MANAGE,
 
         // Schedules
         PERMISSIONS.SCHEDULES_VIEW,
@@ -47,19 +47,19 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
 
         // Read-only access to resources needed for booking
         PERMISSIONS.SERVICES_VIEW,
-        PERMISSIONS.BARBERS_VIEW,
+        PERMISSIONS.PROFESSIONALS_VIEW,
         PERMISSIONS.SCHEDULES_VIEW,
     ],
 
-    // ========== BARBER ==========
-    // Barber permissions
-    BARBER: [
+    // ========== PROFESSIONAL ==========
+    // Professional permissions
+    PROFESSIONAL: [
         PERMISSIONS.BOOKINGS_VIEW_OWN,
         PERMISSIONS.BOOKINGS_CREATE,
         PERMISSIONS.BOOKINGS_UPDATE,
         PERMISSIONS.BOOKINGS_DELETE,
         PERMISSIONS.SERVICES_VIEW,
-        PERMISSIONS.BARBERS_VIEW,
+        PERMISSIONS.PROFESSIONALS_VIEW,
         PERMISSIONS.SCHEDULES_VIEW,
     ]
 };

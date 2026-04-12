@@ -8,7 +8,7 @@ export interface FormValidationError {
 
 export function validateBookingForm(data: {
     selectedService: any | null;
-    selectedBarber: any | null;
+    selectedProfessional: any | null;
     selectedDate: string;
 
     selectedSlot: string;
@@ -19,8 +19,8 @@ export function validateBookingForm(data: {
         errors.push({ field: 'service', message: 'Debes seleccionar un servicio' });
     }
 
-    if (!data.selectedBarber) {
-        errors.push({ field: 'barber', message: 'Debes seleccionar un barbero' });
+    if (!data.selectedProfessional) {
+        errors.push({ field: 'professional', message: 'Debes seleccionar un profesional' });
     }
 
     if (!data.selectedDate) {

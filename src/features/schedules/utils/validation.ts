@@ -1,26 +1,26 @@
 import type { Schedule } from "../types";
 
 /**
- * Validates if a barber's schedule fits within the tenant's operating hours.
- * @param barberSchedule The schedule proposed for the barber
+ * Validates if a professional's schedule fits within the tenant's operating hours.
+ * @param professionalSchedule The schedule proposed for the professional
  * @param tenantSchedule The general tenant schedule for that day
  * @returns { isValid: boolean, error?: string }
  */
 export function validateScheduleMargin(
-    barberSchedule: { startTime?: string; endTime?: string; isClosed?: boolean },
+    professionalSchedule: { startTime?: string; endTime?: string; isClosed?: boolean },
     tenantSchedule?: Schedule
 ): { isValid: boolean; error?: string } {
     // If no tenant schedule exists for this day, assume it's closed (or open 24/7? Safest is closed/undefined).
-    // If tenant schedule says "Closed", barber MUST be closed.
+    // If tenant schedule says "Closed", professional MUST be closed.
     if (!tenantSchedule || tenantSchedule.isClosed) {
-        if (!barberSchedule.isClosed) {
-            return { isValid: false, error: "La barbería está cerrada este día. El barbero no puede trabajar." };
+        if (!professionalSchedule.isClosed) {
+            return { isValid: false, error: "La professionalía está cerrada este día. El profesional no puede trabajar." };
         }
         return { isValid: true };
     }
 
-    // If barber is closed, it's always valid
-    if (barberSchedule.isClosed) return { isValid: true };
+    // If professional is closed, it's always valid
+    if (professionalSchedule.isClosed) return { isValid: true };
 
     // Helper to convert "HH:mm" to minutes
     const toMinutes = (time: string) => {
@@ -32,10 +32,10 @@ export function validateScheduleMargin(
     const tEnd = toMinutes(tenantSchedule.endTime);
     
     // Check start time
-    if (barberSchedule.startTime) {
-        const bStart = toMinutes(barberSchedule.startTime);
+    if (professionalSchedule.startTime) {
+        const bStart = toMinutes(professionalSchedule.startTime);
         if (bStart < tStart) {
-            return { isValid: false, error: `El barbero no puede abrir antes de la hora general (${tenantSchedule.startTime}).` };
+            return { isValid: false, error: `El profesional no puede abrir antes de la hora general (${tenantSchedule.startTime}).` };
         }
         if (bStart > tEnd) {
              return { isValid: false, error: `El inicio del turno debe ser antes del cierre general.` };
@@ -43,10 +43,10 @@ export function validateScheduleMargin(
     }
 
     // Check end time
-    if (barberSchedule.endTime) {
-        const bEnd = toMinutes(barberSchedule.endTime);
+    if (professionalSchedule.endTime) {
+        const bEnd = toMinutes(professionalSchedule.endTime);
         if (bEnd > tEnd) {
-            return { isValid: false, error: `El barbero no puede cerrar después de la hora general (${tenantSchedule.endTime}).` };
+            return { isValid: false, error: `El profesional no puede cerrar después de la hora general (${tenantSchedule.endTime}).` };
         }
         if (bEnd < tStart) {
              return { isValid: false, error: `El fin del turno debe ser después de la apertura general.` };

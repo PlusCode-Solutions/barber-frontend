@@ -1,16 +1,16 @@
 import { Trash2 } from "lucide-react";
-import type { Barber } from "../types";
+import type { Professional } from "../types";
 
 interface Props {
     open: boolean;
-    barber?: Barber | null;
+    professional?: Professional | null;
     submitting?: boolean;
     onConfirm: () => Promise<void> | void;
     onClose: () => void;
 }
 
-export default function DeleteBarberModal({ open, barber, submitting = false, onConfirm, onClose }: Props) {
-    if (!open || !barber) return null;
+export default function DeleteProfessionalModal({ open, professional, submitting = false, onConfirm, onClose }: Props) {
+    if (!open || !professional) return null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
@@ -20,12 +20,12 @@ export default function DeleteBarberModal({ open, barber, submitting = false, on
                         <Trash2 className="w-8 h-8" />
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 mb-1">
-                        ¿Eliminar Barbero?
+                        ¿Eliminar Profesional?
                     </h3>
                     <div className="text-gray-500 text-sm mb-2">
                         <p>Vas a eliminar a:</p>
-                        <p className="font-bold text-gray-800 my-1">{barber.name}</p>
-                        <p className="text-xs">{barber.email}</p>
+                        <p className="font-bold text-gray-800 my-1">{professional.name}</p>
+                        <p className="text-xs">{professional.email}</p>
                     </div>
                     <p className="text-xs text-red-500 font-semibold mt-2 px-4 py-1 bg-red-100/50 rounded-full">
                         Esta acción es irreversible

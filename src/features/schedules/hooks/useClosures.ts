@@ -3,7 +3,7 @@ import { SchedulesService } from "../api/schedules.service";
 import { safeDate } from "../../../utils/dateUtils";
 import { useTenant } from "../../../context/TenantContext";
 
-export function useClosures(barberId?: string) {
+export function useClosures(professionalId?: string) {
     const { tenant } = useTenant();
     const slug = tenant?.slug;
 
@@ -13,9 +13,9 @@ export function useClosures(barberId?: string) {
         error,
         refetch 
     } = useQuery({
-        queryKey: ['closures', slug, barberId],
+        queryKey: ['closures', slug, professionalId],
         queryFn: async () => {
-            return SchedulesService.getClosures(barberId);
+            return SchedulesService.getClosures(professionalId);
         },
         enabled: !!slug,
         select: (data) => {
@@ -28,13 +28,13 @@ export function useClosures(barberId?: string) {
                 return cDate && cDate >= today;
             });
 
-            // Filter by barber if barberId is provided
-            const filtered = barberId
+            // Filter by professional if professionalId is provided
+            const filtered = professionalId
                 ? upcoming.filter(c => {
-                    // Show shop-wide closures (barberId is null) OR closures for the selected barber
-                    return !c.barberId || c.barberId === barberId;
+                    // Show shop-wide closures (professionalId is null) OR closures for the selected professional
+                    return !c.professionalId || c.professionalId === professionalId;
                 })
-                : upcoming; // If no barberId, show all closures
+                : upcoming; // If no professionalId, show all closures
 
             // Sort by date ascending
             return filtered.sort((a, b) => {

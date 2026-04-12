@@ -97,7 +97,7 @@ export default function CreateTenantModal({ isOpen, onClose, onSuccess }: Create
                                 value={formData.name}
                                 onChange={handleChange}
                                 required
-                                placeholder="Ej: Barbería Central"
+                                placeholder="Ej: Professionalía Central"
                             />
 
                             <Input
@@ -106,7 +106,7 @@ export default function CreateTenantModal({ isOpen, onClose, onSuccess }: Create
                                 value={formData.slug}
                                 onChange={handleChange}
                                 required
-                                placeholder="ej: barberia-central"
+                                placeholder="ej: professionalia-central"
                                 className="lowercase"
                             />
                             <p className="text-xs text-gray-500 -mt-3">
@@ -120,7 +120,7 @@ export default function CreateTenantModal({ isOpen, onClose, onSuccess }: Create
                                 value={formData.email}
                                 onChange={handleChange}
                                 required
-                                placeholder="admin@barberia.com"
+                                placeholder="admin@professionalia.com"
                             />
 
                             <Input

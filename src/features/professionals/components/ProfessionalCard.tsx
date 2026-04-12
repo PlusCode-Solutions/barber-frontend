@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { Users, Mail, Phone, Award, UserCheck, Pencil, Trash2 } from "lucide-react";
-import type { Barber } from "../types";
+import type { Professional } from "../types";
 
-interface BarberCardProps {
-    barber: Barber;
+interface ProfessionalCardProps {
+    professional: Professional;
     isAdmin?: boolean;
-    onEdit?: (barber: Barber) => void;
-    onDelete?: (barber: Barber) => void;
+    onEdit?: (professional: Professional) => void;
+    onDelete?: (professional: Professional) => void;
 }
 
-export default function BarberCard({ barber, isAdmin = false, onEdit, onDelete }: BarberCardProps) {
+export default function ProfessionalCard({ professional, isAdmin = false, onEdit, onDelete }: ProfessionalCardProps) {
     const [imgError, setImgError] = useState(false);
 
     return (
@@ -25,12 +25,12 @@ export default function BarberCard({ barber, isAdmin = false, onEdit, onDelete }
             <div className="p-6">
                 {/* Header con foto y nombre */}
                 <div className="flex items-start gap-4 mb-4">
-                    {/* Foto del barbero */}
+                    {/* Foto del profesional */}
                     <div className="relative">
-                        {barber.avatar && !imgError ? (
+                        {professional.avatar && !imgError ? (
                             <img
-                                src={barber.avatar}
-                                alt={barber.name}
+                                src={professional.avatar}
+                                alt={professional.name}
                                 onError={() => setImgError(true)}
                                 className="w-20 h-20 rounded-2xl object-cover shadow-lg border-2"
                                 style={{ borderColor: 'rgba(var(--primary-rgb, 168, 85, 247), 0.2)' }}
@@ -48,7 +48,7 @@ export default function BarberCard({ barber, isAdmin = false, onEdit, onDelete }
                             </div>
                         )}
                         {/* Badge de estado */}
-                        {barber.isActive && (
+                        {professional.isActive && (
                             <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center shadow-md">
                                 <UserCheck className="w-3 h-3 text-white" />
                             </div>
@@ -57,8 +57,8 @@ export default function BarberCard({ barber, isAdmin = false, onEdit, onDelete }
 
                     {/* Información principal */}
                     <div className="flex-1">
-                        <h3 className="text-xl font-bold text-gray-900 mb-1">{barber.name}</h3>
-                        {barber.specialty && (
+                        <h3 className="text-xl font-bold text-gray-900 mb-1">{professional.name}</h3>
+                        {professional.specialty && (
                             <div className="flex items-center gap-2 mb-2">
                                 <Award
                                     className="w-4 h-4"
@@ -68,14 +68,14 @@ export default function BarberCard({ barber, isAdmin = false, onEdit, onDelete }
                                     className="text-sm font-semibold"
                                     style={{ color: 'var(--secondary-color, #9333ea)' }}
                                 >
-                                    {barber.specialty}
+                                    {professional.specialty}
                                 </p>
                             </div>
                         )}
                         <div className="flex items-center gap-1">
-                            <div className={`w-2 h-2 rounded-full ${barber.isActive ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`}></div>
+                            <div className={`w-2 h-2 rounded-full ${professional.isActive ? 'bg-green-400 animate-pulse' : 'bg-gray-400'}`}></div>
                             <span className="text-xs text-gray-500 font-medium">
-                                {barber.isActive ? 'Disponible' : 'No disponible'}
+                                {professional.isActive ? 'Disponible' : 'No disponible'}
                             </span>
                         </div>
                     </div>
@@ -90,19 +90,19 @@ export default function BarberCard({ barber, isAdmin = false, onEdit, onDelete }
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-xs text-gray-500 uppercase font-semibold mb-0.5">Email</p>
-                            <p className="text-sm font-medium text-gray-900 truncate">{barber.email || "No registrado"}</p>
+                            <p className="text-sm font-medium text-gray-900 truncate">{professional.email || "No registrado"}</p>
                         </div>
                     </div>
 
                     {/* Teléfono */}
-                    {barber.phone && (
+                    {professional.phone && (
                         <div className="flex items-center gap-3">
                             <div className="w-9 h-9 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0">
                                 <Phone className="w-4 h-4 text-green-600" />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-xs text-gray-500 uppercase font-semibold mb-0.5">Teléfono</p>
-                                <p className="text-sm font-medium text-gray-900">{barber.phone}</p>
+                                <p className="text-sm font-medium text-gray-900">{professional.phone}</p>
                             </div>
                         </div>
                     )}
@@ -115,7 +115,7 @@ export default function BarberCard({ barber, isAdmin = false, onEdit, onDelete }
                     <div className="grid grid-cols-2 gap-3 w-full">
                         <button
                             type="button"
-                            onClick={() => onEdit?.(barber)}
+                            onClick={() => onEdit?.(professional)}
                             className="flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-2.5 text-sm font-bold text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:border-gray-300"
                         >
                             <Pencil className="h-4 w-4" />
@@ -123,7 +123,7 @@ export default function BarberCard({ barber, isAdmin = false, onEdit, onDelete }
                         </button>
                         <button
                             type="button"
-                            onClick={() => onDelete?.(barber)}
+                            onClick={() => onDelete?.(professional)}
                             className="flex items-center justify-center gap-2 rounded-xl border border-red-100 bg-red-50 py-2.5 text-sm font-bold text-red-600 shadow-sm transition-all hover:bg-red-100 hover:border-red-200"
                         >
                             <Trash2 className="h-4 w-4" />

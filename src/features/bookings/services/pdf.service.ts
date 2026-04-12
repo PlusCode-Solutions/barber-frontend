@@ -89,15 +89,15 @@ export const PDFService = {
             headStyles: { fillColor: [44, 62, 80], textColor: 255 },
         });
 
-        // 5. Desglose por Barbero
+        // 5. Desglose por Profesional
         lastY = (doc as any).lastAutoTable.finalY + 15;
         doc.setFontSize(14);
-        doc.text("Rendimiento por Barbero", 14, lastY);
+        doc.text("Rendimiento por Profesional", 14, lastY);
 
         autoTable(doc, {
             startY: lastY + 5,
-            head: [["Barbero", "Trabajos Realizados", "Total Producido"]],
-            body: (stats?.barbersBreakdown || []).map((b: any) => [
+            head: [["Profesional", "Trabajos Realizados", "Total Producido"]],
+            body: (stats?.professionalsBreakdown || []).map((b: any) => [
                 b.name || "N/A",
                 b.count || 0,
                 `CRC ${(b.revenue || 0).toLocaleString()}`

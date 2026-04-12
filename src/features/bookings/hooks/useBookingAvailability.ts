@@ -12,7 +12,7 @@ import type { AvailabilitySlot } from "../types";
 import { filterSlotsByDuration } from "../utils/availabilityRules";
 
 interface UseBookingAvailabilityProps {
-    barber: { id: string } | null | undefined;
+    professional: { id: string } | null | undefined;
     date: string;
     bookingIdToExclude?: string;
     durationMinutes?: number; // Add duration
@@ -21,9 +21,9 @@ interface UseBookingAvailabilityProps {
 
 /**
  * Centralized hook to calculate availability.
- * Combines business rules (Tenant/Barber Schedules, Closures) with real availability (Bookings).
+ * Combines business rules (Tenant/Professional Schedules, Closures) with real availability (Bookings).
  */
-export function useBookingAvailability({ barber, date, bookingIdToExclude, durationMinutes }: UseBookingAvailabilityProps) {
+export function useBookingAvailability({ professional, date, bookingIdToExclude, durationMinutes }: UseBookingAvailabilityProps) {
     const { tenant } = useTenant();
     const { user } = useAuth();
 
@@ -39,25 +39,25 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
 
     // 1. Cargar Horarios y Cierres (Sistema)
     useEffect(() => {
-        if (!barber || !tenant?.slug) return;
+        if (!professional || !tenant?.slug) return;
 
         Promise.all([
-            SchedulesService.getClosures(barber.id),
-            SchedulesService.getSchedules(barber.id),
+            SchedulesService.getClosures(professional.id),
+            SchedulesService.getSchedules(professional.id),
             SchedulesService.getClosures(),
             SchedulesService.getSchedules()
-        ]).then(([barberClosures, schedulesData, globalClosures, tenantSchedulesData]) => {
+        ]).then(([professionalClosures, schedulesData, globalClosures, tenantSchedulesData]) => {
             const closureMap = new Map<string, Closure>();
-            [...globalClosures, ...barberClosures].forEach(c => closureMap.set(c.id, c));
+            [...globalClosures, ...professionalClosures].forEach(c => closureMap.set(c.id, c));
             setClosures(Array.from(closureMap.values()));
             setSchedules(schedulesData);
             setTenantSchedules(tenantSchedulesData);
         }).catch(() => { });
-    }, [barber, tenant?.slug]);
+    }, [professional, tenant?.slug]);
 
     // 2. Calcular Slots y Verificar Disponibilidad
     useEffect(() => {
-        if (!barber || !date) {
+        if (!professional || !date) {
             setAvailableSlots([]);
             setAllPotentialSlots([]);
             return;
@@ -72,7 +72,7 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
             // A. Check Closures
             const closure = closures.find(c => {
                 const isDateMatch = normalizeDateString(c.date) === date;
-                const isScopeMatch = !c.barberId || (barber && c.barberId === barber.id);
+                const isScopeMatch = !c.professionalId || (professional && c.professionalId === professional.id);
                 // Only block the entire day if it is EXPLICITLY a full day closure
                 const isFullDay = c.isFullDay === true || c.isFullDay === undefined;
 
@@ -114,10 +114,10 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
                     const start = minutesToTime(startMin);
                     const end = minutesToTime(endMin);
 
-                    // Fallback to tenant lunch times if not defined in barber schedule
-                    const hasBarberLunch = schedule.lunchStartTime || schedule.lunchEndTime;
-                    const lunchStart = hasBarberLunch ? schedule.lunchStartTime : tenantSchedule?.lunchStartTime;
-                    const lunchEnd = hasBarberLunch ? schedule.lunchEndTime : tenantSchedule?.lunchEndTime;
+                    // Fallback to tenant lunch times if not defined in professional schedule
+                    const hasProfessionalLunch = schedule.lunchStartTime || schedule.lunchEndTime;
+                    const lunchStart = hasProfessionalLunch ? schedule.lunchStartTime : tenantSchedule?.lunchStartTime;
+                    const lunchEnd = hasProfessionalLunch ? schedule.lunchEndTime : tenantSchedule?.lunchEndTime;
 
                     const slots = generateTimeSlots(start, end, 30, lunchStart, lunchEnd);
                     setAllPotentialSlots(slots);
@@ -144,9 +144,9 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
                 const formattedDate = parsedDate.toISOString().split('T')[0];
 
                 const [availabilityRes, existingBookings] = await Promise.all([
-                    BookingsService.checkAvailability(barber.id, formattedDate),
+                    BookingsService.checkAvailability(professional.id, formattedDate),
                     isAdmin
-                        ? BookingsService.getTenantBookings(formattedDate, formattedDate, barber.id).catch(() => [])
+                        ? BookingsService.getTenantBookings(formattedDate, formattedDate, professional.id).catch(() => [])
                         : Promise.resolve([])
                 ]);
 
@@ -175,9 +175,9 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
                 });
 
                 // Helper to get effective closing/lunch
-                const hasBarberLunchOrig = schedule?.lunchStartTime || schedule?.lunchEndTime;
-                const lunchStart = hasBarberLunchOrig ? schedule?.lunchStartTime : tenantSchedule?.lunchStartTime;
-                const lunchEnd = hasBarberLunchOrig ? schedule?.lunchEndTime : tenantSchedule?.lunchEndTime;
+                const hasProfessionalLunchOrig = schedule?.lunchStartTime || schedule?.lunchEndTime;
+                const lunchStart = hasProfessionalLunchOrig ? schedule?.lunchStartTime : tenantSchedule?.lunchStartTime;
+                const lunchEnd = hasProfessionalLunchOrig ? schedule?.lunchEndTime : tenantSchedule?.lunchEndTime;
 
                 const closingTime = (schedule?.endTime && tenantSchedule?.endTime)
                     ? (timeToMinutes(schedule.endTime) < timeToMinutes(tenantSchedule.endTime) ? schedule.endTime : tenantSchedule.endTime)
@@ -205,7 +205,7 @@ export function useBookingAvailability({ barber, date, bookingIdToExclude, durat
             fetchAvailability();
         }
 
-    }, [barber, date, closures, schedules, tenantSchedules, tenant?.slug, user?.role, bookingIdToExclude]);
+    }, [professional, date, closures, schedules, tenantSchedules, tenant?.slug, user?.role, bookingIdToExclude]);
 
     return {
         availableSlots,

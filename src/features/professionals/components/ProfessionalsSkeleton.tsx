@@ -1,6 +1,6 @@
 import { useTenant } from "../../../context/TenantContext";
 
-export default function BarbersSkeleton() {
+export default function ProfessionalsSkeleton() {
     const { tenant } = useTenant();
 
     return (
@@ -19,7 +19,7 @@ export default function BarbersSkeleton() {
                 </div>
             </div>
 
-            {/* BARBERS SKELETON */}
+            {/* PROFESSIONALS SKELETON */}
             <div className="px-6 pt-6 space-y-4">
                 {[1, 2, 3].map((i) => (
                     <div

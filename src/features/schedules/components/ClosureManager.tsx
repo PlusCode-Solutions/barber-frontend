@@ -2,38 +2,38 @@ import { useState } from "react";
 import { CalendarOff, Trash2, Store, User } from "lucide-react";
 import { useClosureManager } from "../hooks/useClosureManager";
 import { safeDate } from "../../../utils/dateUtils";
-import { useBarbers } from "../../barbers/hooks/useBarbers";
+import { useProfessionals } from "../../professionals/hooks/useProfessionals";
 import DeleteClosureModal from "./DeleteClosureModal";
 import { useAuth } from "../../../context/AuthContext";
 
 interface Props {
     onShowToast?: (message: string, type: "success" | "error") => void;
-    barberId?: string;
+    professionalId?: string;
 }
 
-export default function ClosureManager({ onShowToast, barberId }: Props) {
+export default function ClosureManager({ onShowToast, professionalId }: Props) {
     const { user } = useAuth();
-    const isBarber = user?.role === 'BARBER';
+    const isProfessional = user?.role === 'PROFESSIONAL';
 
-    const { closures, loadingList, form, actions, deleteModal } = useClosureManager({ onShowToast, barberId });
-    const { barbers } = useBarbers();
+    const { closures, loadingList, form, actions, deleteModal } = useClosureManager({ onShowToast, professionalId });
+    const { professionals } = useProfessionals();
 
     // State for scope selection
-    // If barberId prop is present OR user is BARBER, default to BARBER, otherwise SHOP
-    const [scope, setScope] = useState<'SHOP' | 'BARBER'>((barberId || isBarber) ? 'BARBER' : 'SHOP');
-    const [targetBarberId, setTargetBarberId] = useState(isBarber ? user?.barberId || "" : barberId || "");
+    // If professionalId prop is present OR user is PROFESSIONAL, default to PROFESSIONAL, otherwise SHOP
+    const [scope, setScope] = useState<'SHOP' | 'PROFESSIONAL'>((professionalId || isProfessional) ? 'PROFESSIONAL' : 'SHOP');
+    const [targetProfessionalId, setTargetProfessionalId] = useState(isProfessional ? user?.professionalId || "" : professionalId || "");
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
         // Determine the ID to send
         // Shop -> null
-        // Barber -> selected ID
-        const finalId = scope === 'SHOP' ? null : targetBarberId;
+        // Professional -> selected ID
+        const finalId = scope === 'SHOP' ? null : targetProfessionalId;
 
-        // Validation: If Barber scope, must have ID
-        if (scope === 'BARBER' && !finalId) {
-            onShowToast?.("Debe seleccionar un barbero.", "error");
+        // Validation: If Professional scope, must have ID
+        if (scope === 'PROFESSIONAL' && !finalId) {
+            onShowToast?.("Debe seleccionar un profesional.", "error");
             return;
         }
 
@@ -56,8 +56,8 @@ export default function ClosureManager({ onShowToast, barberId }: Props) {
                 {/* Formulario de Creación */}
                 <form onSubmit={handleSubmit} className="space-y-3 mt-4">
 
-                    {/* Scope Selector (Hidden for Barbers) */}
-                    {!isBarber && (
+                    {/* Scope Selector (Hidden for Professionals) */}
+                    {!isProfessional && (
                         <div className="bg-white p-1 rounded-lg border border-gray-200 flex mb-2">
                             <button
                                 type="button"
@@ -73,33 +73,33 @@ export default function ClosureManager({ onShowToast, barberId }: Props) {
                             <button
                                 type="button"
                                 onClick={() => {
-                                    setScope('BARBER');
-                                    if (!targetBarberId && barbers.length > 0) {
-                                        setTargetBarberId(barbers[0].id);
+                                    setScope('PROFESSIONAL');
+                                    if (!targetProfessionalId && professionals.length > 0) {
+                                        setTargetProfessionalId(professionals[0].id);
                                     }
                                 }}
-                                className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-semibold rounded-md transition-all ${scope === 'BARBER'
+                                className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-semibold rounded-md transition-all ${scope === 'PROFESSIONAL'
                                     ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-200'
                                     : 'text-gray-500 hover:bg-gray-50'
                                     }`}
                             >
                                 <User size={14} />
-                                Barbero
+                                Profesional
                             </button>
                         </div>
                     )}
 
-                    {/* Barber Dropdown (Only if scope is BARBER, Hidden for Barbers) */}
-                    {scope === 'BARBER' && !isBarber && (
+                    {/* Professional Dropdown (Only if scope is PROFESSIONAL, Hidden for Professionals) */}
+                    {scope === 'PROFESSIONAL' && !isProfessional && (
                         <div className="animate-fade-in-down">
                             <select
-                                value={targetBarberId}
-                                onChange={(e) => setTargetBarberId(e.target.value)}
+                                value={targetProfessionalId}
+                                onChange={(e) => setTargetProfessionalId(e.target.value)}
                                 className="block w-full rounded-lg border-gray-200 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2"
                                 required
                             >
-                                <option value="" disabled>Seleccionar Barbero...</option>
-                                {barbers.map(b => (
+                                <option value="" disabled>Seleccionar Profesional...</option>
+                                {professionals.map(b => (
                                     <option key={b.id} value={b.id}>{b.name}</option>
                                 ))}
                             </select>
@@ -278,10 +278,10 @@ export default function ClosureManager({ onShowToast, barberId }: Props) {
                                             <div className="min-w-0 flex-1">
                                                 <div className="flex items-center gap-2 mb-1">
                                                     <p className="font-medium text-gray-900 truncate">{closure.reason}</p>
-                                                    {closure.barberId ? (
+                                                    {closure.professionalId ? (
                                                         <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 text-[10px] font-semibold rounded-full border border-blue-200 flex-shrink-0">
                                                             <User size={10} />
-                                                            {barbers.find(b => b.id === closure.barberId)?.name || 'Barbero'}
+                                                            {professionals.find(b => b.id === closure.professionalId)?.name || 'Profesional'}
                                                         </span>
                                                     ) : (
                                                         <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-700 text-[10px] font-semibold rounded-full border border-gray-200 flex-shrink-0">
@@ -323,7 +323,7 @@ export default function ClosureManager({ onShowToast, barberId }: Props) {
             < DeleteClosureModal
                 isOpen={deleteModal.isOpen}
                 closure={deleteModal.closureToDelete || null}
-                barberName={deleteModal.closureToDelete?.barberId ? barbers.find(b => b.id === deleteModal.closureToDelete?.barberId)?.name : undefined}
+                professionalName={deleteModal.closureToDelete?.professionalId ? professionals.find(b => b.id === deleteModal.closureToDelete?.professionalId)?.name : undefined}
                 onConfirm={deleteModal.onConfirm}
                 onCancel={deleteModal.onCancel}
             />

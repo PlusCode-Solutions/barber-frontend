@@ -1,12 +1,12 @@
 import { Check, Scissors, Users, Calendar, Clock, ChevronLeft } from "lucide-react";
 import type { Service } from "../../../services/types";
-import type { Barber } from "../../../barbers/types";
+import type { Professional } from "../../../professionals/types";
 import { useTenant } from "../../../../context/TenantContext";
 import { formatHour } from "../../../../utils/dateUtils";
 
 interface ConfirmBookingStepProps {
     service: Service;
-    barber: Barber;
+    professional: Professional;
     date: string;
     slot: string;
     notes: string;
@@ -19,7 +19,7 @@ interface ConfirmBookingStepProps {
 
 export default function ConfirmBookingStep({
     service,
-    barber,
+    professional,
     date,
     slot,
     //notes,
@@ -52,8 +52,8 @@ export default function ConfirmBookingStep({
                 <div className="flex items-start gap-3">
                     <Users size={20} aria-hidden="true" className="mt-1" style={{ color: primaryColor }} />
                     <div>
-                        <p className="text-xs text-gray-600">Barbero</p>
-                        <p className="font-bold text-gray-900">{barber.name}</p>
+                        <p className="text-xs text-gray-600">Profesional</p>
+                        <p className="font-bold text-gray-900">{professional.name}</p>
                     </div>
                 </div>
                 <div className="flex items-start gap-3">

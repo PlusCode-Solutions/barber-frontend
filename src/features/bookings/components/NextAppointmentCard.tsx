@@ -172,7 +172,7 @@ export default function NextAppointmentCard() {
                         </div>
                         <div className="flex-1">
                             <p className="text-sm font-medium text-gray-900">
-                                {nextBooking.barber?.name || 'Barbero asignado'}
+                                {nextBooking.professional?.name || 'Profesional asignado'}
                             </p>
                             <p className="text-xs text-gray-500">
                                 {nextBooking.service?.name}

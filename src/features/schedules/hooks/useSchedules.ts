@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { SchedulesService } from "../api/schedules.service";
 import { useTenant } from "../../../context/TenantContext";
 
-export function useSchedules(barberId?: string, fetchAll: boolean = false) {
+export function useSchedules(professionalId?: string, fetchAll: boolean = false) {
     const { tenant } = useTenant();
     const slug = tenant?.slug;
 
@@ -12,10 +12,10 @@ export function useSchedules(barberId?: string, fetchAll: boolean = false) {
         error,
         refetch 
     } = useQuery({
-        queryKey: ['schedules', slug, barberId, fetchAll],
+        queryKey: ['schedules', slug, professionalId, fetchAll],
         queryFn: () => fetchAll 
             ? SchedulesService.getAllSchedules()
-            : SchedulesService.getSchedules(barberId),
+            : SchedulesService.getSchedules(professionalId),
         enabled: !!slug, 
     });
 
@@ -24,6 +24,6 @@ export function useSchedules(barberId?: string, fetchAll: boolean = false) {
         loading, 
         error: error ? (error as Error).message : null, 
         refresh: refetch, 
-        barberId 
+        professionalId 
     };
 }

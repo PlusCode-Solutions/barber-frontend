@@ -11,9 +11,9 @@ interface SEOProps {
 export default function SEO({ title, description, name, type = 'website' }: SEOProps) {
     const { tenant } = useTenant();
 
-    const siteName = tenant?.name || 'Barbería App';
+    const siteName = tenant?.name || 'Professionalía App';
     const finalTitle = `${title} | ${siteName}`;
-    const finalDescription = description || `Reserva tu cita en ${siteName}. Los mejores cortes y servicios de barbería.`;
+    const finalDescription = description || `Reserva tu cita en ${siteName}. Los mejores cortes y servicios de professionalía.`;
 
     return (
         <Helmet>

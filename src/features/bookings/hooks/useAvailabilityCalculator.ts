@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { BookingsService } from "../api/bookings.service";
 import { generateTimeSlots, timeToMinutes, minutesToTime } from "../utils/timeUtils";
 import { normalizeDateString } from "../../../utils/dateUtils";
-import type { Barber } from "../../barbers/types";
+import type { Professional } from "../../professionals/types";
 import type { Closure, Schedule } from "../../schedules/types";
 import type { Service } from "../../services/types";
 import type { AvailabilitySlot } from "../types";
@@ -10,21 +10,23 @@ import { useTenant } from "../../../context/TenantContext";
 import { filterSlotsByDuration } from "../utils/availabilityRules";
 
 interface UseAvailabilityCalculatorProps {
-    selectedBarber: Barber | null;
+    selectedProfessional: Professional | null;
     selectedService: Service | null;
     selectedDate: string;
     closures: Closure[];
     schedules: Schedule[];
     tenantSchedules: Schedule[];
+    userId?: string;
 }
 
 export function useAvailabilityCalculator({
-    selectedBarber,
+    selectedProfessional,
     selectedService,
     selectedDate,
     closures,
     schedules,
-    tenantSchedules
+    tenantSchedules,
+    userId
 }: UseAvailabilityCalculatorProps) {
     const { tenant } = useTenant();
 
@@ -42,7 +44,7 @@ export function useAvailabilityCalculator({
         setBreakSlots([]);
 
         try {
-            if (!selectedBarber || !selectedDate) return;
+            if (!selectedProfessional || !selectedDate) return;
 
             let lStartMin = 0;
             let lEndMin = 0;
@@ -50,13 +52,13 @@ export function useAvailabilityCalculator({
             // 1. Check Closures
             const closure = closures.find(c => {
                 const isDateMatch = normalizeDateString(c.date) === selectedDate;
-                const isScopeMatch = !c.barberId || (selectedBarber && c.barberId === selectedBarber.id);
+                const isScopeMatch = !c.professionalId || (selectedProfessional && c.professionalId === selectedProfessional.id);
                 const isFullDay = c.isFullDay === true || c.isFullDay === undefined;
                 return isDateMatch && isScopeMatch && isFullDay;
             });
 
             if (closure) {
-                throw new Error(`La barbería está cerrada este día por: ${closure.reason || 'Mantenimiento o Festivo'}`);
+                throw new Error(`La professionalía está cerrada este día por: ${closure.reason || 'Mantenimiento o Festivo'}`);
             }
 
             // 2. Validate Schedule Restrictions
@@ -69,7 +71,7 @@ export function useAvailabilityCalculator({
             if (!tenantSchedule || tenantSchedule.isClosed || !tenantSchedule.startTime || !tenantSchedule.endTime) {
                 setAllPotentialSlots([]);
                 setAvailableSlots([]);
-                setError(`La barbería no abre los ${parsedDate.toLocaleDateString('es-ES', { weekday: 'long' })}s.`);
+                setError(`La professionalía no abre los ${parsedDate.toLocaleDateString('es-ES', { weekday: 'long' })}s.`);
                 setLoadingSlots(false);
                 return;
             }
@@ -88,9 +90,9 @@ export function useAvailabilityCalculator({
                 const startMin = Math.max(sStart, tStart);
                 const endMin = Math.min(sEnd, tEnd);
 
-                const hasBarberLunch = activeSchedule.lunchStartTime || activeSchedule.lunchEndTime;
-                const lunchStart = hasBarberLunch ? activeSchedule.lunchStartTime : tenantSchedule?.lunchStartTime;
-                const lunchEnd = hasBarberLunch ? activeSchedule.lunchEndTime : tenantSchedule?.lunchEndTime;
+                const hasProfessionalLunch = activeSchedule.lunchStartTime || activeSchedule.lunchEndTime;
+                const lunchStart = hasProfessionalLunch ? activeSchedule.lunchStartTime : tenantSchedule?.lunchStartTime;
+                const lunchEnd = hasProfessionalLunch ? activeSchedule.lunchEndTime : tenantSchedule?.lunchEndTime;
 
                 lStartMin = timeToMinutes(lunchStart);
                 lEndMin = timeToMinutes(lunchEnd);
@@ -124,7 +126,7 @@ export function useAvailabilityCalculator({
             if (!tenant?.slug) return;
 
             // 4. Check API Availability - Backend is source of truth
-            const availabilityRes = await BookingsService.checkAvailability(selectedBarber.id, selectedDate);
+            const availabilityRes = await BookingsService.checkAvailability(selectedProfessional.id, selectedDate, userId);
             const rawSlots: AvailabilitySlot[] = availabilityRes.slots || [];
 
             const apiAvailableTimes = rawSlots
@@ -141,9 +143,9 @@ export function useAvailabilityCalculator({
                 closingTime = tenantSchedule.endTime;
             }
 
-            const hasBarberLunch2 = activeSchedule?.lunchStartTime || activeSchedule?.lunchEndTime;
-            const lStartStr = hasBarberLunch2 ? activeSchedule?.lunchStartTime : tenantSchedule?.lunchStartTime;
-            const lEndStr = hasBarberLunch2 ? activeSchedule?.lunchEndTime : tenantSchedule?.lunchEndTime;
+            const hasProfessionalLunch2 = activeSchedule?.lunchStartTime || activeSchedule?.lunchEndTime;
+            const lStartStr = hasProfessionalLunch2 ? activeSchedule?.lunchStartTime : tenantSchedule?.lunchStartTime;
+            const lEndStr = hasProfessionalLunch2 ? activeSchedule?.lunchEndTime : tenantSchedule?.lunchEndTime;
 
             const finalAvailableSlots = filterSlotsByDuration(
                 apiAvailableTimes,
@@ -172,7 +174,7 @@ export function useAvailabilityCalculator({
         } finally {
             setLoadingSlots(false);
         }
-    }, [selectedBarber, selectedService, selectedDate, closures, schedules, tenantSchedules, tenant?.slug]);
+    }, [selectedProfessional, selectedService, selectedDate, closures, schedules, tenantSchedules, tenant?.slug]);
 
     // Trigger calculation when dependencies change
     useEffect(() => {

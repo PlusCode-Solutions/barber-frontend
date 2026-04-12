@@ -15,7 +15,7 @@ interface SelectDateTimeStepProps {
     closures?: Closure[];
     schedules?: Schedule[];
     tenantSchedules?: Schedule[]; // New prop
-    barberId?: string;
+    professionalId?: string;
     onDateChange: (date: string) => void;
     onSelectSlot: (slot: string) => void;
     onBack?: () => void;
@@ -31,7 +31,7 @@ export default function SelectDateTimeStep({
     closures = [],
     schedules = [],
     tenantSchedules = [],
-    barberId,
+    professionalId,
     onDateChange,
     onSelectSlot,
     onBack,
@@ -80,7 +80,7 @@ export default function SelectDateTimeStep({
                         closures={closures}
                         schedules={schedules}
                         tenantSchedules={tenantSchedules}
-                        barberId={barberId}
+                        professionalId={professionalId}
                         className="w-full"
                         maxDate={new Date(new Date().getFullYear(), 11, 31)}
                     />
@@ -130,7 +130,7 @@ export default function SelectDateTimeStep({
                                 return (
                                     <>
                                         <p className="font-medium text-gray-900">No hay horarios disponibles</p>
-                                        <p className="text-sm mt-1">Intenta seleccionar otra fecha o barbero.</p>
+                                        <p className="text-sm mt-1">Intenta seleccionar otra fecha o profesional.</p>
                                     </>
                                 );
                             })()}
@@ -218,7 +218,7 @@ export default function SelectDateTimeStep({
                     aria-label="Volver al paso anterior"
                 >
                     <ChevronLeft size={20} aria-hidden="true" />
-                    Volver a selección de barbero
+                    Volver a selección de profesional
                 </button>
             )}
         </div>

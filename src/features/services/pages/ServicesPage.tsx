@@ -54,7 +54,7 @@ export default function ServicesPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 pb-8">
-            <SEO title="Servicios" description={`Explora nuestros servicios y precios en ${tenant?.name || 'la barbería'}.`} />
+            <SEO title="Servicios" description={`Explora nuestros servicios y precios en ${tenant?.name || 'la professionalía'}.`} />
 
             {/* HEADER */}
             <div
