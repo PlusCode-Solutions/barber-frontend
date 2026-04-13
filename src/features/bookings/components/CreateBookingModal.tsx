@@ -64,9 +64,16 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess, viewOnl
                     style={{ backgroundColor: primaryColor }}
                 >
                     <div>
-                        <h2 id="modal-title" className="text-2xl font-bold text-white">
-                            {viewOnly ? "Consultar Horarios" : "Nueva Cita"}
-                        </h2>
+                        <div className="flex items-center gap-2">
+                            <h2 id="modal-title" className="text-2xl font-bold text-white">
+                                {viewOnly ? "Consultar Horarios" : "Nueva Cita"}
+                            </h2>
+                            {isProfessional && (
+                                <span className="bg-white/20 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border border-white/20">
+                                    Mi Agenda
+                                </span>
+                            )}
+                        </div>
                         <p className="text-blue-100 text-sm" aria-live="polite">Paso {step} de 4</p>
                     </div>
                     <button

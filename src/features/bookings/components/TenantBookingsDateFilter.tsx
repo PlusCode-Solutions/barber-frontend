@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent } from "react";
 import { Calendar, ChevronDown, Sparkles } from "lucide-react";
 import { formatFriendlyDay, safeDate } from "../../../utils/dateUtils";
+import { useTenant } from "../../../context/TenantContext";
 
 interface Props {
     selectedDate: string;
@@ -16,6 +17,7 @@ export default function TenantBookingsDateFilter({
     totalCount,
 }: Props) {
     const [showCalendar, setShowCalendar] = useState(false);
+    const { tenant } = useTenant();
     const selectedDateObj = safeDate(selectedDate);
     const selectedDayLabel = selectedDateObj ? formatFriendlyDay(selectedDateObj) : "Fecha inválida";
 
@@ -59,7 +61,8 @@ export default function TenantBookingsDateFilter({
                     <button
                         type="button"
                         onClick={() => setShowCalendar((prev) => !prev)}
-                        className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-500 px-4 py-3 text-white font-semibold shadow-lg transition hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 w-full lg:w-auto"
+                        className="flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-white font-semibold shadow-lg transition hover:opacity-90 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 w-full lg:w-auto active:scale-95"
+                        style={{ backgroundColor: tenant?.primaryColor || '#4f46e5' }}
                     >
                         <Calendar className="h-5 w-5" />
                         <span>Ver citas</span>

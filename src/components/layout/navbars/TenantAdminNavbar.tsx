@@ -61,7 +61,7 @@ export default function TenantAdminNavbar() {
 
                     {/* Desktop Menu */}
                     <nav className="hidden md:flex items-center gap-6 absolute left-1/2 transform -translate-x-1/2">
-                        {visibleMenuItems.slice(0, 6).map((item) => (
+                        {visibleMenuItems.filter(item => item.path !== 'admin/settings').map((item) => (
                             <Link
                                 key={item.path}
                                 to={`/${tenantSlug}/${item.path}`}

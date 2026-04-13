@@ -1,4 +1,4 @@
-import { Scissors, ChevronRight } from "lucide-react";
+import { Scissors, ChevronRight, Clock } from "lucide-react";
 import { useServices } from "../../../services/hooks/useServices";
 import type { Service } from "../../../services/types";
 import { useTenant } from "../../../../context/TenantContext";
@@ -34,11 +34,17 @@ export default function SelectServiceStep({ onSelectService }: SelectServiceStep
                             <div className="flex justify-between items-center">
                                 <div>
                                     <h4 className="font-bold text-gray-900">{service.name}</h4>
-                                    <p className="text-sm text-gray-500">{service.description}</p>
+                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                                        <Clock size={12} className="text-gray-400" />
+                                        {service.durationMinutes} min
+                                    </div>
+                                    <p className="text-sm text-gray-500 line-clamp-1">{service.description}</p>
                                 </div>
-                                <div className="text-right">
+                                <div className="text-right flex flex-col items-end gap-1">
                                     <p className="text-lg font-bold text-green-600">₡{service.price}</p>
-                                    <ChevronRight className="text-gray-400" size={20} aria-hidden="true" />
+                                    <div className="bg-gray-50 p-1.5 rounded-full">
+                                        <ChevronRight className="text-gray-400" size={16} aria-hidden="true" />
+                                    </div>
                                 </div>
                             </div>
                         </button>
