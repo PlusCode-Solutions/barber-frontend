@@ -82,8 +82,38 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("tenantData");
   };
 
-  // DYNAMIC THEMING: Inject CSS variables
+  // DYNAMIC THEMING & METADATA: Inject CSS variables and update Document Head
   useLayoutEffect(() => {
+    // 1. Meta-Tags: Update Title and Home Screen Icons
+    if (tenant?.name) {
+      document.title = tenant.name;
+      
+      // Update iOS Specific App Title
+      const appleTitle = document.querySelector("meta[name='apple-mobile-web-app-title']");
+      if (appleTitle) appleTitle.setAttribute("content", tenant.name);
+    }
+
+    if (tenant?.logoUrl) {
+      // Favicon Update
+      let linkIcon = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+      if (!linkIcon) {
+        linkIcon = document.createElement("link");
+        linkIcon.rel = "icon";
+        document.head.appendChild(linkIcon);
+      }
+      linkIcon.href = tenant.logoUrl;
+
+      // Apple Touch Icon Update (For 'Add to Home Screen' on iOS)
+      let appleIcon = document.querySelector("link[rel='apple-touch-icon']") as HTMLLinkElement;
+      if (!appleIcon) {
+        appleIcon = document.createElement("link");
+        appleIcon.rel = "apple-touch-icon";
+        document.head.appendChild(appleIcon);
+      }
+      appleIcon.href = tenant.logoUrl;
+    }
+
+    // 2. CSS Variables
     const root = document.documentElement;
 
     const hexToRgb = (color: string) => {
@@ -125,6 +155,15 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
         root.style.setProperty('--primary-rgb', rgb);
         // Also keep hex for reference if needed, but Tailwind will use RGB
         root.style.setProperty('--primary-color', colorToUse);
+
+        // Update Mobile Browser Status Bar Color
+        let themeMeta = document.querySelector("meta[name='theme-color']");
+        if (!themeMeta) {
+          themeMeta = document.createElement("meta");
+          themeMeta.setAttribute("name", "theme-color");
+          document.head.appendChild(themeMeta);
+        }
+        themeMeta.setAttribute("content", colorToUse);
       } catch (e) {
         console.warn("Invalid primary color format", colorToUse);
         root.style.removeProperty('--primary-rgb');

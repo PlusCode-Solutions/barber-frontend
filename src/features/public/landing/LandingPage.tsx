@@ -438,9 +438,20 @@ const LandingPage = () => {
             </section>
 
             {/* 5. Localización Section */}
-            <section id="localizacion" className="py-48 bg-gray-50 text-black border-t-8 border-white">
+            <section id="localizacion" className="py-24 md:py-48 bg-gray-50 text-black border-t-8 border-white">
                 <div className="container mx-auto px-6">
-                    <div className="flex flex-col lg:flex-row items-center gap-24">
+                    {/* Centered Title */}
+                    <div className="flex flex-col items-center mb-16 md:mb-32 text-center">
+                        <span style={{ color: primaryColor }} className="font-black uppercase tracking-[0.4em] text-[10px] md:text-xs mb-4 md:mb-6 block">Encuéntranos</span>
+                        <h2 className="text-5xl sm:text-6xl md:text-8xl font-black italic uppercase tracking-tighter text-black leading-[0.9] mb-8">Ubicación</h2>
+                        <div className="flex items-center gap-4">
+                            <div className="h-1.5 w-4 bg-gray-200 rounded-full"></div>
+                            <div style={{ backgroundColor: primaryColor }} className="h-1.5 w-16 rounded-full"></div>
+                            <div className="h-1.5 w-4 bg-gray-200 rounded-full"></div>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col lg:flex-row items-center justify-between gap-16 lg:gap-24">
                         {/* Map side */}
                         <div className="w-full lg:w-3/5 rounded-[60px] overflow-hidden shadow-2xl border-[15px] border-white h-[600px] group relative z-0">
                             {tenant.latitude && tenant.longitude ? (
@@ -466,7 +477,7 @@ const LandingPage = () => {
 
                         {/* Info side */}
                         <div className="w-full lg:w-2/5 reveal-on-scroll opacity-0 translate-y-10 transition-all duration-1000">
-                            <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter mb-10 leading-none">Cómo Llegar</h2>
+                            <h3 className="text-4xl md:text-5xl font-black italic uppercase tracking-tighter mb-8 leading-none text-black/80">Cómo Llegar</h3>
 
                             <div className="space-y-10 mb-14">
                                 <div className="flex items-start gap-6">
