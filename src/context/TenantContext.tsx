@@ -111,6 +111,37 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
         document.head.appendChild(appleIcon);
       }
       appleIcon.href = tenant.logoUrl;
+      
+      // Dynamic Manifest for Android (Permite instalar varias apps independientes del mismo dominio)
+      const manifest = {
+        name: tenant.name,
+        short_name: tenant.name,
+        start_url: `/${tenant.slug}/`,
+        scope: `/${tenant.slug}/`,
+        id: `/${tenant.slug}/`, // Este ID único le dice al teléfono que es una App TOTALMENTE diferente a la anterior
+        display: "standalone",
+        background_color: "#ffffff",
+        theme_color: tenant.primaryColor || "#000000",
+        icons: [
+          {
+            src: tenant.logoUrl,
+            sizes: "192x192 512x512",
+            type: "image/png",
+            purpose: "any maskable"
+          }
+        ]
+      };
+      
+      const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+      const manifestURL = URL.createObjectURL(blob);
+      
+      let linkManifest = document.querySelector("link[rel='manifest']") as HTMLLinkElement;
+      if (!linkManifest) {
+        linkManifest = document.createElement("link");
+        linkManifest.rel = "manifest";
+        document.head.appendChild(linkManifest);
+      }
+      linkManifest.href = manifestURL;
     }
 
     // 2. CSS Variables
