@@ -3,12 +3,13 @@ import { Calendar, Users, Activity, Plus, CheckCircle } from 'lucide-react';
 import { useDashboardStats } from '../../features/dashboard/hooks/useDashboardStats';
 import { StatCard } from '../../features/dashboard/components/StatCard';
 import CreateBookingModal from '../../features/bookings/components/CreateBookingModal';
-
+import { useTenant } from '../../context/TenantContext';
 
 export default function TenantAdminDashboard() {
     const { stats, loading, refetch } = useDashboardStats();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+    const { tenant } = useTenant();
 
     const handleBookingSuccess = () => {
         // Refetch stats after a successfull booking creation
@@ -31,7 +32,8 @@ export default function TenantAdminDashboard() {
                 </h1>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-semibold rounded-xl shadow-sm hover:bg-indigo-700 transition"
+                    className="flex items-center gap-2 px-4 py-2 text-white font-semibold rounded-xl shadow-sm hover:opacity-90 transition active:scale-95"
+                    style={{ backgroundColor: tenant?.primaryColor || '#4f46e5' }}
                 >
                     <Plus size={20} />
                     Nueva Cita

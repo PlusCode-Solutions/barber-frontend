@@ -56,6 +56,7 @@ const LandingPage = () => {
     const { tenantSlug } = useParams<{ tenantSlug: string }>();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [offsetY, setOffsetY] = useState(0);
     const [selectedService, setSelectedService] = useState<Service | null>(null);
 
     // Fetch Tenant Info
@@ -102,10 +103,11 @@ const LandingPage = () => {
         return () => observer.disconnect();
     }, [services, professionals, loadingTenant]);
 
-    // Handle Navbar Scroll Effect
+    // Handle Navbar & Parallax Scroll Effect
     useEffect(() => {
         const handleScroll = () => {
             setScrolled(window.scrollY > 50);
+            setOffsetY(window.scrollY);
         };
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
@@ -136,10 +138,15 @@ const LandingPage = () => {
     return (
         <div className="min-h-screen bg-black text-gray-900 font-sans selection:bg-white selection:text-black">
 
-            {/* 1. Navigation */}
+            {/* 1. Navigation (Premium Glassmorphism) */}
             <nav
-                className={`fixed w-full z-50 transition-all duration-500 ${scrolled ? "py-4 shadow-2xl border-b border-black/5" : "bg-transparent py-8"}`}
-                style={scrolled ? { backgroundColor: `${primaryColor}EE`, backdropFilter: 'blur(20px)' } : {}}
+                className={`fixed w-full z-50 transition-all duration-700 ${scrolled ? "py-4 border-b border-white/10" : "bg-transparent py-8 border-b border-transparent"}`}
+                style={scrolled ? { 
+                    backgroundColor: `${primaryColor}CC`, 
+                    backdropFilter: 'blur(24px) saturate(150%)',
+                    WebkitBackdropFilter: 'blur(24px) saturate(150%)',
+                    boxShadow: `0 10px 40px -10px ${primaryColor}60`
+                } : {}}
             >
                 <div className="container mx-auto px-6 flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -215,17 +222,26 @@ const LandingPage = () => {
                 </div>
             )}
 
-            {/* 2. Hero Section */}
+            {/* 2. Hero Section (Parallax Effect) */}
             <header
                 id="hero"
-                className="relative h-screen flex items-center justify-center bg-cover bg-center overflow-hidden"
-                style={{
-                    backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url(${tenant.backgroundUrl || 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2000'})`
-                }}
+                className="relative h-screen flex items-center justify-center overflow-hidden bg-black"
             >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                {/* 2.a Capa de Fondo Parallax */}
+                <div 
+                    className="absolute top-0 left-0 w-full h-[140%] bg-cover bg-center will-change-transform"
+                    style={{
+                        backgroundImage: `url(${tenant.backgroundUrl || 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=2000'})`,
+                        transform: `translateY(${offsetY * 0.4}px)`,
+                    }}
+                />
+                
+                {/* 2.b Filtros de Gradiente para contraste */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-transparent"></div>
 
-                <div className="container mx-auto px-6 relative z-10 text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
+                {/* 2.c Contenido del Hero (se mueve normal) */}
+                <div className="container mx-auto px-6 relative z-10 text-center animate-in fade-in slide-in-from-bottom-8 duration-1000 mt-20">
                     <div className="mb-8 inline-block">
                         <div className="p-2 border border-white/20 rounded-full backdrop-blur-sm">
                             {tenant.logoUrl ? (
@@ -241,7 +257,6 @@ const LandingPage = () => {
                         {tenant.name}
                     </h1>
                     <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mx-auto mb-10 font-medium leading-relaxed drop-shadow-md">
-                        {tenant.description || "Combinamos tradición y vanguardia para tu estilo."}
                     </p>
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                         <Link
@@ -259,14 +274,74 @@ const LandingPage = () => {
                 </div>
             </header>
 
+            {/* Nueva Sección: Nuestra Historia */}
+            {tenant.description && (
+                <section id="historia" className="py-32 bg-gray-50 relative overflow-hidden">
+                    {/* Elementos decorativos */}
+                    <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-black/5 blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-black/5 blur-3xl"></div>
+                    
+                    <div className="container mx-auto px-6 relative z-10">
+                        <div className="max-w-4xl mx-auto">
+                            <div className="flex flex-col items-center mb-16 text-center">
+                                <span style={{ color: primaryColor }} className="font-black uppercase tracking-[0.4em] text-xs mb-4 block">
+                                    Nuestra Historia
+                                </span>
+                                <h2 className="text-5xl sm:text-7xl font-black italic uppercase tracking-tighter text-black leading-none reveal-on-scroll opacity-0 translate-y-10 transition-all duration-700">
+                                    Quiénes Somos
+                                </h2>
+                            </div>
+
+                            <div className="reveal-on-scroll opacity-0 translate-y-10 transition-all duration-700 delay-200">
+                                <div className="bg-white p-10 sm:p-16 rounded-[40px] shadow-2xl shadow-black/5 border border-white relative mt-10">
+                                    {/* Floating Quote Icon */}
+                                    <div 
+                                        className="absolute -top-10 left-10 md:left-16 w-20 h-20 rounded-[20px] flex items-center justify-center text-white shadow-xl rotate-12 hover:rotate-0 transition-all duration-500"
+                                        style={{ backgroundColor: primaryColor }}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+                                        </svg>
+                                    </div>
+
+                                    <div className="mt-6 relative z-10">
+                                        <p className="text-xl sm:text-[22px] text-gray-700 font-medium leading-relaxed italic whitespace-pre-wrap">
+                                            {tenant.description}
+                                        </p>
+                                    </div>
+                                    
+                                    <div className="mt-12 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 border-t border-gray-100 pt-10">
+                                        <div className="flex items-center gap-6">
+                                            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-dashed border-gray-200 p-1">
+                                                {tenant.logoUrl ? (
+                                                    <img src={tenant.logoUrl} alt="Logo" className="w-full h-full object-cover rounded-full" />
+                                                ) : (
+                                                    <div className="w-full h-full bg-black text-white flex items-center justify-center rounded-full font-black italic text-xl">
+                                                        {tenant.name.charAt(0)}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <h4 className="text-2xl font-black uppercase tracking-tight text-black leading-none mb-1">{tenant.name}</h4>
+                                                <p style={{ color: primaryColor }} className="text-[10px] font-black uppercase tracking-widest">Atención de Excelencia</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            )}
+
             {/* 3. Profesionales Section */}
             {professionals && professionals.length > 0 && (
                 <section id="profesionales" className="py-48 bg-gray-50 overflow-hidden relative border-t-8 border-white">
                     <div className="absolute top-0 left-0 w-full h-8 bg-white/50 skew-y-1 origin-top-left"></div>
                     <div className="container mx-auto px-6">
-                        <div className="flex flex-col items-center mb-20 text-center">
-                            <span style={{ color: primaryColor }} className="font-black uppercase tracking-[0.3em] text-xs mb-4">Conoce a los</span>
-                            <h2 className="text-6xl md:text-8xl font-black italic uppercase tracking-tighter text-black mb-10">Profesionales</h2>
+                        <div className="flex flex-col items-center mb-10 md:mb-20 text-center">
+                            <span style={{ color: primaryColor }} className="font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-[10px] md:text-xs mb-3 md:mb-4">Conoce a los</span>
+                            <h2 className="text-4xl sm:text-6xl md:text-8xl font-black italic uppercase tracking-tighter text-black mb-6 md:mb-10 leading-[0.9]">Profesionales</h2>
                             <div className="flex items-center gap-4">
                                 <div style={{ backgroundColor: primaryColor }} className="h-1.5 w-16 rounded-full"></div>
                                 <div className="h-1.5 w-4 bg-gray-200 rounded-full"></div>

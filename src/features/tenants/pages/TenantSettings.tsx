@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
-import { Save, Upload, Building2, Palette, Image as ImageIcon, Lock, MapPin } from "lucide-react";
+import { Save, Upload, Building2, Palette, Image as ImageIcon, Lock, MapPin, FileText } from "lucide-react";
 import { useTenant } from "../../../context/TenantContext";
 import { useAuth } from "../../../context/AuthContext";
 import { TenantsService } from "../api/tenants.service";
@@ -97,7 +97,6 @@ export default function TenantSettings() {
     const onMapLocationSelect = (lat: number, lng: number) => {
         setValue("latitude", parseFloat(lat.toFixed(6)));
         setValue("longitude", parseFloat(lng.toFixed(6)));
-        
         // Auto-generate Google Maps URL for convenience
         const gMapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
         setValue("googleMapsUrl", gMapsUrl);
@@ -142,7 +141,7 @@ export default function TenantSettings() {
         <div className="space-y-6 animate-fade-in p-6">
             <header>
                 <div className="flex items-center gap-3">
-                    <h1 className="text-3xl font-bold text-gray-900">Configuración de la Professionalía</h1>
+                    <h1 className="text-3xl font-bold text-gray-900">Configuración del Negocio</h1>
                     <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-medium rounded-full flex items-center gap-1">
                         <Lock size={12} /> {isSuperAdmin ? 'Gestión de Plataforma' : 'Gestión de Professionalía'}
                     </span>
@@ -179,15 +178,7 @@ export default function TenantSettings() {
                             <Lock size={14} className="absolute right-3 top-9 text-gray-400" />
                         </div>
 
-                        <div className="space-y-1">
-                            <label className="text-sm font-medium text-gray-700">Descripción de la Professionalía</label>
-                            <textarea
-                                {...register("description")}
-                                rows={4}
-                                className="w-full px-4 py-2 bg-white border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all outline-none text-sm placeholder:text-gray-400"
-                                placeholder="Describe tu professionalía, servicios destacados, etc..."
-                            />
-                        </div>
+
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <Input
@@ -206,13 +197,13 @@ export default function TenantSettings() {
                             <div className="flex items-center gap-2 mb-4 text-sm font-bold text-gray-600 uppercase tracking-widest">
                                 <MapPin size={16} /> Ubicación (Mapa Interactivo)
                             </div>
-                            
+
                             {/* Interactive Picker */}
                             <div className="mb-6">
                                 <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                                     Selecciona tu punto exacto
                                 </label>
-                                <LocationPicker 
+                                <LocationPicker
                                     initialLat={tenant.latitude || 19.4326}
                                     initialLng={tenant.longitude || -99.1332}
                                     onLocationSelect={onMapLocationSelect}
@@ -434,6 +425,37 @@ export default function TenantSettings() {
                     </Card>
                 </div>
             </div>
+
+            {/* Historia / Descripción */}
+            <Card className="p-6">
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">
+                        <FileText size={20} />
+                    </div>
+                    <div>
+                        <h2 className="text-lg font-bold text-gray-900">Nuestra Historia</h2>
+                        <p className="text-xs text-gray-500 mt-1">Este texto aparecerá en la página principal (Landing Page)</p>
+                    </div>
+                </div>
+
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <textarea
+                        {...register("description")}
+                        rows={6}
+                        className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all outline-none text-sm placeholder:text-gray-400 mb-4"
+                        placeholder="Escribe aquí la historia de la barbería, valores, años de experiencia..."
+                    />
+                    <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="h-11 px-8 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2 hover:opacity-90 ml-auto disabled:opacity-50 disabled:cursor-not-allowed"
+                        style={{ backgroundColor: tenant?.primaryColor || '#2563eb' }}
+                    >
+                        <Save size={18} />
+                        Guardar Historia
+                    </button>
+                </form>
+            </Card>
         </div>
     );
 }

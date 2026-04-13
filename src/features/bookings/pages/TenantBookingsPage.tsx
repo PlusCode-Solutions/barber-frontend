@@ -17,10 +17,10 @@ import { formatCurrency } from "../../../utils/formatUtils";
 import { Filter, RefreshCw, Plus } from "lucide-react";
 import Toast from "../../../components/ui/Toast";
 import { useTimeline } from "../hooks/useTimeline";
-
-
+import { useTenant } from "../../../context/TenantContext";
 export default function TenantBookingsPage() {
     const { user } = useAuth();
+    const { tenant } = useTenant();
     const isProfessional = user?.role === 'PROFESSIONAL';
     const [selectedProfessionalId, setSelectedProfessionalId] = useState<string | undefined>(isProfessional ? user?.professionalId : undefined);
     const [selectedDate, setSelectedDate] = useState<string>(formatDateForInput(new Date()));
@@ -151,7 +151,8 @@ export default function TenantBookingsPage() {
                         <div className="flex items-center gap-3">
                             <button
                                 onClick={() => setIsCreateModalOpen(true)}
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:bg-blue-700 transition"
+                                className="flex items-center gap-2 px-4 py-2 text-white text-sm font-semibold rounded-lg shadow-sm hover:opacity-90 transition active:scale-95"
+                                style={{ backgroundColor: tenant?.primaryColor || '#2563eb' }}
                             >
                                 <Plus className="w-4 h-4" />
                                 <span className="hidden sm:inline">Nueva Cita</span>
