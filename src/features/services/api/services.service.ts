@@ -37,4 +37,18 @@ export const ServicesService = {
     delete: async (tenantSlug: string, serviceId: string): Promise<void> => {
         await axios.delete(`/${tenantSlug}/services/${serviceId}`);
     },
+
+    // Upload service image
+    uploadImage: async (tenantSlug: string, serviceId: string, file: File): Promise<Service> => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await axios.post(`/${tenantSlug}/services/upload-image/${serviceId}`, formData);
+        return res.data;
+    },
+
+    // Delete service image
+    deleteImage: async (tenantSlug: string, serviceId: string): Promise<Service> => {
+        const res = await axios.delete(`/${tenantSlug}/services/delete-image/${serviceId}`);
+        return res.data;
+    },
 };

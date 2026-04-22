@@ -63,6 +63,34 @@ export function useManageServices() {
         }
     });
 
+    // SUBIR IMAGEN
+    const uploadImageMutation = useMutation({
+        mutationFn: ({ id, file }: { id: string; file: File }) => {
+            if (!slug) throw new Error("Tenant no disponible");
+            return ServicesService.uploadImage(slug, id, file);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['services', slug] });
+        },
+        onError: (err) => {
+            handleError(err, 'uploadServiceImage');
+        }
+    });
+
+    // ELIMINAR IMAGEN
+    const deleteImageMutation = useMutation({
+        mutationFn: (id: string) => {
+            if (!slug) throw new Error("Tenant no disponible");
+            return ServicesService.deleteImage(slug, id);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['services', slug] });
+        },
+        onError: (err) => {
+            handleError(err, 'deleteServiceImage');
+        }
+    });
+
     return {
         services,
         loading,
@@ -72,5 +100,7 @@ export function useManageServices() {
         createService: (payload: Partial<Service>) => createMutation.mutateAsync(payload),
         updateService: (id: string, payload: Partial<Service>) => updateMutation.mutateAsync({ id, payload }),
         deleteService: (id: string) => deleteMutation.mutateAsync(id),
+        uploadServiceImage: (id: string, file: File) => uploadImageMutation.mutateAsync({ id, file }),
+        deleteServiceImage: (id: string) => deleteImageMutation.mutateAsync(id),
     };
 }

@@ -6,6 +6,8 @@ import { ServicesService } from "../../services/api/services.service";
 import { ProfessionalsService } from "../../professionals/api/professionals.service";
 import type { Professional } from "../../professionals/types";
 import type { Service } from "../../services/types";
+import GalleryCarousel from "./components/GalleryCarousel";
+import { GalleryService, type GalleryImage } from "../../tenants/api/gallery.service";
 // @ts-ignore
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import * as L from "leaflet";
@@ -78,6 +80,13 @@ const LandingPage = () => {
     const { data: professionals } = useQuery<Professional[]>({
         queryKey: ["professionals", tenantSlug],
         queryFn: () => ProfessionalsService.getAll(tenantSlug!),
+        enabled: !!tenant && !!tenantSlug
+    });
+
+    // Fetch Gallery
+    const { data: galleryImages } = useQuery<GalleryImage[]>({
+        queryKey: ["gallery", tenantSlug],
+        queryFn: () => GalleryService.getByTenantSlug(tenantSlug!),
         enabled: !!tenant && !!tenantSlug
     });
 
@@ -158,6 +167,9 @@ const LandingPage = () => {
                     <div className="hidden md:flex items-center gap-10">
                         <a href="#profesionales" className="text-xs font-black uppercase tracking-widest text-white/70 hover:text-white transition-colors">Profesionales</a>
                         <a href="#servicios" className="text-xs font-black uppercase tracking-widest text-white/70 hover:text-white transition-colors">Servicios</a>
+                        {galleryImages && galleryImages.length > 0 && (
+                            <a href="#galeria" className="text-xs font-black uppercase tracking-widest text-white/70 hover:text-white transition-colors">Galería</a>
+                        )}
                         <a href="#localizacion" className="text-xs font-black uppercase tracking-widest text-white/70 hover:text-white transition-colors">Localización</a>
                         <Link
                             to={`/${tenant.slug}/auth/login`}
@@ -202,6 +214,15 @@ const LandingPage = () => {
                         >
                             Servicios
                         </a>
+                        {galleryImages && galleryImages.length > 0 && (
+                            <a
+                                href="#galeria"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="text-4xl font-black italic uppercase tracking-tighter text-white hover:scale-110 transition-transform"
+                            >
+                                Galería
+                            </a>
+                        )}
                         <a
                             href="#localizacion"
                             onClick={() => setIsMenuOpen(false)}
@@ -402,10 +423,16 @@ const LandingPage = () => {
                                         borderLeft: `8px solid ${primaryColor}`
                                     }}
                                 >
-                                    {/* Icon Container */}
-                                    <div className="w-16 h-16 bg-white border border-gray-100 text-black rounded-[20px] flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform shrink-0">
-                                        {getServiceIcon(service.name)}
-                                    </div>
+                                    {/* Icon or Image Container */}
+                                    {service.imageUrl ? (
+                                        <div className="w-16 h-16 rounded-[20px] overflow-hidden shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+                                            <img src={service.imageUrl} alt={service.name} className="w-full h-full object-cover" />
+                                        </div>
+                                    ) : (
+                                        <div className="w-16 h-16 bg-white border border-gray-100 text-black rounded-[20px] flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform shrink-0">
+                                            {getServiceIcon(service.name)}
+                                        </div>
+                                    )}
 
                                     {/* Info Container */}
                                     <div className="text-center sm:text-left">
@@ -437,7 +464,30 @@ const LandingPage = () => {
                 </div>
             </section>
 
-            {/* 5. Localización Section */}
+            {/* 5. Gallery Section (Only if images exist) */}
+            {galleryImages && galleryImages.length > 0 && (
+                <section id="galeria" className="py-24 md:py-48 bg-white text-black border-t-8 border-gray-50">
+                    <div className="container mx-auto px-6">
+                        {/* Centered Title */}
+                        <div className="flex flex-col items-center mb-16 md:mb-32 text-center reveal-on-scroll opacity-0 translate-y-10 transition-all duration-1000">
+                            <span style={{ color: primaryColor }} className="font-black uppercase tracking-[0.4em] text-[10px] md:text-xs mb-4 md:mb-6 block">Nuestros Trabajos</span>
+                            <h2 className="text-5xl sm:text-6xl md:text-8xl font-black italic uppercase tracking-tighter text-black leading-[0.9] mb-8">Galería</h2>
+                            <div className="flex items-center gap-4">
+                                <div className="h-1.5 w-4 bg-gray-200 rounded-full"></div>
+                                <div style={{ backgroundColor: primaryColor }} className="h-1.5 w-16 rounded-full"></div>
+                                <div className="h-1.5 w-4 bg-gray-200 rounded-full"></div>
+                            </div>
+                        </div>
+
+                        {/* Carousel */}
+                        <div className="max-w-5xl mx-auto reveal-on-scroll opacity-0 translate-y-10 transition-all duration-1000">
+                            <GalleryCarousel images={galleryImages} primaryColor={primaryColor} />
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {/* 6. Localización Section */}
             <section id="localizacion" className="py-24 md:py-48 bg-gray-50 text-black border-t-8 border-white">
                 <div className="container mx-auto px-6">
                     {/* Centered Title */}
@@ -546,9 +596,16 @@ const LandingPage = () => {
                         </button>
 
                         <div className="p-12">
-                            <div className="w-24 h-24 bg-gray-50 text-black border border-gray-100 rounded-[35px] flex items-center justify-center mb-10 shadow-sm">
-                                {getServiceIcon(selectedService.name)}
-                            </div>
+                            {/* Service Image or Icon */}
+                            {selectedService.imageUrl ? (
+                                <div className="w-full h-48 rounded-[35px] overflow-hidden mb-10 -mt-2">
+                                    <img src={selectedService.imageUrl} alt={selectedService.name} className="w-full h-full object-cover" />
+                                </div>
+                            ) : (
+                                <div className="w-24 h-24 bg-gray-50 text-black border border-gray-100 rounded-[35px] flex items-center justify-center mb-10 shadow-sm">
+                                    {getServiceIcon(selectedService.name)}
+                                </div>
+                            )}
 
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em] mb-4">Detalle del Servicio</p>
                             <h2 className="text-5xl font-black italic uppercase tracking-tighter text-black mb-4 leading-none">
