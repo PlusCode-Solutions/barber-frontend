@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-hot-toast";
-import { Upload, Trash2, GripVertical, Image as ImageIcon, Pencil, Check, X, Loader2 } from "lucide-react";
+import { Upload, Trash2, Image as ImageIcon, Pencil, Check, X, Loader2 } from "lucide-react";
 import { GalleryService, type GalleryImage } from "../api/gallery.service";
 import { Card } from "../../../components/ui/Card";
 
