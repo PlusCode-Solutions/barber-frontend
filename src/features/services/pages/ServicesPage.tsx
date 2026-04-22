@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Scissors, Clock, Pencil, Trash2, Plus } from "lucide-react";
+import { Scissors, Clock, Pencil, Trash2, Plus, X } from "lucide-react";
 import { PERMISSIONS } from "../../../config/permissions";
 import { usePermissions } from "../../../hooks/usePermissions";
 import { useManageServices } from "../hooks/useManageServices";
@@ -21,12 +21,15 @@ export default function ServicesPage() {
         submitting,
         createService,
         updateService,
-        deleteService
+        deleteService,
+        uploadServiceImage,
+        deleteServiceImage
     } = useManageServices();
 
     const [showCreate, setShowCreate] = useState(false);
     const [editing, setEditing] = useState<Service | null>(null);
     const [deleting, setDeleting] = useState<Service | null>(null);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [toastMessage, setToastMessage] = useState("");
     const [toastType, setToastType] = useState<"success" | "error">("success");
     const [showToast, setShowToast] = useState(false);
@@ -112,26 +115,28 @@ export default function ServicesPage() {
                                 key={service.id}
                                 className="group bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-md border border-gray-200 hover:shadow-2xl hover:border-blue-300 transition-all duration-300 overflow-hidden"
                             >
-                                {/* Barra superior decorativa */}
-                                <div
-                                    className="h-1.5"
-                                    style={{
-                                        background: `linear-gradient(to right, var(--primary-color, #3b82f6), var(--secondary-color, #ec4899))`
-                                    }}
-                                ></div>
-
                                 <div className="p-6">
                                     {/* Nombre del servicio */}
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex items-center gap-3">
                                             <div
-                                                className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm"
+                                                className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm overflow-hidden cursor-zoom-in"
                                                 style={{
                                                     backgroundColor: 'rgba(var(--secondary-rgb, 37, 99, 235), 0.1)',
                                                     color: 'var(--secondary-color, #2563eb)'
                                                 }}
+                                                onClick={(e) => {
+                                                    if (service.imageUrl) {
+                                                        e.stopPropagation();
+                                                        setSelectedImage(service.imageUrl);
+                                                    }
+                                                }}
                                             >
-                                                <Scissors className="w-6 h-6" />
+                                                {service.imageUrl ? (
+                                                    <img src={service.imageUrl} alt={service.name} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <Scissors className="w-6 h-6" />
+                                                )}
                                             </div>
                                             <div>
                                                 <h3 className="text-xl font-bold text-gray-900">{service.name}</h3>
@@ -242,6 +247,16 @@ export default function ServicesPage() {
                         setShowToast(true);
                     }
                 }}
+                onUploadImage={async (file) => {
+                    if (!editing) return;
+                    const updated = await uploadServiceImage(editing.id, file);
+                    if (updated) setEditing({ ...updated });
+                }}
+                onDeleteImage={async () => {
+                    if (!editing) return;
+                    const updated = await deleteServiceImage(editing.id);
+                    if (updated) setEditing({ ...updated });
+                }}
             />
 
             <DeleteServiceModal
@@ -271,6 +286,26 @@ export default function ServicesPage() {
                 isVisible={showToast}
                 onClose={() => setShowToast(false)}
             />
+
+            {/* Image Lightbox */}
+            {selectedImage && (
+                <div 
+                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+                    onClick={() => setSelectedImage(null)}
+                >
+                    <button 
+                        className="absolute top-6 right-6 text-white/70 hover:text-white p-2"
+                        onClick={() => setSelectedImage(null)}
+                    >
+                        <X size={32} />
+                    </button>
+                    <img 
+                        src={selectedImage} 
+                        alt="Service" 
+                        className="max-w-full max-h-full rounded-2xl shadow-2xl animate-in zoom-in duration-300"
+                    />
+                </div>
+            )}
         </div>
     );
 }

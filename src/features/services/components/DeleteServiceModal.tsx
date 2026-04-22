@@ -25,6 +25,11 @@ export default function DeleteServiceModal({ open, service, submitting = false, 
                     </h3>
                     <div className="text-gray-500 text-sm mb-2">
                         <p>Vas a eliminar:</p>
+                        {service.imageUrl && (
+                            <div className="my-3 w-20 h-20 mx-auto rounded-xl overflow-hidden border border-gray-200 shadow-sm">
+                                <img src={service.imageUrl} alt={service.name} className="w-full h-full object-cover" />
+                            </div>
+                        )}
                         <p className="font-bold text-gray-800 my-1">{service.name}</p>
                         <p className="text-xs">{formatCurrency(service.price)} • {service.durationMinutes} min</p>
                     </div>

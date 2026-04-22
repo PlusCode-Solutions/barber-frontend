@@ -9,6 +9,7 @@ import ProfessionalsPage from "../features/professionals/pages/ProfessionalsPage
 import SchedulesPage from "../features/schedules/pages/SchedulesPage";
 import TenantSettings from "../features/tenants/pages/TenantSettings";
 import StatisticsPage from "../features/bookings/pages/StatisticsPage";
+import GalleryPage from "../features/tenants/pages/GalleryPage";
 
 /**
  * Tenant Admin routes - business owner/manager dashboard
@@ -26,6 +27,7 @@ export const tenantAdminRoutes = (
             <Route path="professionals" element={<ProtectedRoute requiredRole="TENANT_ADMIN"><ProfessionalsPage /></ProtectedRoute>} />
             <Route path="schedules" element={<SchedulesPage />} />
             <Route path="statistics" element={<ProtectedRoute requiredRole="TENANT_ADMIN"><StatisticsPage /></ProtectedRoute>} />
+            <Route path="gallery" element={<ProtectedRoute requiredRole="TENANT_ADMIN"><GalleryPage /></ProtectedRoute>} />
             <Route path="settings" element={<ProtectedRoute requiredRole="TENANT_ADMIN"><TenantSettings /></ProtectedRoute>} />
         </Route>
     </Route>
