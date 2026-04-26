@@ -23,7 +23,7 @@ jobs:
           cache: 'npm'
 
       - name: 📦 Instalar dependencias (igual que Vercel)
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: 🏗️ Verificar TypeScript
         run: npx tsc --noEmit
