@@ -18,22 +18,22 @@ export default function SchedulesPage() {
     const { user } = useAuth();
     const isAdmin = user?.role === 'TENANT_ADMIN';
     const isProfessional = user?.role === 'PROFESSIONAL';
-    const canEdit = isAdmin; // Solo el admin puede gestionar horarios generales/profesionales
+    const canEdit = isAdmin; // Only admin can manage general/professional schedules
 
-    // Obtener profesionales para identificar el principal y permitir selección
+    // Fetch professionals to identify the primary one and allow selection
     const { professionals } = useProfessionals({ enabled: isAdmin });
 
-    // Estado para el profesional seleccionado
+    // State for the selected professional
     const [selectedProfessionalId, setSelectedProfessionalId] = useState<string | undefined>(isProfessional ? user?.professionalId : undefined);
 
     // Removed auto-selection effect to allow viewing Tenant schedules by default
 
-    // Cargar horarios del profesional seleccionado
+    // Load schedules for the selected professional
     const { schedules, loading, error, refresh } = useSchedules(selectedProfessionalId, false);
 
     const [isEditing, setIsEditing] = useState(false);
 
-    // Sistema de notificaciones (Toast)
+    // Notification system (Toast)
     const [toastState, setToastState] = useState<{ message: string; type: "success" | "error"; isVisible: boolean }>({
         message: "",
         type: "success",
@@ -62,7 +62,7 @@ export default function SchedulesPage() {
         );
     }
 
-    // Ordenar horarios (Domingo a Sábado)
+    // Sort schedules (Sunday to Saturday)
     const sortedSchedules = [...schedules].sort((a, b) => a.dayOfWeek - b.dayOfWeek);
 
     return (
@@ -96,7 +96,7 @@ export default function SchedulesPage() {
                             </div>
                         </div>
 
-                        {/* Selector de Profesional (Solo Admin) */}
+                        {/* Professional Selector (Admin Only) */}
                         {isAdmin && isEditing && (
                             <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md p-1.5 rounded-lg border border-white/20 sm:ml-4">
                                 <User className="w-4 h-4 ml-2 opacity-80" />
@@ -155,7 +155,7 @@ export default function SchedulesPage() {
                             />
                         </div>
 
-                        {/* Columna Derecha: Días Libres */}
+                        {/* Right Column: Days Off */}
                         <div className="lg:col-span-1">
                             <div className="sticky top-32">
                                 <ClosureManager
@@ -167,12 +167,12 @@ export default function SchedulesPage() {
                         </div>
                     </div>
                 ) : (
-                    // Vista Pública (Siempre muestra horarios del primer profesional/tienda por defecto o el seleccionado si quisiéramos)
-                    // Para vista pública habitual, solemos mostrar "Horarios de la Tienda" (General). 
-                    // Si la tienda usa el perfil del primer profesional como "General", está bien.
-                    // Vista Pública
+                    // Public View (Always show first professional/store schedules by default or the selected one)
+                    // For typical public view, we usually show "Store Schedules" (General).
+                    // If the store uses the first professional's profile as "General", that's fine.
+                    // Public View
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                        {/* Sidebar: Próximos Días Libres (1 col) */}
+                        {/* Sidebar: Upcoming Days Off (1 col) */}
                         <div className="lg:col-span-1">
                             {/* Make sticky so it stays visible while scrolling schedule if list is long */}
                             <div className="sticky top-24">

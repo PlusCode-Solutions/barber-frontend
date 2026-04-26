@@ -120,7 +120,7 @@ export default function TenantAdminNavbar() {
                 className={`fixed top-0 right-0 h-full w-72 bg-white z-50 shadow-2xl transform transition-transform duration-300 flex flex-col lg:hidden ${menuOpen ? "translate-x-0" : "translate-x-full"
                     }`}
             >
-                {/* Header del menú */}
+                {/* Menu header */}
                 <div className="p-5 flex items-center justify-between border-b border-gray-200 bg-primary/5">
                     <div className="flex items-center gap-3">
                         {tenant?.logoUrl && (
@@ -143,7 +143,7 @@ export default function TenantAdminNavbar() {
                     </button>
                 </div>
 
-                {/* Items del menú */}
+                {/* Menu items */}
                 <div className="p-4 flex-1 overflow-y-auto">
                     {visibleMenuItems.map((item) => {
                         const Icon = item.icon;

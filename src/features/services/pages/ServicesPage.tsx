@@ -34,7 +34,7 @@ export default function ServicesPage() {
     const [toastType, setToastType] = useState<"success" | "error">("success");
     const [showToast, setShowToast] = useState(false);
 
-    // Considerar rol de tenant admin además del permiso explícito
+    // Consider tenant admin role in addition to explicit permission
     const isAdmin = can(PERMISSIONS.SERVICES_MANAGE) || isRole("TENANT_ADMIN");
 
     if (loading || !tenant) return <ServicesSkeleton />;
@@ -116,7 +116,7 @@ export default function ServicesPage() {
                                 className="group bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-md border border-gray-200 hover:shadow-2xl hover:border-blue-300 transition-all duration-300 overflow-hidden"
                             >
                                 <div className="p-6">
-                                    {/* Nombre del servicio */}
+                                    {/* Service Name */}
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex items-center gap-3">
                                             <div
@@ -145,9 +145,9 @@ export default function ServicesPage() {
                                         </div>
                                     </div>
 
-                                    {/* Detalles */}
+                                    {/* Details */}
                                     <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                                        {/* Duración */}
+                                        {/* Duration */}
                                         <div className="flex items-center gap-2">
                                             <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
                                                 <Clock className="w-4 h-4 text-purple-600" />
@@ -158,7 +158,7 @@ export default function ServicesPage() {
                                             </div>
                                         </div>
 
-                                        {/* Precio */}
+                                        {/* Price */}
                                         <div className="flex items-center gap-2">
                                             <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
                                                 <span className="text-lg font-bold text-green-600">₡</span>
@@ -206,7 +206,7 @@ export default function ServicesPage() {
                 )}
             </div>
 
-            {/* Modales */}
+            {/* Modals */}
             <ServiceModal
                 mode="create"
                 open={showCreate}

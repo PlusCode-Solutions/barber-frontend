@@ -29,7 +29,7 @@ export default function ScheduleCard({ schedule, variant = 'default' }: Schedule
     const lunchStartTime = getProp(schedule, 'lunchStartTime', 'lunch_start_time');
     const lunchEndTime = getProp(schedule, 'lunchEndTime', 'lunch_end_time');
 
-    // Formatear hora (ej: 09:00 -> 9:00 AM)
+    // Format time (e.g.: 09:00 -> 9:00 AM)
     const formatTime = (time: string) => {
         if (!time) return "";
         try {
@@ -59,7 +59,7 @@ export default function ScheduleCard({ schedule, variant = 'default' }: Schedule
             className={containerClasses}
             style={variant === 'default' && !schedule.isClosed ? { borderColor: `${tenant?.primaryColor || '#bfdbfe'}40` } : {}}
         >
-            {/* Indicador lateral de estado */}
+            {/* Status side indicator */}
             <div
                 className={`absolute left-0 top-0 bottom-0 w-1.5 ${schedule.isClosed ? "bg-gray-300" : ""}`}
                 style={!schedule.isClosed ? { backgroundColor: tenant?.primaryColor || '#3b82f6' } : {}}

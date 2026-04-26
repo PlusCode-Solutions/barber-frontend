@@ -248,7 +248,7 @@ const LandingPage = () => {
                 id="hero"
                 className="relative h-screen flex items-center justify-center overflow-hidden bg-black"
             >
-                {/* 2.a Capa de Fondo Parallax */}
+                {/* 2.a Parallax Background Layer */}
                 <div 
                     className="absolute top-0 left-0 w-full h-[140%] bg-cover bg-center will-change-transform"
                     style={{
@@ -257,11 +257,11 @@ const LandingPage = () => {
                     }}
                 />
                 
-                {/* 2.b Filtros de Gradiente para contraste */}
+                {/* 2.b Gradient filters for contrast */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
                 <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-transparent"></div>
 
-                {/* 2.c Contenido del Hero (se mueve normal) */}
+                {/* 2.c Hero content (moves normally) */}
                 <div className="container mx-auto px-6 relative z-10 text-center animate-in fade-in slide-in-from-bottom-8 duration-1000 mt-20">
                     <div className="mb-8 inline-block">
                         <div className="p-2 border border-white/20 rounded-full backdrop-blur-sm">
@@ -295,10 +295,10 @@ const LandingPage = () => {
                 </div>
             </header>
 
-            {/* Nueva Sección: Nuestra Historia */}
+            {/* New Section: Our Story */}
             {tenant.description && (
                 <section id="historia" className="py-32 bg-gray-50 relative overflow-hidden">
-                    {/* Elementos decorativos */}
+                    {/* Decorative elements */}
                     <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-black/5 blur-3xl"></div>
                     <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-black/5 blur-3xl"></div>
                     
@@ -487,7 +487,7 @@ const LandingPage = () => {
                 </section>
             )}
 
-            {/* 6. Localización Section */}
+            {/* 6. Location Section */}
             <section id="localizacion" className="py-24 md:py-48 bg-gray-50 text-black border-t-8 border-white">
                 <div className="container mx-auto px-6">
                     {/* Centered Title */}

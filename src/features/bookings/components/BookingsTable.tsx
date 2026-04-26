@@ -16,7 +16,7 @@ function getNestedValue(obj: any, path: string) {
     return path.split(".").reduce((acc, key) => acc?.[key], obj);
 }
 
-// Mapeo de iconos según el header
+// Icon mapping based on header
 const getIconForHeader = (header: string) => {
     const lowerHeader = header.toLowerCase();
     if (lowerHeader.includes("servicio")) return <Scissors className="w-4 h-4" />;
@@ -26,7 +26,7 @@ const getIconForHeader = (header: string) => {
     return null;
 };
 
-// Determinar color según el tipo de dato
+// Determine color based on data type
 const getValueColor = (header: string) => {
     const lowerHeader = header.toLowerCase();
     if (lowerHeader.includes("precio")) return "text-green-600 font-bold";
@@ -57,7 +57,7 @@ export function BookingsTable<T>({ data, columns, renderActions }: TableProps<T>
                     key={i}
                     className="group bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-md border border-gray-200 hover:shadow-2xl hover:border-blue-300 transition-all duration-300 overflow-hidden"
                 >
-                    {/* Barra superior decorativa con color secundario */}
+                    {/* Decorative top bar with secondary color */}
                     <div
                         className="h-1.5"
                         style={{
@@ -77,7 +77,7 @@ export function BookingsTable<T>({ data, columns, renderActions }: TableProps<T>
                                     className={`flex justify-between items-center py-3.5 gap-4 ${index !== columns.length - 1 ? "border-b border-gray-100" : ""
                                         }`}
                                 >
-                                    {/* Label con icono */}
+                                    {/* Label with icon */}
                                     <div className="flex items-center gap-2">
                                         {icon && (
                                             <div className="w-8 h-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg flex items-center justify-center text-blue-600">
@@ -89,7 +89,7 @@ export function BookingsTable<T>({ data, columns, renderActions }: TableProps<T>
                                         </span>
                                     </div>
 
-                                    {/* Valor con estilo dinámico */}
+                                    {/* Value with dynamic styling */}
                                     <span className={`text-right text-base max-w-[60%] truncate ${valueColor}`}>
                                         {value}
                                     </span>
@@ -98,7 +98,7 @@ export function BookingsTable<T>({ data, columns, renderActions }: TableProps<T>
                         })}
                     </div>
 
-                    {/* Footer decorativo con estado y acciones */}
+                    {/* Decorative footer with status and actions */}
                     <div className="px-5 pb-4 pt-2 border-t border-gray-100/50">
                         <div className="flex items-center justify-between text-xs font-bold uppercase tracking-tight">
                             <span className="flex items-center gap-1.5">

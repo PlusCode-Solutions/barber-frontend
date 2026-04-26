@@ -37,7 +37,7 @@ export function useBookingAvailability({ professional, date, bookingIdToExclude,
     const [schedules, setSchedules] = useState<Schedule[]>([]);
     const [tenantSchedules, setTenantSchedules] = useState<Schedule[]>([]);
 
-    // 1. Cargar Horarios y Cierres (Sistema)
+    // 1. Load Schedules and Closures (System)
     useEffect(() => {
         if (!professional || !tenant?.slug) return;
 
@@ -55,7 +55,7 @@ export function useBookingAvailability({ professional, date, bookingIdToExclude,
         }).catch(() => { });
     }, [professional, tenant?.slug]);
 
-    // 2. Calcular Slots y Verificar Disponibilidad
+    // 2. Calculate Slots and Check Availability
     useEffect(() => {
         if (!professional || !date) {
             setAvailableSlots([]);

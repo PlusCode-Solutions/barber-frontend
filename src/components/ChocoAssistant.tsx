@@ -5,10 +5,10 @@ import { useTenant } from '../context/TenantContext';
 
 export const ChocoAssistant = ({ userRole }: { userRole: string }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const { status, startListening, cancelSpeech, lastTranscript, response, errorMessage } = useChocoVoice('tony'); // Slug dinámico si tienes auth
+    const { status, startListening, cancelSpeech, lastTranscript, response, errorMessage } = useChocoVoice('tony'); // Dynamic slug if you have auth
     const { tenant } = useTenant();
 
-    // Solo mostrar para ADMIN
+    // Only show for ADMIN
     if (userRole !== 'TENANT_ADMIN') return null;
 
     const primaryColor = tenant?.primaryColor || '#1a1a1dff'; // Indigo-600 fallback
@@ -45,7 +45,7 @@ export const ChocoAssistant = ({ userRole }: { userRole: string }) => {
                                 Presiona el micrófono y di "Choco..."
                             </p>
                         )}
-                        {/* Transcripción del usuario */}
+                        {/* User transcript */}
                         {lastTranscript && (
                             <div className="mb-2 flex justify-end">
                                 <span
@@ -56,7 +56,7 @@ export const ChocoAssistant = ({ userRole }: { userRole: string }) => {
                                 </span>
                             </div>
                         )}
-                        {/* Respuesta de Choco */}
+                        {/* Choco response */}
                         {response && (
                             <div className="mb-2 flex justify-start">
                                 <span className="bg-white border text-gray-800 px-3 py-2 rounded-lg text-sm rounded-tl-none shadow-sm">

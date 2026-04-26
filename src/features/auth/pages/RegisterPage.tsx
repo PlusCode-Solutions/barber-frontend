@@ -28,7 +28,7 @@ export default function RegisterPage() {
                 navigate(`/${tenantSlug}/auth/login`);
             }, 1500);
         } catch (err) {
-            // Error al registrar
+            // Registration error
             alert("Error al registrar.");
         }
 
@@ -54,7 +54,7 @@ export default function RegisterPage() {
             {/* Overlay elegante */}
             <div className="absolute inset-0 bg-black/35 backdrop-blur-sm"></div>
 
-            {/* BOTÓN VOLVER (TOP LEFT) */}
+            {/* BACK BUTTON (TOP LEFT) */}
             <Link
                 to={`/${tenantSlug}`}
                 className="
@@ -75,7 +75,7 @@ export default function RegisterPage() {
 
             <div className="relative bg-black/30 backdrop-blur-xl px-7 py-10 sm:px-10 sm:py-12 rounded-3xl shadow-2xl w-full max-w-sm border border-white/10 animate-fadeIn">
 
-                {/* Mensaje de éxito */}
+                {/* Success Message */}
                 {successMsg && (
                     <div className="mb-6 p-3 bg-green-500/20 border border-green-500/30 text-white rounded-xl text-center font-medium backdrop-blur-sm">
                         {successMsg}
@@ -94,7 +94,7 @@ export default function RegisterPage() {
                     </div>
                 )}
 
-                {/* Títulos */}
+                {/* Titles */}
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-extrabold text-white leading-tight drop-shadow-sm">Crear cuenta</h1>
                     <p
@@ -114,7 +114,7 @@ export default function RegisterPage() {
                     />
                 )}
 
-                {/* Footer con link */}
+                {/* Footer with link */}
                 {!successMsg && (
                     <div className="mt-8 text-center border-t border-white/10 pt-6">
                         <p className="text-gray-200">

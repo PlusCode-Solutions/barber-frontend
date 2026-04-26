@@ -262,7 +262,7 @@ export default function TenantCustomersPage() {
                     ) : (
                         paginatedUsers.map((user) => (
                             <div key={user.id} className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 hover:border-indigo-200 transition-colors">
-                                {/* Header con Avatar y Nombre */}
+                                {/* Header with Avatar and Name */}
                                 <div className="flex items-center gap-4 mb-4 pb-4 border-b border-gray-50">
                                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-md">
                                         {user.name ? user.name.substring(0, 2).toUpperCase() : <UserCircle size={24} />}

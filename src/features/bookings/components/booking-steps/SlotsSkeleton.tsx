@@ -2,7 +2,7 @@ export default function SlotsSkeleton() {
     return (
         <div className="space-y-6 animate-pulse">
             <div>
-                {/* Header Skeleton (Mañana) */}
+                {/* Header Skeleton (Morning) */}
                 <div className="h-4 w-20 bg-gray-200 rounded mx-auto mb-4"></div>
 
                 {/* Grid Skeleton - 12 items (divisible by 3 and 4 for even rows on all screens) */}
@@ -14,7 +14,7 @@ export default function SlotsSkeleton() {
             </div>
 
             <div className="pt-4">
-                {/* Header Skeleton (Tarde) */}
+                {/* Header Skeleton (Afternoon) */}
                 <div className="h-4 w-16 bg-gray-200 rounded mx-auto mb-4"></div>
 
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 gap-3">
