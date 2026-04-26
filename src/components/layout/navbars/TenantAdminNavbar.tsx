@@ -61,24 +61,24 @@ export default function TenantAdminNavbar() {
                     </Link>
 
                     {/* Desktop Menu */}
-                    <nav className="hidden md:flex items-center gap-6 absolute left-1/2 transform -translate-x-1/2">
+                    <nav className="hidden lg:flex items-center gap-2 xl:gap-6">
                         {visibleMenuItems.filter(item => item.path !== 'admin/settings').map((item) => (
                             <Link
                                 key={item.path}
                                 to={`/${tenantSlug}/${item.path}`}
-                                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${location.pathname.includes(item.path)
+                                className={`flex items-center gap-2 px-2 xl:px-3 py-2 rounded-lg text-sm font-medium transition-colors ${location.pathname.includes(item.path)
                                     ? "bg-white/20 text-white"
                                     : "text-white/80 hover:bg-white/10 hover:text-white"
                                     }`}
                             >
                                 <item.icon size={18} />
-                                {item.label}
+                                <span className="hidden xl:inline">{item.label}</span>
                             </Link>
                         ))}
                     </nav>
 
                     {/* Desktop Actions */}
-                    <div className="hidden md:flex items-center gap-3">
+                    <div className="hidden lg:flex items-center gap-3">
                         {user?.role === 'TENANT_ADMIN' && (
                             <Link
                                 to={`/${tenantSlug}/admin/settings`}
@@ -93,13 +93,13 @@ export default function TenantAdminNavbar() {
                             className="flex items-center gap-2 bg-red-500/80 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm hover:shadow-md"
                         >
                             <LogOut size={16} />
-                            <span>Salir</span>
+                            <span className="hidden xl:inline">Salir</span>
                         </button>
                     </div>
 
                     {/* Mobile Menu Button */}
                     <button
-                        className="md:hidden w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 transition-all active:scale-95"
+                        className="lg:hidden w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 transition-all active:scale-95"
                         onClick={() => setMenuOpen(!menuOpen)}
                     >
                         {menuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -117,7 +117,7 @@ export default function TenantAdminNavbar() {
 
             {/* Menu lateral */}
             <nav
-                className={`fixed top-0 right-0 h-full w-72 bg-white z-50 shadow-2xl transform transition-transform duration-300 flex flex-col ${menuOpen ? "translate-x-0" : "translate-x-full"
+                className={`fixed top-0 right-0 h-full w-72 bg-white z-50 shadow-2xl transform transition-transform duration-300 flex flex-col lg:hidden ${menuOpen ? "translate-x-0" : "translate-x-full"
                     }`}
             >
                 {/* Header del menú */}

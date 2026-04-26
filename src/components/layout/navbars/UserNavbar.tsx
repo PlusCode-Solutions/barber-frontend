@@ -59,8 +59,8 @@ export default function UserNavbar() {
                             </Link>
                         </div>
 
-                        {/* Desktop Menu - Centered */}
-                        <div className="hidden md:flex items-center space-x-1 absolute left-1/2 transform -translate-x-1/2">
+                        {/* Desktop Menu */}
+                        <div className="hidden lg:flex items-center space-x-1">
                             {menuItems.map((item) => {
                                 const fullPath = `/${finalSlug}/${item.path}`;
                                 // Para "Inicio" (dashboard) requerimos coincidencia exacta para que no se active con los hijos
@@ -86,8 +86,8 @@ export default function UserNavbar() {
                         </div>
 
                         {/* Desktop Actions - Right */}
-                        <div className="hidden md:flex items-center gap-4">
-                            <span className="text-white/80 text-sm font-medium hidden lg:block">
+                        <div className="hidden lg:flex items-center gap-4">
+                            <span className="text-white/80 text-sm font-medium hidden xl:block">
                                 Hola, {user?.name?.split(' ')[0] || 'Cliente'}
                             </span>
                             <button
@@ -95,12 +95,12 @@ export default function UserNavbar() {
                                 className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-xl font-medium transition-all backdrop-blur-sm flex items-center gap-2 border border-white/10 hover:border-white/30"
                             >
                                 <LogOut size={18} />
-                                Salir
+                                <span className="hidden xl:inline">Salir</span>
                             </button>
                         </div>
 
                         {/* Mobile Menu Button */}
-                        <div className="md:hidden flex items-center">
+                        <div className="lg:hidden flex items-center">
                             <button
                                 onClick={() => setMenuOpen(!menuOpen)}
                                 className="text-white hover:bg-white/10 p-2 rounded-lg transition-colors"
@@ -115,14 +115,14 @@ export default function UserNavbar() {
             {/* Overlay */}
             {menuOpen && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-40 transition-opacity md:hidden"
+                    className="fixed inset-0 bg-black/50 z-40 transition-opacity lg:hidden"
                     onClick={() => setMenuOpen(false)}
                 />
             )}
 
             {/* Mobile Menu */}
             <nav
-                className={`fixed top-0 right-0 h-full w-72 bg-white z-50 shadow-2xl transform transition-transform duration-300 flex flex-col md:hidden ${menuOpen ? "translate-x-0" : "translate-x-full"}`}
+                className={`fixed top-0 right-0 h-full w-72 bg-white z-50 shadow-2xl transform transition-transform duration-300 flex flex-col lg:hidden ${menuOpen ? "translate-x-0" : "translate-x-full"}`}
             >
                 <div className="p-5 flex items-center justify-between border-b border-gray-200 bg-primary/5">
                     <span className="font-bold text-lg text-gray-900">Menú</span>
