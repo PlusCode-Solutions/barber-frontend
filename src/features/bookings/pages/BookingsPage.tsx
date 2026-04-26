@@ -13,7 +13,9 @@ import Toast from "../../../components/ui/Toast";
 import { Button } from "../../../components/ui/Button";
 
 export default function BookingsPage() {
-    const { bookings, loading, error, cancelBooking, refetch } = useUserBookings();
+    const [page, setPage] = useState(1);
+    const limit = 10;
+    const { bookings, meta, loading, error, cancelBooking, refetch } = useUserBookings(page, limit);
     const { tenant } = useTenant();
     const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
     const [bookingToReschedule, setBookingToReschedule] = useState<Booking | null>(null);
@@ -33,7 +35,7 @@ export default function BookingsPage() {
                     </div>
                     <h2 className="text-xl font-bold text-gray-900 mb-2">Error al cargar citas</h2>
                     <p className="text-gray-500 mb-6">
-                        No pudimos obtener tu historial de citas. Por favor,Verificar que tengas citas programadas o verifica tu conexión o inténtalo de nuevo más tarde.
+                        No pudimos obtener tu historial de citas. Por favor, verifica tu conexión o inténtalo de nuevo más tarde.
                     </p>
                     <Button onClick={() => refetch()} variant="secondary">
                         Reintentar
@@ -45,18 +47,16 @@ export default function BookingsPage() {
 
     if (loading) return <BookingsSkeleton />;
 
-    const formattedBookings = bookings
-        .slice(0, 10) // Limit to 10 latest entries
-        .map((b) => ({
-            ...b,
-            date: formatRelativeDate(b.date),
-            startTime: formatHour(b.startTime),
-            endTime: formatHour(b.endTime),
-            service: {
-                ...b.service,
-                price: b.service?.price ? `₡${b.service.price}` : "—",
-            },
-        }));
+    const formattedBookings = bookings.map((b: Booking) => ({
+        ...b,
+        date: formatRelativeDate(b.date),
+        startTime: formatHour(b.startTime),
+        endTime: formatHour(b.endTime),
+        service: {
+            ...b.service,
+            price: b.service?.price ? `₡${b.service.price}` : "—",
+        },
+    }));
 
     const handleConfirmCancel = async () => {
         if (!bookingToCancel) return;
@@ -70,8 +70,8 @@ export default function BookingsPage() {
                 isVisible: true,
             });
             setBookingToCancel(null);
-        } catch (error: any) {
-            const isForbidden = error?.response?.status === 403;
+        } catch (err: any) {
+            const isForbidden = err?.response?.status === 403;
             setToast({
                 message: isForbidden
                     ? "No tienes permiso para eliminar citas (Falta permiso 'bookings.delete')"
@@ -118,10 +118,15 @@ export default function BookingsPage() {
                         <div className="flex items-center gap-2">
                             <div className="bg-white/25 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/30">
                                 <span className="font-bold text-sm">
-                                    {formattedBookings.length}{" "}
-                                    {formattedBookings.length === 1 ? "cita" : "citas"}
+                                    {meta?.total || formattedBookings.length}{" "}
+                                    {(meta?.total || formattedBookings.length) === 1 ? "cita" : "citas"}
                                 </span>
                             </div>
+                            {meta && meta.lastPage > 1 && (
+                                <span className="text-xs font-medium bg-black/10 px-3 py-1 rounded-full backdrop-blur-sm">
+                                    Página {page} de {meta.lastPage}
+                                </span>
+                            )}
                         </div>
                     </div>
                     <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
@@ -133,7 +138,7 @@ export default function BookingsPage() {
             </div>
 
             {/* CONTENIDO */}
-            <div className="px-4 pt-6">
+            <div className="px-4 pt-6 space-y-6">
                 <BookingsTable
                     data={formattedBookings}
                     columns={[
@@ -142,28 +147,22 @@ export default function BookingsPage() {
                         { header: "Fecha 📅", accessor: "date" },
                         { header: "Inicio ⏰", accessor: "startTime" },
                         { header: "Fin ⏰", accessor: "endTime" },
-                        //{ header: "Notas 📝", accessor: "notes" },
                     ]}
                     renderActions={(booking) => {
-                        const originalBooking = bookings.find(b => b.id === booking.id);
-
-                        // Determinar si la cita es pasada, cancelada o ya completada
+                        const originalBooking = bookings.find((b: Booking) => b.id === booking.id);
                         const isPast = originalBooking
                             ? isPastBooking(originalBooking.date, originalBooking.startTime)
                             : true;
-
-                        const isInactive = booking.status === 'CANCELED' ||
-                            booking.status === 'REJECTED' ||
-                            booking.status === 'COMPLETED';
-
-                        // Los botones se deshabilitan si es pasada O si ya está inactiva (cancelada/completada)
+                        const isInactive = (booking as any).status === 'CANCELED' ||
+                            (booking as any).status === 'REJECTED' ||
+                            (booking as any).status === 'COMPLETED';
                         const isDisabled = isPast || isInactive;
 
                         let tooltip = "";
                         if (isPast) tooltip = "No se pueden modificar citas pasadas";
-                        else if (booking.status === 'CANCELED') tooltip = "Esta cita ya está cancelada";
-                        else if (booking.status === 'REJECTED') tooltip = "Esta cita fue rechazada";
-                        else if (booking.status === 'COMPLETED') tooltip = "Esta cita ya fue completada";
+                        else if ((booking as any).status === 'CANCELED') tooltip = "Esta cita ya está cancelada";
+                        else if ((booking as any).status === 'REJECTED') tooltip = "Esta cita fue rechazada";
+                        else if ((booking as any).status === 'COMPLETED') tooltip = "Esta cita ya fue completada";
 
                         return (
                             <div className="flex items-center gap-2">
@@ -199,9 +198,41 @@ export default function BookingsPage() {
                         );
                     }}
                 />
+
+                {/* PAGINACIÓN */}
+                {meta && meta.lastPage > 1 && (
+                    <div className="flex items-center justify-center gap-4 py-4 bg-white/50 backdrop-blur-sm rounded-3xl border border-gray-200 mx-4 shadow-sm">
+                        <Button
+                            variant="secondary"
+                            onClick={() => {
+                                setPage(p => Math.max(1, p - 1));
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            disabled={page === 1}
+                            className="px-6 rounded-2xl"
+                        >
+                            Anterior
+                        </Button>
+                        <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-gray-100 shadow-sm">
+                            <span className="text-sm font-bold text-gray-400">Página</span>
+                            <span className="text-sm font-black text-blue-600">{page}</span>
+                            <span className="text-sm font-bold text-gray-400">de {meta.lastPage}</span>
+                        </div>
+                        <Button
+                            variant="secondary"
+                            onClick={() => {
+                                setPage(p => Math.min(meta.lastPage, p + 1));
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            disabled={page === meta.lastPage}
+                            className="px-6 rounded-2xl"
+                        >
+                            Siguiente
+                        </Button>
+                    </div>
+                )}
             </div>
 
-            {/* Modal de Confirmación */}
             <CancelBookingModal
                 isOpen={!!bookingToCancel}
                 isCancelling={isCancelling}
@@ -209,7 +240,6 @@ export default function BookingsPage() {
                 onConfirm={handleConfirmCancel}
             />
 
-            {/* Modal de Reprogramación */}
             <RescheduleBookingModal
                 isOpen={!!bookingToReschedule}
                 booking={bookingToReschedule}

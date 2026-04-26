@@ -143,12 +143,14 @@ export function useBookingAvailability({ professional, date, bookingIdToExclude,
                 const isAdmin = user?.role === 'TENANT_ADMIN' || user?.role === 'SUPER_ADMIN';
                 const formattedDate = parsedDate.toISOString().split('T')[0];
 
-                const [availabilityRes, existingBookings] = await Promise.all([
+                const [availabilityRes, bookingsResponse] = await Promise.all([
                     BookingsService.checkAvailability(professional.id, formattedDate),
                     isAdmin
-                        ? BookingsService.getTenantBookings(formattedDate, formattedDate, professional.id).catch(() => [])
-                        : Promise.resolve([])
+                        ? BookingsService.getTenantBookings(1, 100, professional.id, formattedDate, formattedDate).catch(() => ({ data: [] }))
+                        : Promise.resolve({ data: [] })
                 ]);
+
+                const existingBookings = (bookingsResponse as any).data || [];
 
                 const rawSlots: AvailabilitySlot[] = Array.isArray(availabilityRes)
                     ? availabilityRes
