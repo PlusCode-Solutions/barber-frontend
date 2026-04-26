@@ -8,13 +8,13 @@ import { useBookingAvailability } from "./useBookingAvailability";
 import { useQueryClient } from "@tanstack/react-query";
 
 /**
- * Hook para reprogramar citas.
- * Refactorizado para usar `useBookingAvailability` y reducir duplicidad.
+ * Hook to reschedule bookings.
+ * Refactored to use `useBookingAvailability` and reduce duplication.
  */
 export function useRescheduleBookingForm(booking: Booking, onSuccess?: () => void, onClose?: () => void) {
     const queryClient = useQueryClient();
     
-    // 1. Inicialización de datos
+    // 1. Data initialization
     const selectedService = booking.service;
     const selectedProfessional = booking.professional;
 
@@ -38,13 +38,13 @@ export function useRescheduleBookingForm(booking: Booking, onSuccess?: () => voi
         return booking.startTime ? booking.startTime.substring(0, 5) : "";
     }, [booking.startTime]);
 
-    // 2. Estado del Formulario
+    // 2. Form State
     const [selectedDate, setSelectedDate] = useState(initialDate);
     const [selectedSlot, setSelectedSlot] = useState(initialSlot);
     const [submitting, setSubmitting] = useState(false);
     const [formError, setFormError] = useState<string | null>(null);
 
-    // 3. Hook de Disponibilidad (El "Cerebro" compartido)
+    // 3. Availability Hook (Shared "Brain")
     const { 
         availableSlots, 
         allPotentialSlots, 

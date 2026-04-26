@@ -6,7 +6,7 @@ import { PDFService } from "../services/pdf.service";
 import { toast } from "react-hot-toast";
 
 
-// Singleton para persistir las estadísticas entre navegaciones sin usar librerías extras
+// Singleton to persist statistics between navigations without using extra libraries
 let statsCache: any = null;
 let lastStartDate: string = format(startOfMonth(new Date()), "yyyy-MM-dd");
 let lastEndDate: string = format(subDays(new Date(), 1), "yyyy-MM-dd");
@@ -26,7 +26,7 @@ export function useStatistics() {
     const fetchStats = async () => {
         if (!tenant) return;
 
-        // Validación extra en frontend
+        // Extra validation in frontend
         if (endDate > yesterday) {
             toast.error("El reporte solo puede generarse hasta el día de ayer.");
             return;
@@ -37,7 +37,7 @@ export function useStatistics() {
             const data = await BookingsService.getStatistics(startDate, endDate);
             setStats(data);
 
-            // Actualizar caché global
+            // Update global cache
             statsCache = data;
             lastStartDate = startDate;
             lastEndDate = endDate;
@@ -50,8 +50,8 @@ export function useStatistics() {
         }
     };
 
-    // Eliminamos el useEffect que cargaba automáticamente al montar
-    // para evitar saturar el servidor y cumplir con la carga "On-Demand"
+    // We removed the useEffect that loaded automatically on mount
+    // to avoid saturating the server and comply with "On-Demand" loading
 
     const handleGeneratePDF = async () => {
         if (!stats || !tenant) return;

@@ -19,7 +19,7 @@ export const PDFService = {
             try {
                 const img = await PDFService.loadImage(logoUrl);
                 const circleCanvas = document.createElement('canvas');
-                const size = 200; // Alta resolución para el logo
+                const size = 200; // High resolution for the logo
                 circleCanvas.width = size;
                 circleCanvas.height = size;
                 const ctx = circleCanvas.getContext('2d');
@@ -34,7 +34,7 @@ export const PDFService = {
                     const logoSize = 30;
                     const xPos = (pageWidth - logoSize) / 2;
                     doc.addImage(logoData, 'PNG', xPos, 10, logoSize, logoSize);
-                    yPos = 55; // Mayor espacio entre logo y título
+                    yPos = 55; // More space between logo and title
                 }
             } catch (error) {
                 console.error("Error loading logo for PDF", error);
@@ -49,7 +49,7 @@ export const PDFService = {
         doc.setTextColor(100, 100, 100);
         doc.text(tenantName, pageWidth / 2, yPos + 10, { align: "center" });
 
-        // 2. Info de Filtro
+        // 2. Filter Info
         doc.setFontSize(10);
         doc.text(`Período: ${startDate} al ${endDate}`, 14, yPos + 25);
         doc.text(`Fecha de generación: ${new Date().toLocaleDateString()}`, 14, yPos + 30);
@@ -72,7 +72,7 @@ export const PDFService = {
             headStyles: { fillColor: [41, 128, 185], textColor: 255 },
         });
 
-        // 4. Desglose por Servicio
+        // 4. Breakdown by Service
         let lastY = (doc as any).lastAutoTable.finalY || 100;
         doc.setFontSize(14);
         doc.text("Rendimiento por Servicio", 14, lastY + 15);
@@ -89,7 +89,7 @@ export const PDFService = {
             headStyles: { fillColor: [44, 62, 80], textColor: 255 },
         });
 
-        // 5. Desglose por Profesional
+        // 5. Breakdown by Professional
         lastY = (doc as any).lastAutoTable.finalY + 15;
         doc.setFontSize(14);
         doc.text("Rendimiento por Profesional", 14, lastY);
@@ -106,20 +106,20 @@ export const PDFService = {
             headStyles: { fillColor: [39, 174, 96], textColor: 255 },
         });
 
-        // 6. Pie de página
+        // 6. Footer
         const finalY = (doc as any).lastAutoTable.finalY + 20;
         doc.setFontSize(8);
         doc.setTextColor(150, 150, 150);
         doc.text("Sass Barber - Reporte Analítico Profesional", pageWidth / 2, finalY, { align: "center" });
 
-        // Guardar/Descargar
+        // Save/Download
         doc.save(`Reporte_Premium_${tenantName}_${startDate}.pdf`);
     },
 
     loadImage: (url: string): Promise<HTMLImageElement> => {
         return new Promise((resolve, reject) => {
             const img = new Image();
-            img.crossOrigin = "anonymous"; // Importante para evitar problemas de CORS con Cloudinary
+            img.crossOrigin = "anonymous"; // Important to avoid CORS issues with Cloudinary
             img.onload = () => resolve(img);
             img.onerror = (e) => reject(e);
             img.src = url;

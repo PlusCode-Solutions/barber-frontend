@@ -40,7 +40,7 @@ export default function LoginPage() {
       {/* Overlay */}
       <div className="absolute inset-0 bg-black/35 backdrop-blur-sm"></div>
 
-      {/* BOTÓN VOLVER (TOP LEFT) */}
+      {/* BACK BUTTON (TOP LEFT) */}
       <Link
         to={`/${tenantSlug}`}
         className="

@@ -5,6 +5,11 @@ import { useTenant } from "../../../context/TenantContext";
 import { APP_CONSTANTS } from "../../../config/constants";
 import type { UpdateBookingDto, Booking, PaginatedResponse } from "../types";
 
+/**
+ * Hook to manage user or tenant bookings with pagination and mutations.
+ * @param page Current page number
+ * @param limit Items per page
+ */
 export function useUserBookings(page: number = 1, limit: number = 10) {
     const { tenant } = useTenant();
     const { user, token } = useAuth();

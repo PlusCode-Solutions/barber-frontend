@@ -23,7 +23,7 @@ export default function RevenueChart({ dailyRevenue }: RevenueChartProps) {
                 {dailyRevenue && dailyRevenue.length > 0 ? (
                     dailyRevenue.map((d: any, index: number) => {
                         const height = (d.revenue / maxRevenue) * 100;
-                        // Mostrar etiquetas solo si hay espacio o es cada N días en móvil
+                        // Show labels only if there is space or every N days on mobile
                         const showLabel = dailyRevenue.length < 10 || index % Math.ceil(dailyRevenue.length / 10) === 0;
 
                         return (

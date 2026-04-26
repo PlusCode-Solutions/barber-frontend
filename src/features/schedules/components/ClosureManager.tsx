@@ -53,7 +53,7 @@ export default function ClosureManager({ onShowToast, professionalId }: Props) {
                     </div>
                 </div>
 
-                {/* Formulario de Creación */}
+                {/* Creation Form */}
                 <form onSubmit={handleSubmit} className="space-y-3 mt-4">
 
                     {/* Scope Selector (Hidden for Professionals) */}
@@ -242,7 +242,7 @@ export default function ClosureManager({ onShowToast, professionalId }: Props) {
                 </form>
             </div >
 
-            {/* Lista de Cierres */}
+            {/* Closures List */}
             < div className="flex-1 overflow-y-auto p-4 custom-scrollbar" >
                 {
                     loadingList ? (

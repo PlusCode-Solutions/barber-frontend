@@ -60,7 +60,7 @@ export default function DashboardHome() {
                 {/* Column 2: Dashboard Actions & Info (Welcome Card) */}
                 <div className={`bg-white rounded-3xl shadow-md p-6 border border-gray-100 h-fit transition-all duration-500 ${!hasNextBooking ? "w-full" : ""}`}>
 
-                    {/* Encabezado con logo y nombre */}
+                    {/* Header with logo and name */}
                     <div className="flex items-center gap-4 mb-5">
                         {tenant?.logoUrl && (
                             <img
@@ -80,7 +80,7 @@ export default function DashboardHome() {
                         </div>
                     </div>
 
-                    {/* Mensaje principal */}
+                    {/* Main message */}
                     <p className="text-gray-700 text-base leading-relaxed">
                         Gestiona tus citas, profesionales, servicios y más desde este panel.
                         <span
@@ -91,7 +91,7 @@ export default function DashboardHome() {
                         </span>
                     </p>
 
-                    {/* CTA Button - Nueva Cita */}
+                    {/* CTA Button - New Booking */}
                     <button
                         onClick={() => setIsModalOpen(true)}
                         title={limitReached ? "Modo solo lectura: Límite de citas alcanzado" : "Crear nueva cita"}
@@ -106,7 +106,7 @@ export default function DashboardHome() {
                         </span>
                     </button>
 
-                    {/* CTA bonito */}
+                    {/* Stylish CTA */}
                     <div
                         className="mt-6 border rounded-2xl p-4"
                         style={{

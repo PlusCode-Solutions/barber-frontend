@@ -29,35 +29,35 @@ const TenantContext = createContext<TenantContextType>({
 });
 
 // ─────────────────────────────────────────────────
-// UTILIDADES PRIVADAS
+// PRIVATE UTILITIES
 // ─────────────────────────────────────────────────
 
 /**
- * Extrae el slug del tenant desde la URL actual.
- * Soporta rutas como: /{slug}, /{slug}/auth/login, /{slug}/dashboard, etc.
- * Devuelve null si estamos en rutas del sistema (/admin, /super-admin).
+ * Extracts the tenant slug from the current URL.
+ * Supports paths like: /{slug}, /{slug}/auth/login, /{slug}/dashboard, etc.
+ * Returns null if in system routes (/admin, /super-admin).
  */
 function extractSlugFromURL(): string | null {
   const path = window.location.pathname;
-  // Ignorar rutas del sistema
+  // Ignore system routes
   if (path === "/" || path.startsWith("/admin") || path.startsWith("/super-admin")) {
     return null;
   }
-  // El slug es siempre el primer segmento después de "/"
+  // Slug is always the first segment after "/"
   const segments = path.split("/").filter(Boolean);
   return segments.length > 0 ? segments[0] : null;
 }
 
 /**
- * Genera una clave única de localStorage por slug.
- * Esto permite que cada negocio tenga su propia caché independiente.
+ * Generates a unique localStorage key per slug.
+ * This allows each business to have its own independent cache.
  */
 function getStorageKey(slug: string): string {
   return `tenantData_${slug}`;
 }
 
 /**
- * Convierte un color hex/named a formato RGB separado por espacios.
+ * Converts a hex/named color to space-separated RGB format.
  */
 function hexToRgb(color: string): string {
   let hex = color.trim();
@@ -71,7 +71,7 @@ function hexToRgb(color: string): string {
     return `${r} ${g} ${b}`;
   }
 
-  // Fallback: dejar que el browser compute el color
+  // Fallback: let the browser compute the color
   const tempDiv = document.createElement('div');
   tempDiv.style.color = color;
   document.body.appendChild(tempDiv);
@@ -87,25 +87,25 @@ function hexToRgb(color: string): string {
 }
 
 // ─────────────────────────────────────────────────
-// PROVIDER PRINCIPAL
+// MAIN PROVIDER
 // ─────────────────────────────────────────────────
 
 export function TenantProvider({ children }: { children: React.ReactNode }) {
 
-  // 1. INICIALIZACIÓN INTELIGENTE: Lee del slug en la URL + caché aislada por negocio
+  // 1. SMART INITIALIZATION: Read slug from URL + isolated business cache
   const [tenant, setTenantState] = useState<Tenant | null>(() => {
     if (typeof window === 'undefined') return null;
     try {
       const slug = extractSlugFromURL();
       if (!slug) {
-        // Si no hay slug, intentar la caché genérica como fallback (para rutas de admin)
+        // If no slug, try generic cache as fallback (for admin routes)
         const generic = localStorage.getItem("tenantData");
         return generic ? JSON.parse(generic) : null;
       }
-      // Buscar la caché específica de este negocio
+      // Search for business-specific cache
       const saved = localStorage.getItem(getStorageKey(slug));
       if (saved) return JSON.parse(saved);
-      // Fallback a la caché genérica si existe y coincide el slug
+      // Fallback to generic cache if it exists and slug matches
       const generic = localStorage.getItem("tenantData");
       if (generic) {
         const parsed = JSON.parse(generic);
@@ -117,24 +117,24 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     }
   });
 
-  // 2. AUTO-FETCH INTELIGENTE: Si no hay datos en caché O los datos son de otro slug, pide al API
+  // 2. SMART AUTO-FETCH: If no cache data OR data is from another slug, fetch from API
   useEffect(() => {
     const slug = extractSlugFromURL();
-    if (!slug) return; // No estamos en un tenant
+    if (!slug) return; // Not in a tenant route
 
-    // Si ya tenemos datos y son del mismo slug, solo refrescamos silenciosamente
+    // If we already have data and it's from the same slug, just refresh silently
     const shouldFreshFetch = !tenant || tenant.slug !== slug;
 
     import("../features/tenants/api/tenants.service").then(({ TenantsService }) => {
       TenantsService.getBySlug(slug)
         .then(latest => {
           if (shouldFreshFetch) {
-            // Primera carga: instalar datos del tenant correcto
+            // First load: install correct tenant data
             setTenantState(latest);
             localStorage.setItem(getStorageKey(slug), JSON.stringify(latest));
-            localStorage.setItem("tenantData", JSON.stringify(latest)); // Compatibilidad
+            localStorage.setItem("tenantData", JSON.stringify(latest)); // Compatibility
           } else if (
-            // Refresh silencioso: solo actualizar si cambió algo relevante
+            // Silent refresh: only update if something relevant changed
             latest.primaryColor !== tenant.primaryColor ||
             latest.secondaryColor !== tenant.secondaryColor ||
             latest.name !== tenant.name ||
@@ -151,13 +151,13 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
         })
         .catch(err => console.error("Failed to fetch tenant data for slug:", slug, err));
     });
-  }, []); // Solo al montar
+  }, []); // Mount only
 
-  // 3. SETTERS PÚBLICOS
+  // 3. PUBLIC SETTERS
   const setTenant = (t: Tenant) => {
     setTenantState(t);
     localStorage.setItem(getStorageKey(t.slug), JSON.stringify(t));
-    localStorage.setItem("tenantData", JSON.stringify(t)); // Compatibilidad
+    localStorage.setItem("tenantData", JSON.stringify(t)); // Compatibility
   };
 
   const clearTenant = () => {
@@ -168,13 +168,12 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("tenantData");
   };
 
-  // ─────────────────────────────────────────────────
-  // 4. THEMING DINÁMICO + METADATOS PWA
-  // ─────────────────────────────────────────────────
+  // 4. DYNAMIC THEMING + PWA METADATA
+// ─────────────────────────────────────────────────
   useLayoutEffect(() => {
     if (!tenant) return;
 
-    // ── 4.a Título del documento y de la app instalada ──
+    // ── 4.a Document title and installed app name ──
     document.title = tenant.name;
 
     const appleTitle = document.querySelector("meta[name='apple-mobile-web-app-title']");
@@ -200,9 +199,9 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
       }
       appleIcon.href = tenant.logoUrl;
 
-      // ── 4.c Manifest Dinámico por Slug (Android Install) ──
-      // Cada slug genera un manifest con ID único, permitiendo instalar
-      // múltiples negocios como apps independientes en el mismo teléfono
+      // ── 4.c Dynamic Manifest per Slug (Android Install) ──
+      // Each slug generates a manifest with a unique ID, allowing
+      // installing multiple businesses as independent apps on the same phone
       const manifest = {
         name: tenant.name,
         short_name: tenant.name,
@@ -240,14 +239,14 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
         linkManifest.rel = "manifest";
         document.head.appendChild(linkManifest);
       }
-      // Limpiar el blob anterior para evitar fugas de memoria
+      // Clean up previous blob to avoid memory leaks
       if (linkManifest.href && linkManifest.href.startsWith("blob:")) {
         URL.revokeObjectURL(linkManifest.href);
       }
       linkManifest.href = manifestURL;
     }
 
-    // ── 4.d Variables CSS Dinámicas ──
+    // ── 4.d Dynamic CSS Variables ──
     const root = document.documentElement;
     const colorToUse = tenant.primaryColor || tenant.secondaryColor;
     const secondaryToUse = tenant.secondaryColor;
@@ -258,7 +257,7 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
         root.style.setProperty('--primary-rgb', rgb);
         root.style.setProperty('--primary-color', colorToUse);
 
-        // Barra de estado del celular
+        // Mobile status bar
         let themeMeta = document.querySelector("meta[name='theme-color']");
         if (!themeMeta) {
           themeMeta = document.createElement("meta");
@@ -291,14 +290,14 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
       root.style.removeProperty('--secondary-color');
     }
 
-    // Cleanup: liberar blobs al desmontar
+    // Cleanup: revoke blobs on unmount
     return () => {
       const manifest = document.querySelector("link[rel='manifest']") as HTMLLinkElement;
       if (manifest?.href?.startsWith("blob:")) {
         URL.revokeObjectURL(manifest.href);
       }
     };
-  }, [tenant]); // Se ejecuta cada vez que cambia el tenant completo
+  }, [tenant]); // Executes every time the full tenant object changes
 
   return (
     <TenantContext.Provider value={{ tenant, setTenant, clearTenant }}>

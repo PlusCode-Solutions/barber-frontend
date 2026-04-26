@@ -66,8 +66,8 @@ export default function TenantSettings() {
         setIsLoading(true);
 
         try {
-            // El Super Admin ahora solo puede editar nombre y logo (el slug y colores quedan restringidos)
-            // El Tenant Admin puede editar nombre, logo y colores
+            // Super Admin can only edit name and logo (slug and colors are restricted)
+            // Tenant Admin can edit name, logo, and colors
             const payload = isSuperAdmin
                 ? { name: data.name }
                 : {
@@ -113,7 +113,7 @@ export default function TenantSettings() {
         const uploadMethod = isLogo ? TenantsService.uploadLogo : TenantsService.uploadBackground;
         const label = isLogo ? "logo" : "fondo de pantalla";
 
-        // Validación de tamaño (5MB)
+        // Size validation (5MB)
         if (file.size > 5 * 1024 * 1024) {
             toast.error(`La imagen es muy pesada. Máximo 5MB.`);
             return;
@@ -127,7 +127,7 @@ export default function TenantSettings() {
             setTenant({ ...tenant, ...updated });
             toast.success(`¡${label.charAt(0).toUpperCase() + label.slice(1)} actualizado exitosamente!`, { id: loadingToast });
         } catch (error: any) {
-            // Error subiendo imagen
+            // Image upload error
             const message = error.response?.data?.message || `No se pudo cargar el ${label}. Intente de nuevo.`;
             toast.error(message, { id: loadingToast });
         } finally {
@@ -150,7 +150,7 @@ export default function TenantSettings() {
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Datos Generales y Descripción */}
+                {/* General Data and Description */}
                 <Card className="p-6">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
@@ -348,7 +348,7 @@ export default function TenantSettings() {
                         </div>
                     </Card>
 
-                    {/* Apariencia - Read only for Super Admin, editable for Tenant Admin */}
+                    {/* Appearance - Read only for Super Admin, editable for Tenant Admin */}
                     <Card className="p-6 relative">
                         {isSuperAdmin && (
                             <div className="absolute inset-0 z-10 bg-white/50 backdrop-blur-[1px] cursor-not-allowed rounded-2xl flex items-center justify-center">
@@ -426,7 +426,7 @@ export default function TenantSettings() {
                 </div>
             </div>
 
-            {/* Historia / Descripción */}
+            {/* Story / Description */}
             <Card className="p-6">
                 <div className="flex items-center gap-3 mb-6">
                     <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center text-orange-600">

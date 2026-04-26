@@ -4,8 +4,10 @@ import { useTenant } from "../../../context/TenantContext";
 import { useAuth } from "../../../context/AuthContext";
 
 /**
- * Hook estrella para el Panel Administrativo.
- * Consume el nuevo endpoint de timeline que ya trae todo calculado del backend.
+ * Core hook for the Administrative Panel.
+ * Consumes the timeline endpoint which provides calculated slots and bookings from the backend.
+ * @param date Date to view (YYYY-MM-DD)
+ * @param professionalId Optional professional filter
  */
 export function useTimeline(date: string, professionalId?: string) {
     const { tenant } = useTenant();

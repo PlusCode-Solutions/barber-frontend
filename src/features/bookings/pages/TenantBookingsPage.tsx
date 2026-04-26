@@ -25,7 +25,7 @@ export default function TenantBookingsPage() {
     const [selectedProfessionalId, setSelectedProfessionalId] = useState<string | undefined>(isProfessional ? user?.professionalId : undefined);
     const [selectedDate, setSelectedDate] = useState<string>(formatDateForInput(new Date()));
 
-    // 🔥 EL CAMBIO CLAVE: Usamos el nuevo hook que trae TODO calculado del backend
+    // KEY CHANGE: We use the new hook that brings EVERYTHING calculated from the backend
     const { items: timelineItems, loading, refetch } = useTimeline(selectedDate, selectedProfessionalId);
 
     const { professionals } = useProfessionals();

@@ -4,7 +4,7 @@ export interface Service {
     description: string;
     imageUrl?: string;
     price: number;
-    durationMinutes: number; // Campo del backend
+    durationMinutes: number;
     createdAt?: string;
     updatedAt?: string;
 }

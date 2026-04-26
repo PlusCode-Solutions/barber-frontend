@@ -63,7 +63,7 @@ export default function UserNavbar() {
                         <div className="hidden lg:flex items-center space-x-1">
                             {menuItems.map((item) => {
                                 const fullPath = `/${finalSlug}/${item.path}`;
-                                // Para "Inicio" (dashboard) requerimos coincidencia exacta para que no se active con los hijos
+                                // For "Home" (dashboard) we require exact match so it doesn't activate with children
                                 const isActive = item.path === 'dashboard'
                                     ? location.pathname === fullPath
                                     : location.pathname.startsWith(fullPath);

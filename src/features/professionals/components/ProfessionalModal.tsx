@@ -60,7 +60,7 @@ export default function ProfessionalModal({
             });
             setFile(null);
         } else {
-            // Limpiar estado al cerrar para evitar fugas de datos
+            // Clear state on close to prevent data leaks
             setForm({
                 name: "", userName: "", email: "", phone: "", specialty: "", avatar: "", isActive: true, password: "", passwordConfirm: ""
             });
@@ -234,7 +234,7 @@ export default function ProfessionalModal({
                         )}
                     </div>
 
-                    {/* isActive se mantiene solo lectura en backend, no editable desde aquí */}
+                    {/* isActive remains read-only in backend, not editable from here */}
 
                     <div className="flex items-center justify-end gap-3 pt-2">
                         <button

@@ -199,7 +199,7 @@ export default function BookingsPage() {
                     }}
                 />
 
-                {/* PAGINACIÓN */}
+                {/* PAGINATION */}
                 {meta && meta.lastPage > 1 && (
                     <div className="flex items-center justify-center gap-4 py-4 bg-white/50 backdrop-blur-sm rounded-3xl border border-gray-200 mx-4 shadow-sm">
                         <Button

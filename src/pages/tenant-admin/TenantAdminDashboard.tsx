@@ -42,7 +42,7 @@ export default function TenantAdminDashboard() {
 
             {/* Responsive Grid Layout */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {/* 1. Citas Hoy */}
+                {/* 1. Today's Appointments */}
                 <StatCard
                     icon={<Calendar className="text-white" size={24} />}
                     label="Citas Hoy"
@@ -52,7 +52,7 @@ export default function TenantAdminDashboard() {
                     iconBgClassName="bg-indigo-500 shadow-indigo-200 shadow-lg"
                 />
 
-                {/* 2. Citas Mes Pasado */}
+                {/* 2. Last Month's Appointments */}
                 <StatCard
                     icon={<Activity className="text-white" size={24} />}
                     label="Citas Mes Pasado"
@@ -62,7 +62,7 @@ export default function TenantAdminDashboard() {
                     iconBgClassName="bg-purple-500 shadow-purple-200 shadow-lg"
                 />
 
-                {/* 3. Profesionales Activos */}
+                {/* 3. Active Professionals */}
                 <StatCard
                     icon={<Users className="text-white" size={24} />}
                     label="Profesionales Activos"

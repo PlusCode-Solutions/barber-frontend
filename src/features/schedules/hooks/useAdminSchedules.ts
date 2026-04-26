@@ -8,7 +8,7 @@ export function useAdminSchedules() {
     const queryClient = useQueryClient();
     const slug = tenant?.slug;
 
-    // Actualizar horario
+    // Update schedule
     const scheduleMutation = useMutation({
         mutationFn: (data: CreateScheduleDto) => {
             if (!slug) throw new Error("Tenant no disponible");
@@ -19,7 +19,7 @@ export function useAdminSchedules() {
         }
     });
 
-    // Crear cierre
+    // Create closure
     const createClosureMutation = useMutation({
         mutationFn: (data: CreateClosureDto) => {
             if (!slug) throw new Error("Tenant no disponible");
@@ -30,7 +30,7 @@ export function useAdminSchedules() {
         }
     });
 
-    // Eliminar cierre
+    // Delete closure
     const deleteClosureMutation = useMutation({
         mutationFn: (id: string) => {
             if (!slug) throw new Error("Tenant no disponible");

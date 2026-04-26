@@ -13,11 +13,10 @@ interface RescheduleBookingModalProps {
 }
 
 /**
- * Componente Modal para la reprogramación de citas.
+ * Modal Component for rescheduling bookings.
  * 
- * Proporciona una interfaz de usuario limpia reutilizando `SelectDateTimeStep`
- * para permitir al usuario seleccionar una nueva fecha y hora.
- * Se integra con `useRescheduleBookingForm` para manejar la lógica de negocio y validaciones.
+ * Allows the user to select a new date and time.
+ * Integrates with `useRescheduleBookingForm` to handle business logic and validations.
  */
 export default function RescheduleBookingModal({ booking, isOpen, onClose, onSuccess }: RescheduleBookingModalProps) {
     const { tenant } = useTenant();

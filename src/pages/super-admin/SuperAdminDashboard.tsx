@@ -4,26 +4,26 @@ export default function SuperAdminDashboard() {
     return (
         <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-8">
-                Super Admin Dashboard
+                Panel de Super Administrador
             </h1>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <StatCard
                     icon={<Building2 className="text-purple-600" size={32} />}
-                    label="Total Tenants"
+                    label="Total de Tenants"
                     value="150"
                     trend="+12%"
                 />
                 <StatCard
                     icon={<Users className="text-blue-600" size={32} />}
-                    label="Total Users"
+                    label="Total de Usuarios"
                     value="3,500"
                     trend="+8%"
                 />
                 <StatCard
                     icon={<TrendingUp className="text-green-600" size={32} />}
-                    label="Active Subscriptions"
+                    label="Suscripciones Activas"
                     value="142"
                     trend="+5%"
                 />
@@ -37,8 +37,8 @@ export default function SuperAdminDashboard() {
 
             {/* Placeholder for more content */}
             <div className="bg-white rounded-xl shadow-sm p-8 text-center text-gray-500">
-                <p className="text-lg">Dashboard content coming soon...</p>
-                <p className="text-sm mt-2">Tenants management, analytics, and more</p>
+                <p className="text-lg">Contenido del panel próximamente...</p>
+                <p className="text-sm mt-2">Gestión de tenants, analíticas y más</p>
             </div>
         </div>
     );

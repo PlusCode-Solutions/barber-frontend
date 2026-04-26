@@ -23,9 +23,9 @@ export default function ProfessionalCard({ professional, isAdmin = false, onEdit
             ></div>
 
             <div className="p-6">
-                {/* Header con foto y nombre */}
+                {/* Header with photo and name */}
                 <div className="flex items-start gap-4 mb-4">
-                    {/* Foto del profesional */}
+                    {/* Professional photo */}
                     <div className="relative">
                         {professional.avatar && !imgError ? (
                             <img
@@ -47,7 +47,7 @@ export default function ProfessionalCard({ professional, isAdmin = false, onEdit
                                 <Users className="w-10 h-10" />
                             </div>
                         )}
-                        {/* Badge de estado */}
+                        {/* Status Badge */}
                         {professional.isActive && (
                             <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center shadow-md">
                                 <UserCheck className="w-3 h-3 text-white" />
@@ -55,7 +55,7 @@ export default function ProfessionalCard({ professional, isAdmin = false, onEdit
                         )}
                     </div>
 
-                    {/* Información principal */}
+                    {/* Main information */}
                     <div className="flex-1">
                         <h3 className="text-xl font-bold text-gray-900 mb-1">{professional.name}</h3>
                         {professional.specialty && (
@@ -81,7 +81,7 @@ export default function ProfessionalCard({ professional, isAdmin = false, onEdit
                     </div>
                 </div>
 
-                {/* Detalles de contacto */}
+                {/* Contact details */}
                 <div className="space-y-3 pt-4 border-t border-gray-100">
                     {/* Email */}
                     <div className="flex items-center gap-3">
@@ -94,7 +94,7 @@ export default function ProfessionalCard({ professional, isAdmin = false, onEdit
                         </div>
                     </div>
 
-                    {/* Teléfono */}
+                    {/* Phone */}
                     {professional.phone && (
                         <div className="flex items-center gap-3">
                             <div className="w-9 h-9 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0">
