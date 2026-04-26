@@ -9,7 +9,6 @@ export interface Booking {
         name: string;
         price: number;
     };
-    // Include these for admin view
     user?: {
         id: string;
         name: string;
@@ -24,9 +23,9 @@ export interface Booking {
 export interface CreateBookingDto {
     serviceId: string;
     professionalId: string;
-    date: string; // YYYY-MM-DD
-    startTime: string; // HH:mm
-    endTime: string; // HH:mm
+    date: string;
+    startTime: string;
+    endTime: string;
     notes?: string;
 }
 
@@ -36,6 +35,18 @@ export interface UpdateBookingDto {
     endTime?: string;
     notes?: string;
     status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'CANCELED';
+}
+
+export interface PaginationMeta {
+    total: number;
+    page: number;
+    limit: number;
+    lastPage: number;
+}
+
+export interface PaginatedResponse<T> {
+    data: T[];
+    meta: PaginationMeta;
 }
 
 export interface AvailabilitySlot {
