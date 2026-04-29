@@ -31,7 +31,7 @@ export function useLogin() {
         tenantId: res.user.tenantId || tenant?.id
       };
       
-      authLogin(res.token, userData);
+      authLogin(userData);
       return { ok: true, user: userData };
     } catch (err) {
       const message = handleError(err, 'useLogin');

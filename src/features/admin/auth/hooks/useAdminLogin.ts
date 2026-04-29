@@ -22,7 +22,7 @@ export function useAdminLogin() {
         throw new Error('Unauthorized access. Only administrators allowed.');
       }
       
-      authLogin(res.token, res.user);
+      authLogin(res.user);
       navigate('/admin/dashboard'); 
       return { ok: true, user: res.user };
     } catch (err) {

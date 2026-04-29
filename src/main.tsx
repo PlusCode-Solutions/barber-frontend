@@ -26,13 +26,13 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <QueryClientProvider client={queryClient}>
       <HelmetProvider>
         <ErrorBoundary>
-          <AuthProvider>
-            <TenantProvider>
+          <TenantProvider>
+            <AuthProvider>
               <BrowserRouter>
                 <App />
               </BrowserRouter>
-            </TenantProvider>
-          </AuthProvider>
+            </AuthProvider>
+          </TenantProvider>
         </ErrorBoundary>
       </HelmetProvider>
     </QueryClientProvider>

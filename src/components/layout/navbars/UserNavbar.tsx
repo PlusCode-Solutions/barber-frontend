@@ -3,12 +3,13 @@ import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, Home, CalendarCheck, Users, Scissors, Clock, LogOut } from "lucide-react";
 import { useTenant } from "../../../context/TenantContext";
 import { useAuth } from "../../../context/AuthContext";
+import { AuthService } from "../../../features/auth/api/auth.service";
 
 export default function UserNavbar() {
     const [menuOpen, setMenuOpen] = useState(false);
     const { tenantSlug } = useParams();
     const { tenant } = useTenant();
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -23,15 +24,15 @@ export default function UserNavbar() {
         { icon: Clock, label: "Horarios", path: "dashboard/schedules" }
     ];
 
-    const handleLogout = () => {
-        // Manually clear storage like in TenantAdminNavbar
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-
-        if (finalSlug) {
-            navigate(`/${finalSlug}/auth/login`);
-        } else {
-            navigate('/');
+    const handleLogout = async () => {
+        try {
+            // Clear the httpOnly cookie on the server
+            await AuthService.logout(finalSlug);
+        } catch {
+            // Proceed with logout even if API call fails
+        } finally {
+            logout(); // Clear React state and localStorage
+            navigate(finalSlug ? `/${finalSlug}/auth/login` : '/');
         }
     };
 
