@@ -20,7 +20,7 @@ instance.interceptors.request.use(
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method?.toUpperCase() || '')) {
       const csrfToken = getCsrfToken();
       if (csrfToken) {
-        config.headers['X-CSRF-Token'] = csrfToken;
+        config.headers['x-csrf-token'] = csrfToken;
       }
     }
     return config;
