@@ -42,9 +42,18 @@ instance.interceptors.response.use(
 
     const requestUrl: string = error.config?.url || '';
     const isSessionCheck = requestUrl.endsWith('/auth/me');
+    const isLoginRequest = requestUrl.endsWith('/auth/login');
+    const isRefreshRequest = requestUrl.endsWith('/auth/refresh');
 
     // Handle 401 Unauthorized - try refresh token first
-    if (error.response?.status === 401 && !isSessionCheck && !error.config._retry) {
+    // DON'T try to refresh if the error comes from login, me, or refresh itself
+    if (
+      error.response?.status === 401 && 
+      !isSessionCheck && 
+      !isLoginRequest && 
+      !isRefreshRequest && 
+      !error.config._retry
+    ) {
       error.config._retry = true;
 
       try {
