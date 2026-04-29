@@ -1,26 +1,21 @@
 import axios from "axios";
 import { env } from "../config/env";
 
+// In-memory store for the CSRF token
+let csrfTokenMemory: string | null = null;
+
 // Axios instance url backend (API)
 const instance = axios.create({
   baseURL: env.API_URL,
   withCredentials: true,
 });
 
-// Function to read CSRF token from cookie
-function getCsrfToken(): string | null {
-  const match = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/);
-  return match ? decodeURIComponent(match[1]) : null;
-}
-
-// Request interceptor - Add CSRF token and handle cookies
+// Request interceptor - Add CSRF token
 instance.interceptors.request.use(
   (config) => {
-    // Add CSRF token for state-changing methods
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method?.toUpperCase() || '')) {
-      const csrfToken = getCsrfToken();
-      if (csrfToken) {
-        config.headers['x-csrf-token'] = csrfToken;
+      if (csrfTokenMemory) {
+        config.headers['x-csrf-token'] = csrfTokenMemory;
       }
     }
     return config;
@@ -28,11 +23,23 @@ instance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-
-// Response interceptor to handle errors globally
+// Response interceptor - Capture CSRF token and handle errors
 instance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Sync CSRF token if present in headers
+    const newToken = response.headers['x-csrf-token'];
+    if (newToken) {
+      csrfTokenMemory = newToken;
+    }
+    return response;
+  },
   async (error) => {
+    // Also try to sync token from error response headers
+    const errorToken = error.response?.headers?.['x-csrf-token'];
+    if (errorToken) {
+      csrfTokenMemory = errorToken;
+    }
+
     const requestUrl: string = error.config?.url || '';
     const isSessionCheck = requestUrl.endsWith('/auth/me');
 
@@ -40,7 +47,6 @@ instance.interceptors.response.use(
     if (error.response?.status === 401 && !isSessionCheck && !error.config._retry) {
       error.config._retry = true;
 
-      // Try to refresh token using configured instance (includes CSRF and credentials)
       try {
         const tenantSlug = window.location.pathname.split('/')[1];
         const isValidSlug = tenantSlug && !['admin', 'super-admin'].includes(tenantSlug);
@@ -48,10 +54,8 @@ instance.interceptors.response.use(
         
         await instance.post(refreshUrl, {});
         
-        // Retry original request
         return instance(error.config);
       } catch (refreshError) {
-        // Refresh failed, redirect to login
         let tenantSlug = window.location.pathname.split('/')[1];
         
         if (tenantSlug && !['admin', 'super-admin'].includes(tenantSlug)) {
@@ -64,7 +68,6 @@ instance.interceptors.response.use(
       }
     }
 
-    // Let the error propagate for handling by individual requests
     return Promise.reject(error);
   }
 );
