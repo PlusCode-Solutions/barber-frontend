@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import type { Permission } from '../config/permissions';
-import { resolveUserPermissions, syncPermissionsToStorage, type RBACUser } from '../utils/auth.utils';
+import { resolveUserPermissions, type RBACUser } from '../utils/auth.utils';
+import { AuthService } from '../features/auth/api/auth.service';
 
 /**
  * Interface for the user state in Context
@@ -16,11 +17,10 @@ export interface AuthUser extends RBACUser {
 
 interface AuthContextType {
     user: AuthUser | null;
-    token: string | null;
     permissions: Permission[];
     isAuthenticated: boolean;
     isLoading: boolean;
-    login: (token: string, userData: AuthUser) => void;
+    login: (userData?: AuthUser) => void;
     logout: () => void;
 }
 
@@ -28,65 +28,65 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<AuthUser | null>(null);
-    const [token, setToken] = useState<string | null>(null);
     const [permissions, setPermissions] = useState<Permission[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Initialize state from localStorage on mount
-    useEffect(() => {
-        const storedToken = localStorage.getItem('token');
-        const storedUser = localStorage.getItem('user');
-
-        if (storedToken && storedUser) {
-            try {
-                const parsedUser = JSON.parse(storedUser);
-                setToken(storedToken);
-                setUser(parsedUser);
-
-                // Resolve permissions immediately using our utility
-                const resolvedPermissions = resolveUserPermissions(parsedUser);
-                setPermissions(resolvedPermissions);
-
-                // Ensure permissions are synced (self-healing)
-                syncPermissionsToStorage(parsedUser, resolvedPermissions);
-            } catch (error) {
-                console.error("Error parsing stored auth data", error);
-                localStorage.removeItem('token');
-                localStorage.removeItem('user');
-            }
+    const fetchUser = useCallback(async (tenantSlug?: string) => {
+        try {
+            const userData = await AuthService.getMe(tenantSlug);
+            setUser(userData);
+            setPermissions(resolveUserPermissions(userData));
+            return true;
+        } catch (error) {
+            console.error("Auth verification failed", error);
+            setUser(null);
+            setPermissions([]);
+            return false;
         }
-        setIsLoading(false);
     }, []);
 
-    const login = (newToken: string, userData: AuthUser) => {
-        // 1. Update State
-        setToken(newToken);
-        setUser(userData);
+    // Verify session on mount
+    useEffect(() => {
+        const checkAuth = async () => {
+            const tenantSlug = window.location.pathname.split('/')[1];
+            const isValidSlug = tenantSlug && !['admin', 'super-admin'].includes(tenantSlug);
 
-        // 2. Resolve Permissions
-        const resolvedPermissions = resolveUserPermissions(userData);
-        setPermissions(resolvedPermissions);
+            await fetchUser(isValidSlug ? tenantSlug : undefined);
+            setIsLoading(false);
+        };
 
-        // 3. Persist to Storage
-        // We persist permissions in the user object too, for redundancy/access outside React if ever needed
-        const userToStore = { ...userData, permissions: resolvedPermissions };
-        localStorage.setItem('token', newToken);
-        localStorage.setItem('user', JSON.stringify(userToStore));
+        checkAuth();
+    }, [fetchUser]);
+
+    const login = (userData?: AuthUser) => {
+        if (userData) {
+            // Backwards compatibility: set user data directly
+            setUser(userData);
+            setPermissions(resolveUserPermissions(userData));
+        } else {
+            // After login, fetch user data from server
+            const tenantSlug = window.location.pathname.split('/')[1];
+            const isValidSlug = tenantSlug && !['admin', 'super-admin'].includes(tenantSlug);
+            fetchUser(isValidSlug ? tenantSlug : undefined);
+        }
     };
 
-    const logout = () => {
-        setToken(null);
+    const logout = async () => {
+        try {
+            const tenantSlug = window.location.pathname.split('/')[1];
+            const isValidSlug = tenantSlug && !['admin', 'super-admin'].includes(tenantSlug);
+            await AuthService.logout(isValidSlug ? tenantSlug : undefined);
+        } catch (error) {
+            console.error("Logout error", error);
+        }
         setUser(null);
         setPermissions([]);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
     };
 
     const value = {
         user,
-        token,
         permissions,
-        isAuthenticated: !!user && !!token,
+        isAuthenticated: !!user,
         isLoading,
         login,
         logout
@@ -94,7 +94,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return (
         <AuthContext.Provider value={value}>
-            {!isLoading && children}
+            {/* Always render children - isLoading is exposed in context for components to use.
+                The TenantProvider's SplashScreen already masks the UI during initial load. */}
+            {children}
         </AuthContext.Provider>
     );
 }

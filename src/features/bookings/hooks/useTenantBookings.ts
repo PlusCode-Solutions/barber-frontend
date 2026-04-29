@@ -12,12 +12,12 @@ import type { Booking, PaginatedResponse } from "../types";
  */
 export function useTenantBookings(page: number = 1, limit: number = 10, filters?: { professionalId?: string }) {
     const { tenant } = useTenant();
-    const { user, token } = useAuth();
+    const { user } = useAuth();
 
     const { data, isLoading, error, refetch } = useQuery<PaginatedResponse<Booking>>({
         queryKey: ['tenant-bookings', tenant?.slug, filters?.professionalId, page, limit],
         queryFn: () => BookingsService.getTenantBookings(page, limit, filters?.professionalId),
-        enabled: !!user?.tenantId && !!token && !!tenant?.slug,
+        enabled: !!user?.tenantId && !!tenant?.slug,
     });
 
     return { 

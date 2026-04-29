@@ -12,7 +12,7 @@ import type { UpdateBookingDto, Booking, PaginatedResponse } from "../types";
  */
 export function useUserBookings(page: number = 1, limit: number = 10) {
     const { tenant } = useTenant();
-    const { user, token } = useAuth();
+    const { user } = useAuth();
     const queryClient = useQueryClient();
 
     const { 
@@ -28,7 +28,7 @@ export function useUserBookings(page: number = 1, limit: number = 10) {
             }
             return BookingsService.getUserBookings(user!.id, page, limit);
         },
-        enabled: !!user?.id && !!token && !!tenant?.slug,
+        enabled: !!user?.id && !!tenant?.slug,
         staleTime: APP_CONSTANTS.QUERY.STALE_TIME,
         gcTime: APP_CONSTANTS.QUERY.GC_TIME,
         refetchOnWindowFocus: false,

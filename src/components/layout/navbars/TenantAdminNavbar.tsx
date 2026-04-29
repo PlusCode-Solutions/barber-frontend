@@ -3,6 +3,7 @@ import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, LayoutDashboard, FileText, Scissors, Users, Calendar, UserCircle, LogOut, Settings, TrendingUp, Image } from "lucide-react";
 import { useTenant } from "../../../context/TenantContext";
 import { useAuth } from "../../../context/AuthContext";
+import { AuthService } from "../../../features/auth/api/auth.service";
 
 export default function TenantAdminNavbar() {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -10,7 +11,7 @@ export default function TenantAdminNavbar() {
     const { tenant } = useTenant();
     const location = useLocation();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
 
     const menuItems = [
         { icon: LayoutDashboard, label: "Dashboard", path: "admin/dashboard", roles: ['TENANT_ADMIN'] },
@@ -26,10 +27,16 @@ export default function TenantAdminNavbar() {
 
     const visibleMenuItems = menuItems.filter(item => item.roles.includes(user?.role as string));
 
-    const handleLogout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        navigate(`/${tenantSlug}/auth/login`);
+    const handleLogout = async () => {
+        try {
+            // Clear the httpOnly cookie on the server
+            await AuthService.logout(tenantSlug);
+        } catch {
+            // Proceed with logout even if API call fails
+        } finally {
+            logout(); // Clear React state and localStorage
+            navigate(`/${tenantSlug}/auth/login`);
+        }
     };
 
     return (

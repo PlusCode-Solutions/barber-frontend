@@ -1,5 +1,5 @@
 
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation, useParams } from 'react-router-dom';
 import type { Permission } from '../../config/permissions';
 import type { UserRole } from '../../config/roles';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -37,13 +37,27 @@ export default function ProtectedRoute({
 }: ProtectedRouteProps) {
     const { user, isAuthenticated, isLoading } = useAuth();
     const { isRole, canAll, canAny } = usePermissions();
+    const location = useLocation();
+    const params = useParams();
 
     if (isLoading) {
         return null;
     }
 
     if (!isAuthenticated || !user) {
-        return <Navigate to="/login" replace />;
+        // Determine the correct login page based on the current URL
+        const tenantSlug = params.tenantSlug || location.pathname.split('/')[1];
+        const isAdminRoute = location.pathname.startsWith('/admin');
+
+        if (isAdminRoute) {
+            return <Navigate to="/admin/login" replace />;
+        }
+
+        if (tenantSlug && !['admin', 'super-admin'].includes(tenantSlug)) {
+            return <Navigate to={`/${tenantSlug}/auth/login`} replace />;
+        }
+
+        return <Navigate to="/" replace />;
     }
     if (allowedRoles && allowedRoles.length > 0) {
         if (!allowedRoles.some(role => isRole(role))) {

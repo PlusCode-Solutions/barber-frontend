@@ -5,12 +5,12 @@ import { useTenant } from "../../../context/TenantContext";
 
 export function useTenantUsers() {
     const { tenant } = useTenant();
-    const { token } = useAuth();
+    const { isAuthenticated } = useAuth();
 
     const { data, isLoading, error, refetch } = useQuery({
         queryKey: ['tenant-users', tenant?.slug],
         queryFn: UsersService.getTenantUsers,
-        enabled: !!token && !!tenant?.slug,
+        enabled: isAuthenticated && !!tenant?.slug,
         staleTime: 1000 * 60, // 1 minute
     });
 

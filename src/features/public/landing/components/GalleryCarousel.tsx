@@ -22,7 +22,6 @@ export default function GalleryCarousel({ images, primaryColor = "#000000" }: Ga
     const trackRef = useRef<HTMLDivElement>(null);
 
     const total = images.length;
-    if (total === 0) return null;
 
     const prev = useCallback(() => setCurrent((c) => (c - 1 + total) % total), [total]);
     const next = useCallback(() => setCurrent((c) => (c + 1) % total), [total]);
@@ -33,6 +32,31 @@ export default function GalleryCarousel({ images, primaryColor = "#000000" }: Ga
         const timer = setInterval(next, 5000);
         return () => clearInterval(timer);
     }, [next, lightbox, isDragging]);
+
+    // Keyboard navigation for lightbox
+    useEffect(() => {
+        if (lightbox === null) return;
+        const handler = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setLightbox(null);
+            if (e.key === "ArrowLeft") setLightbox((l) => ((l ?? 0) - 1 + total) % total);
+            if (e.key === "ArrowRight") setLightbox((l) => ((l ?? 0) + 1) % total);
+        };
+        window.addEventListener("keydown", handler);
+        return () => window.removeEventListener("keydown", handler);
+    }, [lightbox, total]);
+
+    // Lock body scroll when lightbox is open
+    useEffect(() => {
+        if (lightbox !== null) {
+            document.body.style.overflow = "hidden";
+        } else {
+            document.body.style.overflow = "";
+        }
+        return () => { document.body.style.overflow = ""; };
+    }, [lightbox]);
+
+    // Early return AFTER all hooks (Rules of Hooks: hooks must not be conditional)
+    if (total === 0) return null;
 
     // Touch handlers for smooth mobile swipe
     const handleTouchStart = (e: React.TouchEvent) => {
@@ -61,27 +85,7 @@ export default function GalleryCarousel({ images, primaryColor = "#000000" }: Ga
         setDragOffset(0);
     };
 
-    // Keyboard navigation for lightbox
-    useEffect(() => {
-        if (lightbox === null) return;
-        const handler = (e: KeyboardEvent) => {
-            if (e.key === "Escape") setLightbox(null);
-            if (e.key === "ArrowLeft") setLightbox((l) => ((l ?? 0) - 1 + total) % total);
-            if (e.key === "ArrowRight") setLightbox((l) => ((l ?? 0) + 1) % total);
-        };
-        window.addEventListener("keydown", handler);
-        return () => window.removeEventListener("keydown", handler);
-    }, [lightbox, total]);
 
-    // Lock body scroll when lightbox is open
-    useEffect(() => {
-        if (lightbox !== null) {
-            document.body.style.overflow = "hidden";
-        } else {
-            document.body.style.overflow = "";
-        }
-        return () => { document.body.style.overflow = ""; };
-    }, [lightbox]);
 
     const translateX = -(current * 100) - dragOffset;
 

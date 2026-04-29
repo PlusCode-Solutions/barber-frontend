@@ -13,14 +13,14 @@ interface RegisterData {
 }
 
 interface AuthResponse {
-    token: string;
     user: {
         id: string;
         email: string;
         name: string;
         role: string;
         tenantId?: string;
-        [key: string]: any; // Allow additional fields from backend
+        tenantSlug?: string;
+        [key: string]: any;
     };
 }
 
@@ -33,7 +33,6 @@ export const AuthService = {
         const res = await axios.post(`/${tenantSlug}/auth/login`, credentials);
         const userData = res.data.user || {};
         return {
-            token: res.data.access_token,
             user: {
                 id: userData.id,
                 email: userData.email,
@@ -52,7 +51,6 @@ export const AuthService = {
         const res = await axios.post(`/admin/auth/login`, credentials);
         const userData = res.data.user || {};
         return {
-            token: res.data.access_token,
             user: {
                 id: userData.id,
                 email: userData.email,
@@ -70,8 +68,16 @@ export const AuthService = {
     },
 
     // Logout user
-    logout: async (): Promise<void> => {
-        await axios.post("/auth/logout");
+    logout: async (tenantSlug?: string): Promise<void> => {
+        const url = tenantSlug ? `/${tenantSlug}/auth/logout` : "/admin/auth/logout";
+        await axios.post(url);
+    },
+
+    // Get current session user
+    getMe: async (tenantSlug?: string): Promise<any> => {
+        const url = tenantSlug ? `/${tenantSlug}/auth/me` : "/admin/auth/me";
+        const res = await axios.get(url);
+        return res.data;
     },
 
     // Forgot password
@@ -84,5 +90,11 @@ export const AuthService = {
     resetPassword: async (tenantSlug: string, data: any) => {
         const res = await axios.post(`/${tenantSlug}/auth/reset-password`, { ...data, tenantSlug });
         return res.data;
+    },
+
+    // Refresh access token
+    refreshToken: async (tenantSlug?: string): Promise<void> => {
+        const url = tenantSlug ? `/${tenantSlug}/auth/refresh` : "/admin/auth/refresh";
+        await axios.post(url);
     },
 };

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Building2, BarChart, LogOut, Menu, X, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../../../context/AuthContext';
+import { AuthService } from '../../../features/auth/api/auth.service';
 
 export default function SuperAdminNavbar() {
     const [menuOpen, setMenuOpen] = useState(false);
@@ -14,9 +15,16 @@ export default function SuperAdminNavbar() {
         { path: '/admin/tenants', label: 'Tenants', icon: Building2 }
     ];
 
-    const handleLogout = () => {
-        logout();
-        navigate('/admin/login');
+    const handleLogout = async () => {
+        try {
+            // Clear the httpOnly cookie on the server
+            await AuthService.logout();
+        } catch {
+            // Proceed with logout even if API call fails
+        } finally {
+            logout(); // Clear React state and localStorage
+            navigate('/admin/login');
+        }
     };
 
     return (

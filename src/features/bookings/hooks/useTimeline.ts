@@ -11,12 +11,12 @@ import { useAuth } from "../../../context/AuthContext";
  */
 export function useTimeline(date: string, professionalId?: string) {
     const { tenant } = useTenant();
-    const { token } = useAuth();
+    const { user } = useAuth();
 
     const { data, isLoading, error, refetch, isPlaceholderData } = useQuery({
         queryKey: ['timeline', tenant?.id, date, professionalId],
         queryFn: () => BookingsService.getTimeline(date, professionalId),
-        enabled: !!tenant?.id && !!date && !!token,
+        enabled: !!tenant?.id && !!date && !!user,
         placeholderData: (previousData) => previousData,
         staleTime: 1000 * 30,
     });
