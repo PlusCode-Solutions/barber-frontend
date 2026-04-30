@@ -39,5 +39,29 @@ export function useTenantLoader(slug: string) {
         load();
     }, [slug, tenant, setTenant, handleError]);
 
+    useEffect(() => {
+        if (tenant) {
+            // Actualizar Título de la pestaña
+            document.title = tenant.name;
+
+            // URL del logo (si no tiene, usa por defecto)
+            const iconUrl = tenant.logoUrl || '/icon/icon-barber.png';
+            
+            // Actualizar Favicon
+            let favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
+            if (favicon) favicon.href = iconUrl;
+
+            // Actualizar Nombre para PWA / Guardar en Pantalla de Inicio
+            let appleTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]') as HTMLMetaElement;
+            if (appleTitle) appleTitle.content = tenant.name;
+
+            // Actualizar Icono para PWA / Guardar en Pantalla de Inicio (iOS y Android moderno)
+            let appleIcons = document.querySelectorAll('link[rel="apple-touch-icon"]');
+            appleIcons.forEach(icon => {
+                (icon as HTMLLinkElement).href = iconUrl;
+            });
+        }
+    }, [tenant]);
+
     return { tenant, loading, error };
 }
