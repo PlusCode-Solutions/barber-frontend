@@ -25,8 +25,14 @@ jobs:
       - name: 📦 Instalar dependencias (igual que Vercel)
         run: npm ci --legacy-peer-deps
 
+      - name: 🛡️ Auditoría de Seguridad (Vulnerabilidades)
+        run: npm audit --audit-level=high
+
       - name: 🏗️ Verificar TypeScript
         run: npx tsc --noEmit
+
+      - name: 🧹 Revisión de Código Limpio (Linter)
+        run: npm run lint -- --quiet
 
       - name: 📦 Build completo (simulando Vercel)
         run: npm run build
