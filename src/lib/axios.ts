@@ -45,8 +45,13 @@ instance.interceptors.response.use(
     const isLoginRequest = requestUrl.endsWith('/auth/login');
     const isRefreshRequest = requestUrl.endsWith('/auth/refresh');
 
-    // Función de redirección única para evitar inconsistencias
+    const isOnLoginPage = window.location.pathname.includes('/auth/login') || window.location.pathname.endsWith('/login');
+
     const handleRedirect = () => {
+      if (isOnLoginPage) {
+        return;
+      }
+
       const pathSegments = window.location.pathname.split('/');
       const firstSegment = pathSegments[1];
       const isAdminPath = window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/super-admin');
