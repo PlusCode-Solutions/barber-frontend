@@ -1,5 +1,6 @@
 import axios from "axios";
 import { env } from "../config/env";
+import { handleApiError } from "./errorHandler";
 
 // In-memory store for the CSRF token
 let csrfTokenMemory: string | null = null;
@@ -34,50 +35,51 @@ instance.interceptors.response.use(
     return response;
   },
   async (error) => {
-    // Also try to sync token from error response headers
     const errorToken = error.response?.headers?.['x-csrf-token'];
-    if (errorToken) {
-      csrfTokenMemory = errorToken;
-    }
+    if (errorToken) csrfTokenMemory = errorToken;
 
+    const apiError = handleApiError(error);
+    const status = apiError.statusCode;
     const requestUrl: string = error.config?.url || '';
     const isSessionCheck = requestUrl.endsWith('/auth/me');
     const isLoginRequest = requestUrl.endsWith('/auth/login');
     const isRefreshRequest = requestUrl.endsWith('/auth/refresh');
 
-    // Handle 401 Unauthorized - try refresh token first
-    // DON'T try to refresh if the error comes from login, me, or refresh itself
-    if (
-      error.response?.status === 401 && 
-      !isSessionCheck && 
-      !isLoginRequest && 
-      !isRefreshRequest && 
-      !error.config._retry
-    ) {
-      error.config._retry = true;
+    // Función de redirección única para evitar inconsistencias
+    const handleRedirect = () => {
+      const pathSegments = window.location.pathname.split('/');
+      const firstSegment = pathSegments[1];
+      const isAdminPath = window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/super-admin');
 
+      if (isAdminPath) {
+        window.location.href = '/admin/login';
+      } else if (firstSegment && !['login', 'auth', 'admin', 'super-admin'].includes(firstSegment)) {
+        window.location.href = `/${firstSegment}/auth/login`;
+      } else {
+        window.location.href = "/";
+      }
+    };
+
+    if (status === 401 && !isSessionCheck && !isLoginRequest && !isRefreshRequest && !error.config._retry) {
+      error.config._retry = true;
       try {
         const tenantSlug = window.location.pathname.split('/')[1];
         const isValidSlug = tenantSlug && !['admin', 'super-admin'].includes(tenantSlug);
         const refreshUrl = isValidSlug ? `/${tenantSlug}/auth/refresh` : "/admin/auth/refresh";
-        
+
         await instance.post(refreshUrl, {});
-        
         return instance(error.config);
       } catch (refreshError) {
-        let tenantSlug = window.location.pathname.split('/')[1];
-        
-        if (tenantSlug && !['admin', 'super-admin'].includes(tenantSlug)) {
-          window.location.href = `/${tenantSlug}/auth/login`;
-        } else if (window.location.pathname.startsWith('/admin')) {
-          window.location.href = '/admin/login';
-        } else {
-          window.location.href = "/";
-        }
+        handleRedirect();
+        return Promise.reject(apiError);
       }
     }
 
-    return Promise.reject(error);
+    if ((status === 401 && isSessionCheck) || status === 403 || (status === 500 && isSessionCheck)) {
+      handleRedirect();
+    }
+
+    return Promise.reject(apiError);
   }
 );
 
