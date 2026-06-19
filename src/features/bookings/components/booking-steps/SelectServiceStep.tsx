@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Scissors, ChevronRight, Clock, X } from "lucide-react";
 import { useServices } from "../../../services/hooks/useServices";
 import type { Service } from "../../../services/types";
+import { CURRENCY_SYMBOLS } from "../../../services/types";
 import { useTenant } from "../../../../context/TenantContext";
 
 interface SelectServiceStepProps {
@@ -31,7 +32,7 @@ export default function SelectServiceStep({ onSelectService }: SelectServiceStep
                             key={service.id}
                             onClick={() => onSelectService(service)}
                             className="w-full bg-white border-2 border-gray-200 rounded-2xl p-4 hover:border-primary hover:shadow-md transition text-left"
-                            aria-label={`Seleccionar ${service.name}, precio ₡${service.price}`}
+                            aria-label={`Seleccionar ${service.name}, precio ${CURRENCY_SYMBOLS[service.currency ?? 'CRC']}${service.price}`}
                         >
                             <div className="flex items-center gap-4">
                                 {service.imageUrl ? (
@@ -64,7 +65,7 @@ export default function SelectServiceStep({ onSelectService }: SelectServiceStep
                                         <p className="text-sm text-gray-500 line-clamp-1">{service.description}</p>
                                     </div>
                                     <div className="text-right flex flex-col items-end gap-1 shrink-0 ml-2">
-                                        <p className="text-lg font-bold text-green-600">₡{service.price}</p>
+                                        <p className="text-lg font-bold text-green-600">{CURRENCY_SYMBOLS[service.currency ?? 'CRC']}{service.price}</p>
                                         <div className="bg-gray-50 p-1.5 rounded-full">
                                             <ChevronRight className="text-gray-400" size={16} aria-hidden="true" />
                                         </div>

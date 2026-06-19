@@ -1,3 +1,5 @@
+import type { Currency } from "../services/types";
+
 export interface Booking {
     id: string;
     date: string;
@@ -8,6 +10,7 @@ export interface Booking {
     service?: {
         name: string;
         price: number;
+        currency?: Currency;
     };
     user?: {
         id: string;

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, type FormEvent } from "react";
 import { X, Upload, Trash2, Image as ImageIcon, Loader2 } from "lucide-react";
-import type { Service } from "../types";
+import type { Service, Currency } from "../types";
+import { CURRENCY_SYMBOLS, CURRENCY_LABELS } from "../types";
 
 type Mode = "create" | "edit";
 
@@ -15,6 +16,7 @@ interface Props {
         description: string;
         price: number;
         durationMinutes: number;
+        currency: Currency;
     }) => Promise<void> | void;
     onUploadImage?: (file: File) => Promise<void>;
     onDeleteImage?: () => Promise<void>;
@@ -35,6 +37,7 @@ export default function ServiceModal({
         description: initialData?.description ?? "",
         price: initialData?.price?.toString() ?? "",
         durationMinutes: initialData?.durationMinutes?.toString() ?? "",
+        currency: (initialData?.currency ?? "CRC") as Currency,
     });
     const [imagePreview, setImagePreview] = useState<string | null>(initialData?.imageUrl || null);
     const [uploadingImage, setUploadingImage] = useState(false);
@@ -47,6 +50,7 @@ export default function ServiceModal({
             description: initialData?.description ?? "",
             price: initialData?.price?.toString() ?? "",
             durationMinutes: initialData?.durationMinutes?.toString() ?? "",
+            currency: (initialData?.currency ?? "CRC") as Currency,
         });
         setImagePreview(initialData?.imageUrl || null);
     }, [open, initialData]);
@@ -61,6 +65,7 @@ export default function ServiceModal({
             description: form.description.trim(),
             price: Number(form.price),
             durationMinutes: Number(form.durationMinutes),
+            currency: form.currency,
         });
     };
 
@@ -97,6 +102,8 @@ export default function ServiceModal({
     };
 
     if (!open) return null;
+
+    const priceSymbol = CURRENCY_SYMBOLS[form.currency];
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -201,9 +208,26 @@ export default function ServiceModal({
                             placeholder="Detalle del servicio y valor agregado"
                         />
                     </div>
+
+                    {/* Currency Selector */}
+                    <div>
+                        <label className="text-sm font-semibold text-gray-700">Moneda</label>
+                        <select
+                            value={form.currency}
+                            onChange={(e) => handleChange("currency", e.target.value)}
+                            className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 bg-white cursor-pointer"
+                        >
+                            {(Object.keys(CURRENCY_LABELS) as Currency[]).map((code) => (
+                                <option key={code} value={code}>
+                                    {CURRENCY_LABELS[code]}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
-                            <label className="text-sm font-semibold text-gray-700">Precio (₡)</label>
+                            <label className="text-sm font-semibold text-gray-700">Precio ({priceSymbol})</label>
                             <input
                                 required
                                 type="number"

@@ -3,6 +3,7 @@ import { useUserBookings } from "../hooks/useUserBookings";
 import { BookingsTable } from "../components/BookingsTable";
 import BookingsSkeleton from "../components/BookingsSkeleton";
 import { formatRelativeDate, formatHour, isPastBooking } from "../../../utils/dateUtils";
+import { CURRENCY_SYMBOLS } from "../../services/types";
 import SEO from "../../../components/shared/SEO";
 import { useTenant } from "../../../context/TenantContext";
 import { Trash2, AlertTriangle, Pencil } from "lucide-react";
@@ -54,7 +55,7 @@ export default function BookingsPage() {
         endTime: formatHour(b.endTime),
         service: {
             ...b.service,
-            price: b.service?.price ? `₡${b.service.price}` : "—",
+            price: b.service?.price ? `${CURRENCY_SYMBOLS[b.service.currency ?? 'CRC']}${b.service.price}` : "—",
         },
     }));
 
@@ -143,7 +144,7 @@ export default function BookingsPage() {
                     data={formattedBookings}
                     columns={[
                         { header: "Servicio 🎨", accessor: "service.name" },
-                        { header: "Precio ₡", accessor: "service.price" },
+                        { header: "Precio", accessor: "service.price" },
                         { header: "Fecha 📅", accessor: "date" },
                         { header: "Inicio ⏰", accessor: "startTime" },
                         { header: "Fin ⏰", accessor: "endTime" },

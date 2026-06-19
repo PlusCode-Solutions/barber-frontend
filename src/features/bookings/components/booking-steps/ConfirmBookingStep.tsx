@@ -1,5 +1,6 @@
 import { Check, Scissors, Users, Calendar, Clock, ChevronLeft } from "lucide-react";
 import type { Service } from "../../../services/types";
+import { CURRENCY_SYMBOLS } from "../../../services/types";
 import type { Professional } from "../../../professionals/types";
 import { useTenant } from "../../../../context/TenantContext";
 import { formatHour } from "../../../../utils/dateUtils";
@@ -44,8 +45,8 @@ export default function ConfirmBookingStep({
                     <div>
                         <p className="text-xs text-gray-600">Servicio</p>
                         <p className="font-bold text-gray-900">{service.name}</p>
-                        <p className="text-sm text-green-600" aria-label={`Precio: ${service.price} colones`}>
-                            ₡{service.price}
+                        <p className="text-sm text-green-600" aria-label={`Precio: ${CURRENCY_SYMBOLS[service.currency ?? 'CRC']}${service.price}`}>
+                            {CURRENCY_SYMBOLS[service.currency ?? 'CRC']}{service.price}
                         </p>
                     </div>
                 </div>
