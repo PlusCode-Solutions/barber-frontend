@@ -1,15 +1,15 @@
-/**
- * Format a number as Costa Rican Colones (CRC)
- * Example: 1000 -> ₡1.000
- */
-export function formatCurrency(amount: number | string): string {
+import type { Currency } from "../features/services/types";
+import { CURRENCY_SYMBOLS } from "../features/services/types";
+
+const LOCALE_MAP: Record<Currency, string> = {
+    CRC: 'es-CR',
+    NIO: 'es-NI',
+    USD: 'en-US',
+};
+
+export function formatCurrency(amount: number | string, currency: Currency = 'CRC'): string {
     const numericAmount = Number(amount);
     if (isNaN(numericAmount)) return String(amount);
-    
-    return new Intl.NumberFormat('es-CR', {
-        style: 'currency',
-        currency: 'CRC',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(numericAmount);
+
+    return `${CURRENCY_SYMBOLS[currency]}${numericAmount.toLocaleString(LOCALE_MAP[currency])}`;
 }

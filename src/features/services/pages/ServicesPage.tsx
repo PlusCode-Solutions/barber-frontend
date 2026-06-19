@@ -7,6 +7,7 @@ import ServicesSkeleton from "../components/ServicesSkeleton";
 import ServiceModal from "../components/ServiceModal";
 import DeleteServiceModal from "../components/DeleteServiceModal";
 import type { Service } from "../types";
+import { CURRENCY_SYMBOLS } from "../types";
 import Toast from "../../../components/ui/Toast";
 import SEO from "../../../components/shared/SEO";
 import { useTenant } from "../../../context/TenantContext";
@@ -161,11 +162,11 @@ export default function ServicesPage() {
                                         {/* Price */}
                                         <div className="flex items-center gap-2">
                                             <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
-                                                <span className="text-lg font-bold text-green-600">₡</span>
+                                                <span className="text-lg font-bold text-green-600">{CURRENCY_SYMBOLS[service.currency ?? 'CRC']}</span>
                                             </div>
                                             <div className="text-right">
                                                 <p className="text-xs text-gray-500 uppercase font-semibold">Precio</p>
-                                                <p className="text-lg font-black text-green-600">₡{service.price}</p>
+                                                <p className="text-lg font-black text-green-600">{CURRENCY_SYMBOLS[service.currency ?? 'CRC']}{service.price}</p>
                                             </div>
                                         </div>
                                     </div>

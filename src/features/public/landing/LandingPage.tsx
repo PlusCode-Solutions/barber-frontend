@@ -6,6 +6,7 @@ import { ServicesService } from "../../services/api/services.service";
 import { ProfessionalsService } from "../../professionals/api/professionals.service";
 import type { Professional } from "../../professionals/types";
 import type { Service } from "../../services/types";
+import { CURRENCY_SYMBOLS } from "../../services/types";
 import GalleryCarousel from "./components/GalleryCarousel";
 import { GalleryService, type GalleryImage } from "../../tenants/api/gallery.service";
 // @ts-ignore
@@ -450,7 +451,7 @@ const LandingPage = () => {
                                             <Clock size={12} /> {service.durationMinutes} min
                                         </div>
                                         <span style={{ color: primaryColor }} className="text-3xl font-black italic tracking-tighter">
-                                            ₡{service.price}
+                                            {CURRENCY_SYMBOLS[service.currency ?? 'CRC'] + service.price}
                                         </span>
                                     </div>
                                 </div>
@@ -613,7 +614,7 @@ const LandingPage = () => {
                             </h2>
                             <div className="flex items-center gap-6 mb-10">
                                 <span style={{ color: primaryColor }} className="text-4xl font-black italic tabular-nums leading-none">
-                                    ${selectedService.price}
+                                    {CURRENCY_SYMBOLS[selectedService.currency ?? 'CRC'] + selectedService.price}
                                 </span>
                                 <span className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] bg-gray-100 px-4 py-2 rounded-full">
                                     <Clock size={16} /> {selectedService.durationMinutes} min

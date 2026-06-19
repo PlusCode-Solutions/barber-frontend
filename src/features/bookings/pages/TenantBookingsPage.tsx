@@ -110,7 +110,7 @@ export default function TenantBookingsPage() {
         service: {
             ...b.service,
             name: b.status === 'AVAILABLE' ? "Espacio Libre" : b.status === 'CLOSED' ? "Cierre Especial" : (b.service?.name || "Servicio General"),
-            price: b.service?.price ? formatCurrency(b.service.price) : "—",
+            price: b.service?.price ? formatCurrency(b.service.price, b.service.currency) : "—",
         },
         customerName: b.user?.name || "Cliente Desconocido",
         professionalName: b.professional?.name || "Profesional Asignado",

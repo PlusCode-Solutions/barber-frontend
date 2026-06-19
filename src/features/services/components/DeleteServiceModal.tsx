@@ -31,7 +31,7 @@ export default function DeleteServiceModal({ open, service, submitting = false, 
                             </div>
                         )}
                         <p className="font-bold text-gray-800 my-1">{service.name}</p>
-                        <p className="text-xs">{formatCurrency(service.price)} • {service.durationMinutes} min</p>
+                        <p className="text-xs">{formatCurrency(service.price, service.currency)} • {service.durationMinutes} min</p>
                     </div>
                 </div>
 

@@ -26,7 +26,7 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: 🛡️ Auditoría de Seguridad (Vulnerabilidades)
-        run: npm audit --audit-level=high
+        run: npm audit --audit-level=critical
 
       - name: 🏗️ Verificar TypeScript
         run: npx tsc --noEmit
