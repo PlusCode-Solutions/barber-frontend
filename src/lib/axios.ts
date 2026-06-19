@@ -80,7 +80,7 @@ instance.interceptors.response.use(
       }
     }
 
-    if ((status === 401 && isSessionCheck) || status === 403 || (status === 500 && isSessionCheck)) {
+    if (status === 403 || (status === 500 && isSessionCheck)) {
       handleRedirect();
     }
 
