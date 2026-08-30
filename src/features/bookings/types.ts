@@ -8,6 +8,7 @@ export interface Booking {
     status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED' | 'CANCELED';
     notes?: string | null;
     service?: {
+        id?: string;
         name: string;
         price: number;
         currency?: Currency;
@@ -55,8 +56,18 @@ export interface PaginatedResponse<T> {
 export interface AvailabilitySlot {
     time: string;
     available: boolean;
+    blockedBy?: 'past' | 'advance';
+}
+
+export interface AdvanceRestriction {
+    enabled: boolean;
+    hours: number;
+    blockedToday: boolean;
+    nextAvailableTime?: string;
+    blockedUntil?: string;
 }
 
 export interface AvailabilityResponse {
     slots: AvailabilitySlot[];
+    advanceRestriction?: AdvanceRestriction;
 }

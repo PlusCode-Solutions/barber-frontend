@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
-import { Save, Upload, Building2, Palette, Image as ImageIcon, Lock, MapPin, FileText } from "lucide-react";
+import { Save, Upload, Building2, Palette, Image as ImageIcon, Lock, MapPin, FileText, Clock } from "lucide-react";
 import { useTenant } from "../../../context/TenantContext";
+import { getErrorMessage } from "../../../lib/errorHandler";
 import { useAuth } from "../../../context/AuthContext";
 import { TenantsService } from "../api/tenants.service";
 import { Card } from "../../../components/ui/Card";
@@ -20,6 +21,8 @@ interface TenantForm {
     latitude: number;
     longitude: number;
     googleMapsUrl: string;
+    bookingAdvanceEnabled: boolean;
+    bookingAdvanceHours: number;
 }
 
 export default function TenantSettings() {
@@ -58,6 +61,8 @@ export default function TenantSettings() {
             setValue("latitude", tenant.latitude || 0);
             setValue("longitude", tenant.longitude || 0);
             setValue("googleMapsUrl", tenant.googleMapsUrl || "");
+            setValue("bookingAdvanceEnabled", tenant.bookingAdvanceEnabled ?? true);
+            setValue("bookingAdvanceHours", tenant.bookingAdvanceHours ?? 12);
         }
     }, [tenant, setValue]);
 
@@ -79,7 +84,9 @@ export default function TenantSettings() {
                     phone: data.phone,
                     latitude: Number(data.latitude),
                     longitude: Number(data.longitude),
-                    googleMapsUrl: data.googleMapsUrl
+                    googleMapsUrl: data.googleMapsUrl,
+                    bookingAdvanceEnabled: data.bookingAdvanceEnabled,
+                    bookingAdvanceHours: Number(data.bookingAdvanceHours),
                 };
 
             console.log("Saving payload:", payload);
@@ -128,7 +135,7 @@ export default function TenantSettings() {
             toast.success(`¡${label.charAt(0).toUpperCase() + label.slice(1)} actualizado exitosamente!`, { id: loadingToast });
         } catch (error: any) {
             // Image upload error
-            const message = error.response?.data?.message || `No se pudo cargar el ${label}. Intente de nuevo.`;
+            const message = getErrorMessage(error);
             toast.error(message, { id: loadingToast });
         } finally {
             setUploading(false);
@@ -418,6 +425,64 @@ export default function TenantSettings() {
                                         className="w-full h-11 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl font-medium transition-all"
                                     >
                                         Actualizar Colores
+                                    </button>
+                                </div>
+                            )}
+                        </form>
+                    </Card>
+
+                    {/* Booking Advance Configuration */}
+                    <Card className="p-6">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-600">
+                                <Clock size={20} />
+                            </div>
+                            <h2 className="text-lg font-bold text-gray-900">Configuración de Agendamiento</h2>
+                        </div>
+
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                            <label className="flex items-start gap-3 cursor-pointer group">
+                                <input
+                                    type="checkbox"
+                                    {...register("bookingAdvanceEnabled")}
+                                    className="mt-1 w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300 cursor-pointer"
+                                />
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium text-gray-900 group-hover:text-gray-700 transition-colors">
+                                        Restringir agendamiento con anticipación mínima
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-0.5">
+                                        Si activas esta opción, los clientes solo podrán agendar citas con al menos ciertas horas de anticipación.
+                                    </p>
+                                </div>
+                            </label>
+
+                            {watch("bookingAdvanceEnabled") && (
+                                <div className="ml-8">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Horas mínimas de anticipación
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        max={720}
+                                        {...register("bookingAdvanceHours", { valueAsNumber: true })}
+                                        className="w-28 px-3 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none text-sm text-gray-900"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">Ej: 0.5 = 30 min, 1 = 1 hora, 12 = 12 horas. Los clientes deberán agendar con esa anticipación mínima.</p>
+                                </div>
+                            )}
+
+                            {!isSuperAdmin && (
+                                <div className="pt-2">
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading}
+                                        className="h-11 px-6 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        style={{ backgroundColor: tenant?.primaryColor || '#2563eb' }}
+                                    >
+                                        <Save size={18} />
+                                        Guardar Configuración
                                     </button>
                                 </div>
                             )}

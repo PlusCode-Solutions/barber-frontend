@@ -12,6 +12,7 @@ import CancelBookingModal from "../components/CancelBookingModal";
 import type { Booking } from "../types";
 import Toast from "../../../components/ui/Toast";
 import { Button } from "../../../components/ui/Button";
+import { ApiError, getErrorMessage } from "../../../lib/errorHandler";
 
 export default function BookingsPage() {
     const [page, setPage] = useState(1);
@@ -71,12 +72,12 @@ export default function BookingsPage() {
                 isVisible: true,
             });
             setBookingToCancel(null);
-        } catch (err: any) {
-            const isForbidden = err?.response?.status === 403;
+        } catch (err) {
+            const isForbidden = (err as ApiError)?.statusCode === 403;
             setToast({
                 message: isForbidden
                     ? "No tienes permiso para eliminar citas (Falta permiso 'bookings.delete')"
-                    : "Error al cancelar la cita. Inténtalo de nuevo.",
+                    : getErrorMessage(err),
                 type: "error",
                 isVisible: true,
             });

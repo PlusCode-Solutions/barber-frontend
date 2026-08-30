@@ -10,9 +10,7 @@ interface ConfirmBookingStepProps {
     professional: Professional;
     date: string;
     slot: string;
-    notes: string;
     submitting: boolean;
-    onNotesChange: (notes: string) => void;
     onSubmit: () => void;
     onBack: () => void;
     error: string | null;
@@ -23,9 +21,7 @@ export default function ConfirmBookingStep({
     professional,
     date,
     slot,
-    //notes,
     submitting,
-    //onNotesChange,
     onSubmit,
     onBack
 }: ConfirmBookingStepProps) {
@@ -72,23 +68,6 @@ export default function ConfirmBookingStep({
                     </div>
                 </div>
             </div>
-
-            {/* Notas Para citas *   div className="mb-4">
-                <div>
-                    <label htmlFor="booking-notes" className="block text-sm font-semibold text-gray-700 mb-1">
-                        Notas (Opcional)
-                    </label>
-                    <textarea
-                        id="booking-notes"
-                        value={notes}
-                        onChange={(e) => onNotesChange(e.target.value)}
-                        placeholder="Ej: Corte clásico, lavar cabello..."
-                        className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:border-primary focus:outline-none resize-none"
-                        rows={3}
-                        aria-label="Notas adicionales para la cita"
-                    />
-                </div>
-            </div>/ */}
 
             <button
                 onClick={onSubmit}

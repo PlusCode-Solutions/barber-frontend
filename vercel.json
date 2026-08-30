@@ -1,8 +1,21 @@
 {
   "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+    { "source": "/:file(.*\\.*)", "destination": "/__vx404" },
+    { "source": "/wp-content(.*)", "destination": "/__vx404" },
+    { "source": "/wp-includes(.*)", "destination": "/__vx404" },
+    { "source": "/wp-admin(.*)", "destination": "/__vx404" },
+    { "source": "/cgi-bin(.*)", "destination": "/__vx404" },
+    { "source": "/phpmyadmin(.*)", "destination": "/__vx404" },
+    { "source": "/xmlrpc(.*)", "destination": "/__vx404" },
+    { "source": "/server-status(.*)", "destination": "/__vx404" },
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/login", "destination": "/index.html" },
+    { "source": "/unauthorized", "destination": "/index.html" },
+    { "source": "/admin/:path(.*)", "destination": "/index.html" },
+    { "source": "/:tenantSlug", "destination": "/index.html" },
+    { "source": "/:tenantSlug/", "destination": "/index.html" },
+    { "source": "/:tenantSlug/auth/:path(.*)", "destination": "/index.html" },
+    { "source": "/:tenantSlug/admin/:path(.*)", "destination": "/index.html" },
+    { "source": "/:tenantSlug/dashboard/:path(.*)", "destination": "/index.html" }
   ]
 }

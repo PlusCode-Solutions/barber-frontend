@@ -6,6 +6,7 @@ import { normalizeDateString } from "../../../utils/dateUtils";
 import { differenceInMinutes, parse as parseDate } from "date-fns";
 import { useBookingAvailability } from "./useBookingAvailability";
 import { useQueryClient } from "@tanstack/react-query";
+import { getErrorMessage } from "../../../lib/errorHandler";
 
 /**
  * Hook to reschedule bookings.
@@ -48,9 +49,11 @@ export function useRescheduleBookingForm(booking: Booking, onSuccess?: () => voi
     const { 
         availableSlots, 
         allPotentialSlots, 
-        breakSlots, // Extract breakSlots
+        breakSlots,
+        blockedSlots,
         loading: loadingSlots, 
         error: availabilityError, 
+        advanceRestriction,
         closures, 
         schedules,
         tenantSchedules
@@ -58,7 +61,8 @@ export function useRescheduleBookingForm(booking: Booking, onSuccess?: () => voi
         professional: selectedProfessional,
         date: selectedDate,
         bookingIdToExclude: booking.id,
-        durationMinutes: duration // Pass the calculated duration
+        durationMinutes: duration,
+        serviceId: booking.service?.id
     });
 
     const error = formError || availabilityError;
@@ -99,9 +103,8 @@ export function useRescheduleBookingForm(booking: Booking, onSuccess?: () => voi
             await queryClient.invalidateQueries({ queryKey: ['bookings'] }); // Force refresh of all bookings
             onSuccess?.();
             handleClose();
-        } catch (err: any) {
-            const errorMessage = err.response?.data?.message ||
-                "No se pudo reprogramar la cita. Por favor intenta de nuevo.";
+        } catch (err) {
+            const errorMessage = getErrorMessage(err);
             setFormError(errorMessage);
         } finally {
             setSubmitting(false);
@@ -115,7 +118,9 @@ export function useRescheduleBookingForm(booking: Booking, onSuccess?: () => voi
         selectedSlot,
         availableSlots,
         allPotentialSlots,
-        breakSlots, 
+        breakSlots,
+        blockedSlots,
+        advanceRestriction, 
         loadingSlots,
         submitting,
         error,

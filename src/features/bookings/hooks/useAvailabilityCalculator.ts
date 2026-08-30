@@ -1,13 +1,14 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { BookingsService } from "../api/bookings.service";
 import { generateTimeSlots, timeToMinutes, minutesToTime } from "../utils/timeUtils";
 import { normalizeDateString } from "../../../utils/dateUtils";
 import type { Professional } from "../../professionals/types";
 import type { Closure, Schedule } from "../../schedules/types";
 import type { Service } from "../../services/types";
-import type { AvailabilitySlot } from "../types";
+import type { AvailabilitySlot, AdvanceRestriction, AvailabilityResponse } from "../types";
 import { useTenant } from "../../../context/TenantContext";
 import { filterSlotsByDuration } from "../utils/availabilityRules";
+import { getErrorMessage } from "../../../lib/errorHandler";
 
 interface UseAvailabilityCalculatorProps {
     selectedProfessional: Professional | null;
@@ -30,18 +31,25 @@ export function useAvailabilityCalculator({
 }: UseAvailabilityCalculatorProps) {
     const { tenant } = useTenant();
 
+    const requestSeqRef = useRef(0);
+
     const [availableSlots, setAvailableSlots] = useState<string[]>([]);
     const [allPotentialSlots, setAllPotentialSlots] = useState<string[]>([]);
     const [breakSlots, setBreakSlots] = useState<string[]>([]);
+    const [blockedSlots, setBlockedSlots] = useState<Map<string, 'past' | 'advance'>>(new Map());
     const [loadingSlots, setLoadingSlots] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [advanceRestriction, setAdvanceRestriction] = useState<AdvanceRestriction | undefined>(undefined);
 
     const calculateSlots = useCallback(async () => {
+        const requestId = ++requestSeqRef.current;
         setLoadingSlots(true);
         setError(null);
         setAvailableSlots([]);
         setAllPotentialSlots([]);
         setBreakSlots([]);
+        setBlockedSlots(new Map());
+        setAdvanceRestriction(undefined);
 
         try {
             if (!selectedProfessional || !selectedDate) return;
@@ -126,12 +134,24 @@ export function useAvailabilityCalculator({
             if (!tenant?.slug) return;
 
             // 4. Check API Availability - Backend is source of truth
-            const availabilityRes = await BookingsService.checkAvailability(selectedProfessional.id, selectedDate, userId);
+            const availabilityRes = await BookingsService.checkAvailability(selectedProfessional.id, selectedDate, userId, selectedService?.id);
+            // Guardamos contra respuestas fuera de orden (cambio de fecha/profesional rápido)
+            if (requestId !== requestSeqRef.current) return;
+            const advanceRestrictionData = (availabilityRes as AvailabilityResponse)?.advanceRestriction;
+            setAdvanceRestriction(advanceRestrictionData);
+
             const rawSlots: AvailabilitySlot[] = availabilityRes.slots || [];
 
             const apiAvailableTimes = rawSlots
                 .filter(s => s.available)
                 .map((s) => s.time.substring(0, 5));
+
+            const apiBlockedSlots = new Map<string, string>();
+            rawSlots.forEach(s => {
+                if (!s.available && s.blockedBy) {
+                    apiBlockedSlots.set(s.time.substring(0, 5), s.blockedBy);
+                }
+            });
 
             const serviceDuration = selectedService?.durationMinutes || 30;
 
@@ -157,24 +177,34 @@ export function useAvailabilityCalculator({
 
             setAvailableSlots(finalAvailableSlots);
 
+            const blockedMap = new Map<string, 'past' | 'advance'>();
+            rawSlots.forEach(s => {
+                const t = s.time.substring(0, 5);
+                if (!s.available && s.blockedBy) {
+                    blockedMap.set(t, s.blockedBy);
+                }
+            });
+            setBlockedSlots(blockedMap);
+
             if (rawSlots.length > 0) {
                 const apiAllTimes = rawSlots.map(s => s.time.substring(0, 5));
                 setAllPotentialSlots(apiAllTimes);
             }
 
-        } catch (err: any) {
-            let errorMessage = "No se pudo verificar la disponibilidad.";
-            if (err.response?.data?.message) {
-                errorMessage = err.response.data.message;
-            } else if (typeof err.message === 'string') {
-                errorMessage = err.message;
-            }
-            setError(errorMessage);
+        } catch (err) {
+            if (requestId !== requestSeqRef.current) return;
+            setError(getErrorMessage(err));
             setAvailableSlots([]);
+            setAllPotentialSlots([]);
+            setBreakSlots([]);
+            setBlockedSlots(new Map());
+            setAdvanceRestriction(undefined);
         } finally {
-            setLoadingSlots(false);
+            if (requestId === requestSeqRef.current) {
+                setLoadingSlots(false);
+            }
         }
-    }, [selectedProfessional, selectedService, selectedDate, closures, schedules, tenantSchedules, tenant?.slug]);
+    }, [selectedProfessional, selectedService, selectedDate, userId, closures, schedules, tenantSchedules, tenant?.slug]);
 
     // Trigger calculation when dependencies change
     useEffect(() => {
@@ -185,8 +215,10 @@ export function useAvailabilityCalculator({
         availableSlots,
         allPotentialSlots,
         breakSlots,
+        blockedSlots,
         loadingSlots,
         error,
+        advanceRestriction,
         refresh: calculateSlots
     };
 }

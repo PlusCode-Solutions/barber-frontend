@@ -38,10 +38,11 @@ export const BookingsService = {
     checkAvailability: async (
         professionalId: string,
         date: string,
-        userId?: string
+        userId?: string,
+        serviceId?: string
     ): Promise<AvailabilityResponse> => {
         const res = await axios.get(`/bookings/availability`, {
-            params: { professionalId, date, userId }
+            params: { professionalId, date, userId, serviceId }
         });
         return res.data;
     },

@@ -15,6 +15,8 @@ interface Tenant {
   googleMapsUrl?: string | null;
   address?: string | null;
   phone?: string | null;
+  bookingAdvanceEnabled?: boolean | null;
+  bookingAdvanceHours?: number | null;
 }
 
 interface TenantContextType {
@@ -31,9 +33,8 @@ const TenantContext = createContext<TenantContextType>({
   clearTenant: () => { },
 });
 
-// ─────────────────────────────────────────────────
+
 // PRIVATE UTILITIES
-// ─────────────────────────────────────────────────
 
 function extractSlugFromURL(): string | null {
   const path = window.location.pathname;
@@ -70,10 +71,7 @@ function hexToRgb(color: string): string {
   throw new Error('Invalid color format');
 }
 
-// ─────────────────────────────────────────────────
 // MAIN PROVIDER
-// ─────────────────────────────────────────────────
-
 export function TenantProvider({ children }: { children: React.ReactNode }) {
   const [tenant, setTenantState] = useState<Tenant | null>(null);
   const [isTenantLoading, setIsTenantLoading] = useState(true);
@@ -138,7 +136,7 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
       } catch (e) { }
     }
 
-    // 🚀 THE MAGIC: Start fading out, then unmount
+    //  THE MAGIC: Start fading out, then unmount
     setIsFadingOut(true);
     const timer = setTimeout(() => {
       setIsTenantLoading(false);

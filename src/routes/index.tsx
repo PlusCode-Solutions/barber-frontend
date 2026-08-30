@@ -1,8 +1,9 @@
-import { Routes } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { publicRoutes } from "./publicRoutes";
 import { userRoutes } from "./userRoutes";
 import { tenantAdminRoutes } from "./tenantAdminRoutes";
 import { superAdminRoutes } from "./superAdminRoutes";
+import NotFoundPage from "../pages/NotFoundPage";
 
 /**
  * Main application router
@@ -22,6 +23,9 @@ export default function AppRoutes() {
 
             {/* User Routes */}
             {userRoutes}
+
+            {/* Catch-all: unmatched client routes render the 404 page */}
+            <Route path="*" element={<NotFoundPage />} />
         </Routes>
     );
 }
