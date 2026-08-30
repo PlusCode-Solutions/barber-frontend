@@ -32,7 +32,9 @@ function RescheduleBookingModalContent({ booking, onClose, onSuccess, primaryCol
         selectedSlot,
         availableSlots,
         allPotentialSlots,
-        breakSlots, // Extract here
+        breakSlots,
+        blockedSlots,
+        advanceRestriction,
         loadingSlots,
         submitting,
         error,
@@ -65,7 +67,7 @@ function RescheduleBookingModalContent({ booking, onClose, onSuccess, primaryCol
                         </div>
                         <div>
                             <h2 className="text-xl font-bold text-white">Reprogramar Cita</h2>
-                            <p className="text-blue-100 text-sm">{selectedService?.name} con {selectedProfessional?.name}</p>
+                            <p className="text-blue-100 text-sm">{selectedService?.name ?? "Servicio no disponible"} con {selectedProfessional?.name ?? "Profesional"}</p>
                         </div>
                     </div>
                     <button
@@ -92,11 +94,13 @@ function RescheduleBookingModalContent({ booking, onClose, onSuccess, primaryCol
                         selectedDate={selectedDate}
                         availableSlots={availableSlots}
                         allPotentialSlots={allPotentialSlots}
-                        breakSlots={breakSlots} // Pass it here
+                        breakSlots={breakSlots}
+                        blockedSlots={blockedSlots}
+                        advanceRestriction={advanceRestriction}
                         loadingSlots={loadingSlots}
                         closures={closures}
                         schedules={schedules}
-                        tenantSchedules={tenantSchedules} // Pass it here
+                        tenantSchedules={tenantSchedules}
                         professionalId={selectedProfessional?.id}
                         onDateChange={handleDateChange}
                         onSelectSlot={handleSlotSelect}

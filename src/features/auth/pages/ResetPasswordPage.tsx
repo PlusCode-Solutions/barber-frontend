@@ -4,6 +4,7 @@ import { useTenantLoader } from "../../tenants/hooks/useTenantLoader";
 import { AuthService } from "../api/auth.service";
 import { Input } from "../../../components/ui/Input";
 import { toast } from "react-hot-toast";
+import { getErrorMessage } from "../../../lib/errorHandler";
 
 export default function ResetPasswordPage() {
     const { tenantSlug } = useParams();
@@ -41,7 +42,7 @@ export default function ResetPasswordPage() {
             toast.success("Contraseña restablecida con éxito. Ya puedes iniciar sesión.");
             navigate(`/${tenantSlug}/auth/login`);
         } catch (error: any) {
-            toast.error(error.response?.data?.message || "Error al restablecer la contraseña.");
+            toast.error(getErrorMessage(error));
         } finally {
             setLoading(false);
         }

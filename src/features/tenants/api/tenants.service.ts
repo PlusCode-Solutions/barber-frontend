@@ -15,6 +15,8 @@ interface Tenant {
     googleMapsUrl?: string;
     address?: string;
     phone?: string;
+    bookingAdvanceEnabled?: boolean;
+    bookingAdvanceHours?: number;
     createdAt: string;
     updatedAt: string;
 }

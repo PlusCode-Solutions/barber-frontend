@@ -18,6 +18,7 @@ import { Filter, RefreshCw, Plus } from "lucide-react";
 import Toast from "../../../components/ui/Toast";
 import { useTimeline } from "../hooks/useTimeline";
 import { useTenant } from "../../../context/TenantContext";
+import { ApiError, getErrorMessage } from "../../../lib/errorHandler";
 export default function TenantBookingsPage() {
     const { user } = useAuth();
     const { tenant } = useTenant();
@@ -88,12 +89,12 @@ export default function TenantBookingsPage() {
             });
             setBookingToCancel(null);
             refetch();
-        } catch (error: any) {
-            const isForbidden = error?.response?.status === 403;
+        } catch (error) {
+            const isForbidden = (error as ApiError)?.statusCode === 403;
             setToast({
                 message: isForbidden
                     ? "No tienes permiso para eliminar citas de otras personas"
-                    : "Error al cancelar la cita. Inténtalo de nuevo.",
+                    : getErrorMessage(error),
                 type: "error",
                 isVisible: true,
             });

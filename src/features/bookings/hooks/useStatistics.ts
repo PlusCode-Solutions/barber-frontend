@@ -4,6 +4,7 @@ import { BookingsService } from "../api/bookings.service";
 import { useTenant } from "../../../context/TenantContext";
 import { PDFService } from "../services/pdf.service";
 import { toast } from "react-hot-toast";
+import { getErrorMessage } from "../../../lib/errorHandler";
 
 
 // Singleton to persist statistics between navigations without using extra libraries
@@ -43,7 +44,7 @@ export function useStatistics() {
             lastEndDate = endDate;
 
         } catch (error: any) {
-            const msg = error.response?.data?.message || "Error al cargar las estadísticas";
+            const msg = getErrorMessage(error);
             toast.error(msg);
         } finally {
             setLoading(false);

@@ -4,6 +4,7 @@ import { useTenantLoader } from "../../tenants/hooks/useTenantLoader";
 import { AuthService } from "../api/auth.service";
 import { Input } from "../../../components/ui/Input";
 import { toast } from "react-hot-toast";
+import { getErrorMessage } from "../../../lib/errorHandler";
 
 export default function ForgotPasswordPage() {
     const { tenantSlug } = useParams();
@@ -21,7 +22,7 @@ export default function ForgotPasswordPage() {
             setSubmitted(true);
             toast.success("Si tu cuenta existe, recibirás instrucciones en breve.");
         } catch (error: any) {
-            toast.error(error.response?.data?.message || "No se pudo procesar la solicitud.");
+            toast.error(getErrorMessage(error));
         } finally {
             setLoading(false);
         }

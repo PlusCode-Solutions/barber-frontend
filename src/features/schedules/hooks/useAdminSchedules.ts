@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { SchedulesService } from '../api/schedules.service';
 import type { CreateScheduleDto, CreateClosureDto, Schedule, Closure } from '../types';
 import { useTenant } from '../../../context/TenantContext';
+import { getErrorMessage } from '../../../lib/errorHandler';
 
 export function useAdminSchedules() {
     const { tenant } = useTenant();
@@ -63,7 +64,7 @@ export function useAdminSchedules() {
             await deleteClosureMutation.mutateAsync(id);
             return true;
         } catch (error: any) {
-            return error.response?.data?.message || error.message || "Error desconocido al eliminar";
+            return getErrorMessage(error);
         }
     };
 

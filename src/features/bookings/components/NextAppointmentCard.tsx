@@ -7,6 +7,7 @@ import { useUserBookings } from '../hooks/useUserBookings';
 import CancelBookingModal from './CancelBookingModal';
 import Toast from '../../../components/ui/Toast';
 import { formatFullDate, safeDate, isPastBooking, formatHour } from '../../../utils/dateUtils';
+import { ApiError, getErrorMessage } from '../../../lib/errorHandler';
 
 export default function NextAppointmentCard() {
     const { user } = useAuth();
@@ -59,12 +60,12 @@ export default function NextAppointmentCard() {
             });
             setBookingToCancel(null);
             queryClient.invalidateQueries({ queryKey: ['bookings'] }); // Update ALL lists including dashboard
-        } catch (error: any) {
-            const isForbidden = error?.response?.status === 403;
+        } catch (error) {
+            const isForbidden = (error as ApiError)?.statusCode === 403;
             setToast({
                 message: isForbidden
                     ? "No tienes permiso para eliminar citas"
-                    : "Error al cancelar la cita.",
+                    : getErrorMessage(error),
                 type: "error",
                 isVisible: true,
             });

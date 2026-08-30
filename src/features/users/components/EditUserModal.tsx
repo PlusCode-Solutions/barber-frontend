@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import type { User, UpdateUserDto } from "../types";
 import type { UserRole } from "../../../config/roles";
 import { useUpdateUser } from "../hooks/useUpdateUser";
+import { getErrorMessage } from "../../../lib/errorHandler";
 
 interface EditUserModalProps {
     user: User;
@@ -59,8 +60,8 @@ export default function EditUserModal({ user, isOpen, onClose, onSuccess }: Edit
         } catch (err: any) {
             console.error("Update error:", err);
 
-            const msg = err.response?.data?.message;
-            const msgs = Array.isArray(msg) ? msg : [msg || err.message];
+            const msg = getErrorMessage(err);
+            const msgs = [msg];
 
             const hasRoleError = msgs.some((m: any) =>
                 typeof m === 'string' && (m.includes('role') || m.includes('not exist'))

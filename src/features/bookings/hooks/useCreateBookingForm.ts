@@ -11,6 +11,7 @@ import type { Closure, Schedule } from "../../schedules/types";
 import { useAvailabilityCalculator } from "./useAvailabilityCalculator";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../../context/AuthContext";
+import { getErrorMessage } from "../../../lib/errorHandler";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -25,7 +26,6 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
     const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
     const [selectedDate, setSelectedDate] = useState("");
     const [selectedSlot, setSelectedSlot] = useState("");
-    const [notes, setNotes] = useState("");
 
 
     // UI State
@@ -64,8 +64,10 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         availableSlots,
         allPotentialSlots,
         breakSlots,
+        blockedSlots,
         loadingSlots,
         error: availabilityError,
+        advanceRestriction,
         refresh: refreshAvailability
     } = useAvailabilityCalculator({
         selectedProfessional,
@@ -85,7 +87,6 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         setSelectedProfessional(null);
         setSelectedDate("");
         setSelectedSlot("");
-        setNotes("");
 
         setFormError(null);
         setValidationErrors([]);
@@ -101,6 +102,9 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
 
     const handleServiceSelect = useCallback((service: Service) => {
         setSelectedService(service);
+        // Limpiar selecciones previas de fecha/hora al cambiar de servicio
+        setSelectedDate("");
+        setSelectedSlot("");
         if (user?.role === 'PROFESSIONAL' && user?.professionalId) {
             setSelectedProfessional({ id: user.professionalId, name: user.name || 'Profesional' } as Professional);
             setStep(3);
@@ -112,6 +116,9 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
 
     const handleProfessionalSelect = useCallback((professional: Professional) => {
         setSelectedProfessional(professional);
+        // Limpiar selecciones previas de fecha/hora al cambiar de profesional
+        setSelectedDate("");
+        setSelectedSlot("");
         setStep(3);
         setFormError(null);
     }, []);
@@ -140,7 +147,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
 
         // Availability Safety Check
         // Ensure the slot is strictly available before submitting
-        if (availableSlots.length > 0 && !availableSlots.includes(selectedSlot)) {
+        if (selectedSlot && !availableSlots.includes(selectedSlot)) {
             errors.push({ field: 'slot', message: 'Este horario ya no está disponible. Por favor selecciona otro.' });
         }
 
@@ -164,7 +171,6 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
             date: selectedDate,
             startTime: selectedSlot,
             endTime: endTime,
-            notes: notes || undefined
         };
 
         setSubmitting(true);
@@ -174,16 +180,12 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
             await queryClient.invalidateQueries({ queryKey: ['bookings'] }); // Refresh lists
             handleClose();
             onSuccess?.();
-        } catch (err: any) {
-            let errorMessage = err.response?.data?.message ||
-                "No se pudo crear la cita. Por favor intenta de nuevo.";
+        } catch (err) {
+            let errorMessage = getErrorMessage(err);
 
             // Handle Concurrent Booking Conflict (409)
-            if (err.response?.status === 409) {
-                // If the backend didn't provide a specific message, use the fallback
-                if (!err.response?.data?.message) {
-                    errorMessage = "Lo sentimos, este horario acaba de ser reservado por otra persona. Por favor selecciona otro.";
-                }
+            if ((err as { statusCode?: number })?.statusCode === 409) {
+                errorMessage = "Lo sentimos, este horario acaba de ser reservado por otra persona. Por favor selecciona otro.";
 
                 // Refresh slots to show the latest availability
                 refreshAvailability();
@@ -197,7 +199,7 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         } finally {
             setSubmitting(false);
         }
-    }, [selectedService, selectedProfessional, selectedDate, selectedSlot, notes, availableSlots, handleClose, onSuccess, tenant?.slug, refreshAvailability]);
+    }, [selectedService, selectedProfessional, selectedDate, selectedSlot, availableSlots, handleClose, onSuccess, tenant?.slug, refreshAvailability]);
 
     const goToStep = useCallback((newStep: Step) => {
         setStep(newStep);
@@ -220,10 +222,11 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         selectedProfessional,
         selectedDate,
         selectedSlot,
-        notes,
         availableSlots,      // From hook
         allPotentialSlots,   // From hook
         breakSlots,          // From hook
+        blockedSlots,        // From hook
+        advanceRestriction,   // From hook
         loadingSlots,        // From hook
         submitting,
         error,
@@ -240,7 +243,6 @@ export function useCreateBookingForm(onSuccess?: () => void, onClose?: () => voi
         handleDateChange,
         handleSlotSelect,
         handleSubmit,
-        setNotes,
         goToStep,
         clearError,
     };

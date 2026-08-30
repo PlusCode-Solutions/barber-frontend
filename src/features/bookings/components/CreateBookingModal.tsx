@@ -26,11 +26,12 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess, viewOnl
         selectedProfessional,
         selectedDate,
         selectedSlot,
-        notes,
 
         availableSlots,
         allPotentialSlots,
         breakSlots,
+        blockedSlots,
+        advanceRestriction,
         loadingSlots,
         submitting,
         error,
@@ -40,7 +41,6 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess, viewOnl
         handleDateChange,
         handleSlotSelect,
         handleSubmit,
-        setNotes,
         goToStep,
         clearError,
         closures,
@@ -135,6 +135,8 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess, viewOnl
                             availableSlots={availableSlots}
                             allPotentialSlots={allPotentialSlots}
                             breakSlots={breakSlots}
+                            advanceRestriction={advanceRestriction}
+                            blockedSlots={blockedSlots}
                             loadingSlots={loadingSlots}
                             closures={closures}
                             schedules={schedules}
@@ -153,8 +155,6 @@ export default function CreateBookingModal({ isOpen, onClose, onSuccess, viewOnl
                             professional={selectedProfessional}
                             date={selectedDate}
                             slot={selectedSlot}
-                            notes={notes}
-                            onNotesChange={setNotes}
                             submitting={submitting}
                             error={error}
                             onSubmit={handleSubmit}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { SchedulesService } from "../../schedules/api/schedules.service";
 import { BookingsService } from "../api/bookings.service";
 import { useAuth } from "../../../context/AuthContext";
@@ -7,7 +7,7 @@ import type { Closure, Schedule } from "../../schedules/types";
 import { normalizeDateString, safeDate } from "../../../utils/dateUtils";
 import { generateTimeSlots, timeToMinutes, minutesToTime } from "../utils/timeUtils";
 import { getDay } from "date-fns";
-import type { AvailabilitySlot } from "../types";
+import type { AvailabilitySlot, AdvanceRestriction, AvailabilityResponse } from "../types";
 
 import { filterSlotsByDuration } from "../utils/availabilityRules";
 
@@ -15,7 +15,8 @@ interface UseBookingAvailabilityProps {
     professional: { id: string } | null | undefined;
     date: string;
     bookingIdToExclude?: string;
-    durationMinutes?: number; // Add duration
+    durationMinutes?: number;
+    serviceId?: string;
 }
 
 
@@ -23,9 +24,11 @@ interface UseBookingAvailabilityProps {
  * Centralized hook to calculate availability.
  * Combines business rules (Tenant/Professional Schedules, Closures) with real availability (Bookings).
  */
-export function useBookingAvailability({ professional, date, bookingIdToExclude, durationMinutes }: UseBookingAvailabilityProps) {
+export function useBookingAvailability({ professional, date, bookingIdToExclude, durationMinutes, serviceId }: UseBookingAvailabilityProps) {
     const { tenant } = useTenant();
     const { user } = useAuth();
+
+    const requestSeqRef = useRef(0);
 
     const [availableSlots, setAvailableSlots] = useState<string[]>([]);
     const [allPotentialSlots, setAllPotentialSlots] = useState<string[]>([]);
@@ -36,6 +39,8 @@ export function useBookingAvailability({ professional, date, bookingIdToExclude,
     const [closures, setClosures] = useState<Closure[]>([]);
     const [schedules, setSchedules] = useState<Schedule[]>([]);
     const [tenantSchedules, setTenantSchedules] = useState<Schedule[]>([]);
+    const [advanceRestriction, setAdvanceRestriction] = useState<AdvanceRestriction | undefined>(undefined);
+    const [blockedSlots, setBlockedSlots] = useState<Map<string, 'past' | 'advance'>>(new Map());
 
     // 1. Load Schedules and Closures (System)
     useEffect(() => {
@@ -52,7 +57,7 @@ export function useBookingAvailability({ professional, date, bookingIdToExclude,
             setClosures(Array.from(closureMap.values()));
             setSchedules(schedulesData);
             setTenantSchedules(tenantSchedulesData);
-        }).catch(() => { });
+        }).catch(() => setError("No se pudieron cargar los horarios."));
     }, [professional, tenant?.slug]);
 
     // 2. Calculate Slots and Check Availability
@@ -60,15 +65,24 @@ export function useBookingAvailability({ professional, date, bookingIdToExclude,
         if (!professional || !date) {
             setAvailableSlots([]);
             setAllPotentialSlots([]);
+            setBreakSlots([]);
+            setBlockedSlots(new Map());
+            setAdvanceRestriction(undefined);
             return;
         }
 
         // Limpieza inicial
+        const requestId = ++requestSeqRef.current;
         setAvailableSlots([]);
         setAllPotentialSlots([]);
+        setBreakSlots([]);
+        setBlockedSlots(new Map());
+        setAdvanceRestriction(undefined);
         setError(null);
 
         const fetchAvailability = async () => {
+            if (!tenant?.slug) return;
+
             // A. Check Closures
             const closure = closures.find(c => {
                 const isDateMatch = normalizeDateString(c.date) === date;
@@ -144,17 +158,38 @@ export function useBookingAvailability({ professional, date, bookingIdToExclude,
                 const formattedDate = parsedDate.toISOString().split('T')[0];
 
                 const [availabilityRes, bookingsResponse] = await Promise.all([
-                    BookingsService.checkAvailability(professional.id, formattedDate),
+                    BookingsService.checkAvailability(professional.id, formattedDate, undefined, serviceId),
                     isAdmin
                         ? BookingsService.getTenantBookings(1, 100, professional.id, formattedDate, formattedDate).catch(() => ({ data: [] }))
                         : Promise.resolve({ data: [] })
                 ]);
 
+                // Guardamos contra respuestas fuera de orden (cambio de fecha/profesional rápido)
+                if (requestId !== requestSeqRef.current) return;
+
                 const existingBookings = (bookingsResponse as any).data || [];
+
+                const restrictionData = !Array.isArray(availabilityRes)
+                    ? (availabilityRes as AvailabilityResponse)?.advanceRestriction
+                    : undefined;
+
+                if (restrictionData) {
+                    setAdvanceRestriction(restrictionData);
+                } else {
+                    setAdvanceRestriction(undefined);
+                }
 
                 const rawSlots: AvailabilitySlot[] = Array.isArray(availabilityRes)
                     ? availabilityRes
                     : (availabilityRes?.slots || []);
+
+                const blockedMap = new Map<string, 'past' | 'advance'>();
+                rawSlots.forEach(s => {
+                    if (!s.available && s.blockedBy) {
+                        blockedMap.set(s.time.substring(0, 5), s.blockedBy);
+                    }
+                });
+                setBlockedSlots(blockedMap);
 
                 const occupiedRanges: { start: number, end: number }[] = [];
                 existingBookings.forEach((b: any) => {
@@ -196,27 +231,33 @@ export function useBookingAvailability({ professional, date, bookingIdToExclude,
                 setAvailableSlots(validatedSlots);
 
             } catch {
+                if (requestId !== requestSeqRef.current) return;
                 setError("No se pudo verificar disponibilidad.");
+                setAllPotentialSlots([]);
+                setBreakSlots([]);
+                setBlockedSlots(new Map());
+                setAdvanceRestriction(undefined);
             } finally {
-                setLoading(false);
+                if (requestId === requestSeqRef.current) {
+                    setLoading(false);
+                }
             }
         };
 
-        // Execute only if metadata is loaded
-        if (schedules.length > 0 || tenantSchedules.length > 0) {
-            fetchAvailability();
-        }
+        fetchAvailability();
 
-    }, [professional, date, closures, schedules, tenantSchedules, tenant?.slug, user?.role, bookingIdToExclude]);
+    }, [professional, date, serviceId, durationMinutes, closures, schedules, tenantSchedules, tenant?.slug, user?.role, bookingIdToExclude]);
 
     return {
         availableSlots,
         allPotentialSlots,
         breakSlots,
+        blockedSlots,
         loading,
         error,
         closures,
         schedules,
-        tenantSchedules
+        tenantSchedules,
+        advanceRestriction
     };
 }
