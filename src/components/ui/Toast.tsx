@@ -1,9 +1,9 @@
 import { useEffect } from "react";
-import { CheckCircle, X } from "lucide-react";
+import { CheckCircle, Info, X } from "lucide-react";
 
 interface ToastProps {
     message: string;
-    type?: "success" | "error";
+    type?: "success" | "error" | "info";
     isVisible: boolean;
     onClose: () => void;
 }
@@ -25,13 +25,19 @@ export default function Toast({ message, type = "success", isVisible, onClose }:
         <div className="fixed top-4 right-4 z-[100] animate-slide-in-right">
             <div className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border ${type === "success"
                     ? "bg-green-50 border-green-200"
-                    : "bg-red-50 border-red-200"
+                    : type === "info"
+                      ? "bg-blue-50 border-blue-200"
+                      : "bg-red-50 border-red-200"
                 }`}>
-                <CheckCircle
-                    size={20}
-                    className={type === "success" ? "text-green-600" : "text-red-600"}
-                />
-                <span className={`font-medium text-sm ${type === "success" ? "text-green-800" : "text-red-800"
+                {type === "info" ? (
+                    <Info size={20} className="text-blue-600" />
+                ) : (
+                    <CheckCircle
+                        size={20}
+                        className={type === "success" ? "text-green-600" : "text-red-600"}
+                    />
+                )}
+                <span className={`font-medium text-sm ${type === "success" ? "text-green-800" : type === "info" ? "text-blue-800" : "text-red-800"
                     }`}>
                     {message}
                 </span>

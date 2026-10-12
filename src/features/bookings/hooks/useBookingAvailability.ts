@@ -33,7 +33,8 @@ export function useBookingAvailability({ professional, date, bookingIdToExclude,
     const [availableSlots, setAvailableSlots] = useState<string[]>([]);
     const [allPotentialSlots, setAllPotentialSlots] = useState<string[]>([]);
     const [breakSlots, setBreakSlots] = useState<string[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [loadingSchedules, setLoadingSchedules] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const [closures, setClosures] = useState<Closure[]>([]);
@@ -44,8 +45,12 @@ export function useBookingAvailability({ professional, date, bookingIdToExclude,
 
     // 1. Load Schedules and Closures (System)
     useEffect(() => {
-        if (!professional || !tenant?.slug) return;
+        if (!professional || !tenant?.slug) {
+            setLoadingSchedules(false);
+            return;
+        }
 
+        setLoadingSchedules(true);
         Promise.all([
             SchedulesService.getClosures(professional.id),
             SchedulesService.getSchedules(professional.id),
@@ -57,7 +62,8 @@ export function useBookingAvailability({ professional, date, bookingIdToExclude,
             setClosures(Array.from(closureMap.values()));
             setSchedules(schedulesData);
             setTenantSchedules(tenantSchedulesData);
-        }).catch(() => setError("No se pudieron cargar los horarios."));
+        }).catch(() => setError("No se pudieron cargar los horarios."))
+          .finally(() => setLoadingSchedules(false));
     }, [professional, tenant?.slug]);
 
     // 2. Calculate Slots and Check Availability
@@ -68,10 +74,11 @@ export function useBookingAvailability({ professional, date, bookingIdToExclude,
             setBreakSlots([]);
             setBlockedSlots(new Map());
             setAdvanceRestriction(undefined);
+            setLoading(false);
             return;
         }
 
-        // Limpieza inicial
+        // Limpieza inicial + skeleton inmediato (también al cambiar fecha)
         const requestId = ++requestSeqRef.current;
         setAvailableSlots([]);
         setAllPotentialSlots([]);
@@ -79,9 +86,16 @@ export function useBookingAvailability({ professional, date, bookingIdToExclude,
         setBlockedSlots(new Map());
         setAdvanceRestriction(undefined);
         setError(null);
+        setLoading(true);
 
         const fetchAvailability = async () => {
-            if (!tenant?.slug) return;
+            if (!tenant?.slug) {
+                setLoading(false);
+                return;
+            }
+
+            // Horarios base aún cargando -> mantener skeleton, sin pintar error
+            if (loadingSchedules) return;
 
             // A. Check Closures
             const closure = closures.find(c => {
@@ -95,12 +109,16 @@ export function useBookingAvailability({ professional, date, bookingIdToExclude,
 
             if (closure) {
                 setError(`Cerrado: ${closure.reason || 'Mantenimiento o Festivo'}`);
+                setLoading(false);
                 return;
             }
 
             // B. Validate Schedule Restrictions
             const parsedDate = safeDate(date);
-            if (!parsedDate) return;
+            if (!parsedDate) {
+                setLoading(false);
+                return;
+            }
 
             const dayOfWeek = getDay(parsedDate);
             const schedule = schedules.find(s => Number(s.dayOfWeek) === Number(dayOfWeek));
@@ -109,6 +127,7 @@ export function useBookingAvailability({ professional, date, bookingIdToExclude,
             if (!tenantSchedule || tenantSchedule.isClosed || !tenantSchedule.startTime || !tenantSchedule.endTime) {
                 setAllPotentialSlots([]);
                 setError(`No abrimos los ${parsedDate.toLocaleDateString('es-ES', { weekday: 'long' })}.`);
+                setLoading(false);
                 return;
             }
 
@@ -246,7 +265,7 @@ export function useBookingAvailability({ professional, date, bookingIdToExclude,
 
         fetchAvailability();
 
-    }, [professional, date, serviceId, durationMinutes, closures, schedules, tenantSchedules, tenant?.slug, user?.role, bookingIdToExclude]);
+    }, [professional, date, serviceId, durationMinutes, closures, schedules, tenantSchedules, tenant?.slug, user?.role, bookingIdToExclude, loadingSchedules]);
 
     return {
         availableSlots,
@@ -254,6 +273,7 @@ export function useBookingAvailability({ professional, date, bookingIdToExclude,
         breakSlots,
         blockedSlots,
         loading,
+        loadingSchedules,
         error,
         closures,
         schedules,
