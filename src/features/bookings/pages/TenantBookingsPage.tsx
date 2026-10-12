@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import BookingsList from "../components/BookingsList";
 import CancelBookingModal from "../components/CancelBookingModal";
 import CreateBookingModal from "../components/CreateBookingModal";
+import BookingDetailModal, { type BookingDetail } from "../components/BookingDetailModal";
 import { useAuth } from "../../../context/AuthContext";
 import { BookingsService } from "../api/bookings.service";
 import BookingsSkeleton from "../components/BookingsSkeleton";
 import Pagination from "../../../components/ui/Pagination";
 import {
     formatDateForInput,
+    formatFullDate,
     formatHour,
     formatRelativeDate,
 } from "../../../utils/dateUtils";
@@ -32,6 +34,7 @@ export default function TenantBookingsPage() {
     const { professionals } = useProfessionals();
     const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
     const [isCancelling, setIsCancelling] = useState(false);
+    const [selectedBooking, setSelectedBooking] = useState<BookingDetail | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 6;
@@ -128,6 +131,27 @@ export default function TenantBookingsPage() {
 
     const paginatedDisplay = paginatedRaw.map(formatItem);
 
+    const handleSelectBooking = (b: { id: string; status: string }) => {
+        if (b.status === 'AVAILABLE' || b.status === 'CLOSED') return;
+        const raw: any = paginatedRaw.find((r: any) => r.id === b.id) ?? {};
+        const display: any = paginatedDisplay.find((d: any) => d.id === b.id) ?? {};
+        const user = raw.user ?? display.user;
+        setSelectedBooking({
+            id: b.id,
+            customerName: user?.name || display.customerName || "Cliente Desconocido",
+            email: user?.email,
+            phone: user?.phone,
+            serviceName: raw.service?.name || display.service?.name || "Servicio General",
+            professionalName: raw.professional?.name || display.professionalName || "Profesional Asignado",
+            dateLabel: raw.date ? formatFullDate(raw.date) : (display.date || ""),
+            timeLabel: raw.startTime
+                ? `${formatHour(raw.startTime, "12h")} - ${formatHour(raw.endTime, "12h")}`
+                : `${display.startTime || ""} - ${display.endTime || ""}`,
+            status: raw.status || b.status,
+            notes: raw.notes ?? null,
+        });
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 pb-8">
             <Toast
@@ -200,6 +224,7 @@ export default function TenantBookingsPage() {
                         ...b,
                         id: b.id || Math.random().toString()
                     }))}
+                    onSelectBooking={handleSelectBooking}
                     onCancelBooking={(b) => setBookingToCancel(b.id)}
                 />
 
@@ -221,6 +246,12 @@ export default function TenantBookingsPage() {
                 isCancelling={isCancelling}
                 onClose={() => setBookingToCancel(null)}
                 onConfirm={handleConfirmCancel}
+            />
+
+            <BookingDetailModal
+                isOpen={!!selectedBooking}
+                booking={selectedBooking}
+                onClose={() => setSelectedBooking(null)}
             />
 
             <CreateBookingModal
