@@ -9,6 +9,7 @@ import SlotsSkeleton from "./SlotsSkeleton";
 
 interface SelectDateTimeStepProps {
     selectedDate: string;
+    selectedSlot?: string;
     availableSlots: string[];
     allPotentialSlots?: string[];
     breakSlots?: string[];
@@ -25,7 +26,7 @@ interface SelectDateTimeStepProps {
     viewOnly?: boolean;
 }
 
-type SlotState = 'available' | 'break' | 'advance' | 'occupied' | 'past' | 'locked';
+type SlotState = 'available' | 'break' | 'advance' | 'occupied' | 'past' | 'locked' | 'selected';
 
 interface SlotButtonProps {
     slot: string;
@@ -38,6 +39,7 @@ interface SlotButtonProps {
 function SlotButton({ slot, state, tooltip, onSelect, disallowSelect }: SlotButtonProps) {
     const styles: Record<SlotState, string> = {
         available: 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100 hover:border-green-300 hover:scale-105 active:scale-95',
+        selected: 'bg-blue-600 border-blue-600 text-white shadow-md scale-105 hover:bg-blue-700',
         locked: 'bg-green-50 border-green-200 text-green-700 cursor-default opacity-80',
         break: 'bg-orange-50 border-orange-200 text-orange-500 cursor-not-allowed opacity-70',
         advance: 'bg-red-50 border-red-200 text-red-500 cursor-not-allowed opacity-60',
@@ -47,6 +49,7 @@ function SlotButton({ slot, state, tooltip, onSelect, disallowSelect }: SlotButt
 
     const ariaLabels: Record<SlotState, string> = {
         available: `Seleccionar horario ${slot}`,
+        selected: `Horario elegido ${slot}`,
         locked: `Horario no disponible ${slot}`,
         break: `Descanso ${slot}`,
         advance: `Horario bloqueado ${slot} - requiere anticipacion`,
@@ -54,7 +57,7 @@ function SlotButton({ slot, state, tooltip, onSelect, disallowSelect }: SlotButt
         past: `Horario pasado ${slot}`,
     };
 
-    const canSelect = state === 'available' && !disallowSelect;
+    const canSelect = (state === 'available' || state === 'selected') && !disallowSelect;
 
     return (
         <button
@@ -72,6 +75,7 @@ function SlotButton({ slot, state, tooltip, onSelect, disallowSelect }: SlotButt
 
 export default function SelectDateTimeStep({
     selectedDate,
+    selectedSlot = "",
     availableSlots,
     allPotentialSlots = [],
     breakSlots = [],
@@ -104,6 +108,7 @@ export default function SelectDateTimeStep({
     };
 
     const buildSlotState = (slot: string): { state: SlotState; tooltip: string } => {
+        if (slot === selectedSlot && !viewOnly) return { state: 'selected', tooltip: 'Hora elegida' };
         const isAvailable = availableSlots.includes(slot);
         const isBreak = breakSlots.includes(slot);
         const blockedBy = blockedSlots?.get(slot);

@@ -4,6 +4,7 @@ import SelectDateTimeStep from "./booking-steps/SelectDateTimeStep";
 import { useTenant } from "../../../context/TenantContext";
 import type { Booking } from "../types";
 import { Button } from "../../../components/ui/Button";
+import { formatHour } from "../../../utils/dateUtils";
 
 interface RescheduleBookingModalProps {
     booking: Booking | null;
@@ -36,6 +37,7 @@ function RescheduleBookingModalContent({ booking, onClose, onSuccess, primaryCol
         blockedSlots,
         advanceRestriction,
         loadingSlots,
+        loadingSchedules,
         submitting,
         error,
         closures,
@@ -92,12 +94,13 @@ function RescheduleBookingModalContent({ booking, onClose, onSuccess, primaryCol
                 <div className="flex-1 overflow-y-auto p-6">
                     <SelectDateTimeStep
                         selectedDate={selectedDate}
+                        selectedSlot={selectedSlot}
                         availableSlots={availableSlots}
                         allPotentialSlots={allPotentialSlots}
                         breakSlots={breakSlots}
                         blockedSlots={blockedSlots}
                         advanceRestriction={advanceRestriction}
-                        loadingSlots={loadingSlots}
+                        loadingSlots={loadingSlots || loadingSchedules}
                         closures={closures}
                         schedules={schedules}
                         tenantSchedules={tenantSchedules}
@@ -105,6 +108,11 @@ function RescheduleBookingModalContent({ booking, onClose, onSuccess, primaryCol
                         onDateChange={handleDateChange}
                         onSelectSlot={handleSlotSelect}
                     />
+                    {selectedDate && selectedSlot && (
+                        <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-blue-800 text-sm font-semibold text-center">
+                            Hora elegida: {formatHour(selectedSlot, "12h")}
+                        </div>
+                    )}
                 </div>
 
                 {/* Footer */}
