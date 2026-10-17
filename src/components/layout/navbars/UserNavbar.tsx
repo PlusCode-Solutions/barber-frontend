@@ -1,12 +1,12 @@
-import { useState } from "react";
 import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, Home, CalendarCheck, Users, Scissors, Clock, LogOut } from "lucide-react";
+import { Home, CalendarCheck, Users, Scissors, Clock, LogOut } from "lucide-react";
 import { useTenant } from "../../../context/TenantContext";
 import { useAuth } from "../../../context/AuthContext";
+import MobileNavbar from "./MobileNavbar";
 import { AuthService } from "../../../features/auth/api/auth.service";
 
+
 export default function UserNavbar() {
-    const [menuOpen, setMenuOpen] = useState(false);
     const { tenantSlug } = useParams();
     const { tenant } = useTenant();
     const { user, logout } = useAuth();
@@ -17,9 +17,9 @@ export default function UserNavbar() {
     const finalSlug = tenantSlug || tenant?.slug;
 
     const menuItems = [
-        { icon: Home, label: "Inicio", path: "dashboard" },
         { icon: CalendarCheck, label: "Citas", path: "dashboard/bookings" },
         { icon: Scissors, label: "Servicios", path: "dashboard/services" },
+        { icon: Home, label: "Inicio", path: "dashboard" },
         { icon: Users, label: "Profesionales", path: "dashboard/professionals" },
         { icon: Clock, label: "Horarios", path: "dashboard/schedules" }
     ];
@@ -87,7 +87,7 @@ export default function UserNavbar() {
                         </div>
 
                         {/* Desktop Actions - Right */}
-                        <div className="hidden lg:flex items-center gap-4">
+                        <div className="flex items-center gap-4">
                             <span className="text-white/80 text-sm font-medium hidden xl:block">
                                 Hola, {user?.name?.split(' ')[0] || 'Cliente'}
                             </span>
@@ -99,79 +99,17 @@ export default function UserNavbar() {
                                 <span className="hidden xl:inline">Salir</span>
                             </button>
                         </div>
-
-                        {/* Mobile Menu Button */}
-                        <div className="lg:hidden flex items-center">
-                            <button
-                                onClick={() => setMenuOpen(!menuOpen)}
-                                className="text-white hover:bg-white/10 p-2 rounded-lg transition-colors"
-                            >
-                                {menuOpen ? <X size={24} /> : <Menu size={24} />}
-                            </button>
-                        </div>
                     </div>
                 </div>
             </header>
 
-            {/* Overlay */}
-            {menuOpen && (
-                <div
-                    className="fixed inset-0 bg-black/50 z-40 transition-opacity lg:hidden"
-                    onClick={() => setMenuOpen(false)}
-                />
-            )}
-
-            {/* Mobile Menu */}
-            <nav
-                className={`fixed top-0 right-0 h-full w-72 bg-white z-50 shadow-2xl transform transition-transform duration-300 flex flex-col lg:hidden ${menuOpen ? "translate-x-0" : "translate-x-full"}`}
-            >
-                <div className="p-5 flex items-center justify-between border-b border-gray-200 bg-primary/5">
-                    <span className="font-bold text-lg text-gray-900">Menú</span>
-                    <button
-                        onClick={() => setMenuOpen(false)}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                        <X size={20} className="text-gray-500" />
-                    </button>
-                </div>
-
-                <div className="p-4 flex-1 overflow-y-auto space-y-2">
-                    {menuItems.map((item) => {
-                        const isActive = location.pathname === `/${finalSlug}/${item.path}`;
-                        return (
-                            <Link
-                                key={item.path}
-                                to={`/${finalSlug}/${item.path}`}
-                                onClick={() => setMenuOpen(false)}
-                                className={`flex items-center gap-3 p-3 rounded-xl transition-colors ${isActive ? 'font-semibold' : 'text-gray-600 hover:bg-gray-50'
-                                    }`}
-                                style={isActive ? {
-                                    backgroundColor: 'rgba(var(--secondary-rgb, 37, 99, 235), 0.1)',
-                                    color: 'var(--secondary-color, #2563eb)'
-                                } : undefined}
-                            >
-                                <item.icon
-                                    size={20}
-                                    className={isActive ? '' : 'text-gray-400'}
-                                    style={isActive ? { color: 'var(--secondary-color, #2563eb)' } : undefined}
-                                />
-                                {item.label}
-                            </Link>
-                        );
-                    })}
-                </div>
-
-                <div className="p-4 border-t border-gray-100">
-                    <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-3 p-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors font-medium"
-                    >
-                        <LogOut size={20} />
-                        Cerrar Sesión
-                    </button>
-                </div>
-            </nav>
-
+            {/* Bottom Bar Móvil */}
+            <MobileNavbar
+                items={menuItems.map((item) => ({ ...item, exact: item.path === "dashboard" }))}
+                primaryColor={tenant?.primaryColor || '#2563eb'}
+                basePath={`/${finalSlug}`}
+            />
+            
             {/* Spacer */}
             <div className="h-20" />
         </>
