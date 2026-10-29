@@ -5,6 +5,26 @@ import { handleApiError } from "./errorHandler";
 // In-memory store for the CSRF token
 let csrfTokenMemory: string | null = null;
 
+// In-memory single-flight promise for the refresh token.
+// Prevents concurrent 401s from triggering multiple refresh rotations.
+let refreshAccessTokenPromise: Promise<void> | null = null;
+
+function refreshAccessToken(): Promise<void> {
+  if (!refreshAccessTokenPromise) {
+    const tenantSlug = window.location.pathname.split('/')[1];
+    const isValidSlug = !!tenantSlug && !['admin', 'super-admin'].includes(tenantSlug);
+    const refreshUrl = isValidSlug ? `/${tenantSlug}/auth/refresh` : '/admin/auth/refresh';
+
+    refreshAccessTokenPromise = instance
+      .post(refreshUrl, {})
+      .then(() => undefined)
+      .finally(() => {
+        refreshAccessTokenPromise = null;
+      });
+  }
+  return refreshAccessTokenPromise;
+}
+
 // Axios instance url backend (API)
 const instance = axios.create({
   baseURL: env.API_URL,
@@ -65,14 +85,17 @@ instance.interceptors.response.use(
       }
     };
 
-    if (status === 401 && !isSessionCheck && !isLoginRequest && !isRefreshRequest && !error.config._retry) {
+    if (
+      status === 401 &&
+      error.config &&
+      !isSessionCheck &&
+      !isLoginRequest &&
+      !isRefreshRequest &&
+      !error.config._retry
+    ) {
       error.config._retry = true;
       try {
-        const tenantSlug = window.location.pathname.split('/')[1];
-        const isValidSlug = tenantSlug && !['admin', 'super-admin'].includes(tenantSlug);
-        const refreshUrl = isValidSlug ? `/${tenantSlug}/auth/refresh` : "/admin/auth/refresh";
-
-        await instance.post(refreshUrl, {});
+        await refreshAccessToken();
         return instance(error.config);
       } catch (refreshError) {
         handleRedirect();
