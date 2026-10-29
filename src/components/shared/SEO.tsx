@@ -1,4 +1,3 @@
-import { Helmet } from 'react-helmet-async';
 import { useTenant } from '../../context/TenantContext';
 
 interface SEOProps {
@@ -16,7 +15,7 @@ export default function SEO({ title, description, name, type = 'website' }: SEOP
     const finalDescription = description || `Reserva tu cita en ${siteName}. Los mejores cortes y servicios de professionalía.`;
 
     return (
-        <Helmet>
+        <>
             {/* Standard metadata tags */}
             <title>{finalTitle}</title>
             <meta name='description' content={finalDescription} />
@@ -32,6 +31,6 @@ export default function SEO({ title, description, name, type = 'website' }: SEOP
             <meta name="twitter:card" content="summary_large_image" />
             <meta name="twitter:title" content={finalTitle} />
             <meta name="twitter:description" content={finalDescription} />
-        </Helmet>
+        </>
     );
 }
