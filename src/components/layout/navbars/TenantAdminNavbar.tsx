@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, LayoutDashboard, FileText, Scissors, Users, Calendar, UserCircle, LogOut, Settings, TrendingUp, Image } from "lucide-react";
+import { Menu, X, LayoutDashboard, FileText, Scissors, Users, Calendar, UserCircle, LogOut, Settings, TrendingUp, Image, Bell } from "lucide-react";
 import { useTenant } from "../../../context/TenantContext";
 import { useAuth } from "../../../context/AuthContext";
 import { AuthService } from "../../../features/auth/api/auth.service";
@@ -22,6 +22,7 @@ export default function TenantAdminNavbar() {
         { icon: Calendar, label: "Horarios", path: "admin/schedules", roles: ['TENANT_ADMIN', 'PROFESSIONAL'] },
         { icon: UserCircle, label: "Clientes", path: "admin/customers", roles: ['TENANT_ADMIN'] },
         { icon: Image, label: "Galería", path: "admin/gallery", roles: ['TENANT_ADMIN'] },
+        { icon: Bell, label: "Notificaciones", path: "admin/notifications", roles: ['TENANT_ADMIN'] },
         { icon: Settings, label: "Configuración", path: "admin/settings", roles: ['TENANT_ADMIN'] },
     ];
 
